@@ -1,17 +1,17 @@
 from typing import NamedTuple, Union
 
 
-class Response(NamedTuple):
+class HttpResponse(NamedTuple):
     content: Union[str, bytes]
     content_type: str
 
     @staticmethod
-    def application_zip(content: bytes):
+    def application_zip(content: bytes) -> 'HttpResponse':
         content_type = 'application/zip, application/octet-stream, application/x-zip-compressed, multipart/x-zip'
-        return Response(content, content_type)
+        return HttpResponse(content, content_type)
 
 
-class Request(NamedTuple):
+class HttpRequest(NamedTuple):
     method: str
     content: Union[str, bytes]
     content_type: str

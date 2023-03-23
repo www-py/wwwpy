@@ -5,7 +5,7 @@ import pytest
 
 
 from wwwpy.server import find_port
-# from wwwpy.webservers.available_webservers import available_webservers
+from wwwpy.webservers.available_webservers import available_webservers
 
 
 def for_all_webservers():

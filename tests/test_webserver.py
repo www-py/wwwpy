@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 from tests import for_all_webservers
-from wwwpy import Response, Routes, Webserver
-from wwwpy.response import Request
+from wwwpy.response import HttpResponse
+from wwwpy.response import HttpRequest
+from wwwpy.routes import Routes
 from wwwpy.server import find_port
 from wwwpy.server.fetch import sync_fetch_response
+from wwwpy.webserver import Webserver
 
 
 @for_all_webservers()
 def test_webservers_get(webserver: Webserver):
-    response_a = Response('a', 'text/plain')
-    response_b = Response('b', 'text/html')
+    response_a = HttpResponse('a', 'text/plain')
+    response_b = HttpResponse('b', 'text/html')
 
     routes = (
         Routes()
@@ -27,10 +31,10 @@ def test_webservers_get(webserver: Webserver):
 @for_all_webservers()
 def test_webservers_post(webserver: Webserver):
     # GIVEN
-    response_a = Response('a', 'text/plain')
-    actual_request: Request = None
+    response_a = HttpResponse('a', 'text/plain')
+    actual_request: HttpRequest | None = None
 
-    def handler(req: Request) -> Response:
+    def handler(req: HttpRequest) -> HttpResponse:
         nonlocal actual_request
         actual_request = req
         return response_a

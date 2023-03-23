@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from time import sleep
 from typing import Tuple
 
-from wwwpy.routes import Routes, Route
+from wwwpy.routes import Routes, HttpRoute
 from wwwpy.server import wait_url
 
 
@@ -41,7 +41,7 @@ class Webserver(ABC):
 
     # todo inline Route type
     @abstractmethod
-    def _setup_route(self, route: Route):
+    def _setup_route(self, route: HttpRoute):
         pass
 
     @abstractmethod
@@ -56,6 +56,6 @@ class Webserver(ABC):
         return f'http://127.0.0.1:{self.port}'
 
 
-def wait_forever():
+def wait_forever() -> None:
     while True:
         sleep(10)

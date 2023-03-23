@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from functools import partial
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -5,8 +7,8 @@ from threading import Thread
 from typing import Optional, Callable, Dict
 from urllib.parse import urlparse, parse_qs
 
-from ..response import Response, Request
-from ..routes import Route
+from ..response import HttpResponse, HttpRequest
+from ..routes import HttpRoute
 from ..webserver import Webserver
 from ..webserver import wait_forever
 
@@ -14,10 +16,10 @@ from ..webserver import wait_forever
 class WsPythonEmbedded(Webserver):
     def __init__(self):
         super().__init__()
-        self.thread: Optional[Thread] = None
-        self._routes: Dict[str, Route] = {}
+        self.thread: Thread | None = None
+        self._routes: Dict[str, HttpRoute] = {}
 
-    def _setup_route(self, route: Route):
+    def _setup_route(self, route: HttpRoute):
         self._routes[route.path] = route
 
     def _start_listen(self):
@@ -39,7 +41,7 @@ class WsPythonEmbedded(Webserver):
             nf = HTTPStatus.NOT_FOUND
             request.send_bytes(bytes(nf.phrase, 'utf8'), code=nf.value)
         else:
-            req = Request(request.command, request.get_body(), request.get_content_type())
+            req = HttpRequest(request.command, request.get_body(), request.get_content_type())
             resp = route.callback(req)
             content = resp.content
             if isinstance(content, str):
@@ -103,6 +105,6 @@ class RequestHandler(SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     s = WsPythonEmbedded()
-    s._setup_route(Route('/', lambda: Response('ciao', 'text/html')))
+    s._setup_route(HttpRoute('/', lambda: HttpResponse('ciao', 'text/html')))
     s.start_listen()
     wait_forever()

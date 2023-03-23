@@ -1,23 +1,22 @@
 from typing import List, Callable, NamedTuple
 
-from wwwpy import Response
-from wwwpy.response import Request
+from .response import HttpRequest, HttpResponse
 
 
-class Route(NamedTuple):
+class HttpRoute(NamedTuple):
     path: str
-    callback: Callable[[Request], Response]
+    callback: Callable[[HttpRequest], HttpResponse]
 
 
 class Routes:
     def __init__(self):
-        self.list: List[Route] = []
+        self.list: List[HttpRoute] = []
 
-    def add_route(self, path: str, callback: Callable[[Request], Response]) -> 'Routes':
-        self.list.append(Route(path, callback))
+    def add_route(self, path: str, callback: Callable[[HttpRequest], HttpResponse]) -> 'Routes':
+        self.list.append(HttpRoute(path, callback))
         return self
 
-    def add_route_obj(self, route: Route) -> 'Routes':
+    def add_route_obj(self, route: HttpRoute) -> 'Routes':
         self.list.append(route)
         return self
 
