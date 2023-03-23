@@ -1,6 +1,7 @@
 from typing import List, Callable, NamedTuple
 
-from .response import HttpRequest, HttpResponse
+from .http_request import HttpRequest
+from .http_response import HttpResponse
 
 
 class HttpRoute(NamedTuple):

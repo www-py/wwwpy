@@ -3,7 +3,7 @@ from __future__ import annotations
 import urllib
 import urllib.request
 
-from wwwpy.response import HttpResponse
+from wwwpy.http_response import HttpResponse
 
 
 async def async_fetch_str(url: str, method: str = 'GET', data: str = '') -> str:

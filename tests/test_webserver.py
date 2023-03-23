@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from tests import for_all_webservers
-from wwwpy.response import HttpRequest
-from wwwpy.response import HttpResponse
+from wwwpy.http_request import HttpRequest
+from wwwpy.http_response import HttpResponse
 from wwwpy.routes import HttpRoute
 from wwwpy.server import find_port
 from wwwpy.server.fetch import sync_fetch_response
