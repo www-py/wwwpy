@@ -17,7 +17,7 @@ def test_webservers_get(webserver: Webserver):
     webserver.set_http_route(HttpRoute('/b', lambda req: response_b))
     webserver.set_http_route(HttpRoute('/', lambda req: response_a))
 
-    webserver.set_port(find_port()).start_listen().wait_ready()
+    webserver.set_port(find_port()).start_listen()
 
     url = webserver.localhost_url()
 
@@ -38,7 +38,7 @@ def test_webservers_post(webserver: Webserver):
 
     http_route = HttpRoute('/route1', handler)
 
-    webserver.set_http_route(http_route).set_port(find_port()).start_listen().wait_ready()
+    webserver.set_http_route(http_route).start_listen()
 
     url = webserver.localhost_url()
 

@@ -20,6 +20,7 @@ class Webserver(ABC):
 
     def start_listen(self) -> 'Webserver':
         self._start_listen()
+        self.wait_ready()
         return self
 
     def set_http_route(self, http_route: HttpRoute) -> 'Webserver':
