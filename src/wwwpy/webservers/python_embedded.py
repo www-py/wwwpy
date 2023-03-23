@@ -9,7 +9,7 @@ from urllib.parse import urlparse, parse_qs
 
 from ..http_request import HttpRequest
 from wwwpy.http_response import HttpResponse
-from ..routes import HttpRoute
+from ..http_route import HttpRoute
 from ..webserver import Webserver
 from ..webserver import wait_forever
 

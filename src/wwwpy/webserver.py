@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 from time import sleep
-from typing import Tuple
 
-from wwwpy.routes import  HttpRoute
+from wwwpy.http_route import HttpRoute
 from wwwpy.server import wait_url
 
 
