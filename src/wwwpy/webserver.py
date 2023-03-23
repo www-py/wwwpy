@@ -27,11 +27,11 @@ class Webserver(ABC):
         return self
 
     @abstractmethod
-    def _setup_route(self, route: HttpRoute):
+    def _setup_route(self, route: HttpRoute) -> None:
         pass
 
     @abstractmethod
-    def _start_listen(self):
+    def _start_listen(self) -> None:
         pass
 
     def wait_ready(self) -> 'Webserver':

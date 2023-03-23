@@ -4,7 +4,7 @@ from functools import partial
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
-from typing import Optional, Callable, Dict
+from typing import Optional, Callable, Dict, AnyStr, Tuple, Any
 from urllib.parse import urlparse, parse_qs
 
 from ..http_request import HttpRequest
@@ -15,18 +15,18 @@ from ..webserver import wait_forever
 
 
 class WsPythonEmbedded(Webserver):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.thread: Thread | None = None
         self._routes: Dict[str, HttpRoute] = {}
 
-    def _setup_route(self, route: HttpRoute):
+    def _setup_route(self, route: HttpRoute) -> None:
         self._routes[route.path] = route
 
-    def _start_listen(self):
+    def _start_listen(self) -> None:
         httpd = ThreadingHTTPServer((self.host, self.port), partial(RequestHandler, handler=self._handler))
 
-        def run():
+        def run() -> None:
             print(f'Starting embedded python web server on:\n'
                   f' - http://{self.host}:{self.port}\n'
                   f' - {self.localhost_url()}\n')
@@ -57,37 +57,37 @@ class RequestHandler(SimpleHTTPRequestHandler):
     query_index = 4
     path_index = 2
 
-    def __init__(self, *args
+    def __init__(self, *args: Any
                  , handler: Callable[['RequestHandler'], bool]
-                 , **kwargs):
+                 , **kwargs: Any) -> None:
         self.handler = handler
         super(RequestHandler, self).__init__(*args, **kwargs)
 
-    def do_GET(self):
+    def do_GET(self) -> None:
         self.handler(self)
 
-    def do_POST(self):
+    def do_POST(self) -> None:
         self.handler(self)
 
     def get_content_type(self) -> str:
-        return self.headers.get('Content-Type')
+        return self.headers.get('Content-Type', '')
 
-    def get_body(self):
+    def get_body(self) -> bytes:
         if self.command != 'POST':
-            return None
-        content_len = int(self.headers.get('Content-Length'))
+            return b''
+        content_len = int(self.headers.get('Content-Length', '0'))
         body = self.rfile.read(content_len)
         return body
 
-    def decode_request(self):
+    def decode_request(self) -> Tuple[Dict[str, str], str]:
         p = urlparse(self.path)
         query_str = p[self.query_index]
-        rpath = p[self.path_index]
+        rpath: str = p[self.path_index]
         di = parse_qs(query_str)
         params = {k: v[0] for k, v in di.items()}
         return params, rpath
 
-    def send_bytes(self, content, code=200, content_type='text/plain'):
+    def send_bytes(self, content: bytes, code: int = 200, content_type: str = 'text/plain') -> int:
         self.protocol_version = "HTTP/1.1"
         self.send_response(code)
         self.send_header("Content-Type", content_type)
@@ -96,9 +96,9 @@ class RequestHandler(SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Methods", "*")
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
-        self.wfile.write(content)
+        return self.wfile.write(content)
 
-    def serve_file(self, directory, filename):
+    def serve_file(self, directory: str, filename: str) -> None:
         self.directory = directory
         self.path = '/' + filename
         super(RequestHandler, self).do_GET()
@@ -106,6 +106,6 @@ class RequestHandler(SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     s = WsPythonEmbedded()
-    s._setup_route(HttpRoute('/', lambda: HttpResponse('ciao', 'text/html')))
+    s.set_http_route(HttpRoute('/', lambda req: HttpResponse('ciao', 'text/html')))
     s.start_listen()
     wait_forever()
