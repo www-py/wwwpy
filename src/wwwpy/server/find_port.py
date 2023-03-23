@@ -1,13 +1,14 @@
 import errno
 import socket
 
-_start = 10000
+_start = (10000 - 1)
 _end = 30000
 
 
 def find_port() -> int:
     global _start
     while _start < _end:
+        _start += 1
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             try:
                 s.bind(('0.0.0.0', _start))
@@ -16,7 +17,7 @@ def find_port() -> int:
             except socket.error as e:
                 if e.errno != errno.EADDRINUSE:
                     raise
-                _start += 1
+
     raise Exception(f'find_port(start={_start},end={_end}) no bindable tcp port found in interval')
 
 
