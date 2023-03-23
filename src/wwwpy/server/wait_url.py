@@ -3,7 +3,7 @@ import urllib.request
 from time import sleep
 
 
-def wait_url(url: str):
+def wait_url(url: str) -> None:
     for _ in range(300):
         try:
             urllib.request.urlopen(url)

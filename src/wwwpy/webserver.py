@@ -6,7 +6,7 @@ from wwwpy.server import wait_url
 
 
 class Webserver(ABC):
-    def __init__(self):
+    def __init__(self) -> None:
         self.host: str = '0.0.0.0'
         self.port: int = 7777
 

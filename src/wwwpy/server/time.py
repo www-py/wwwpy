@@ -1,12 +1,20 @@
+from __future__ import annotations
+
 import datetime as datetime_mod
 import time
 from datetime import datetime, date, timedelta
-from typing import Union, Optional
+from typing import Union, Optional, Any, TypeVar, Callable
+
+from mypy_extensions import VarArg, KwArg
+
+# FuncT = TypeVar("FuncT", bound=Callable[[VarArg(Any), KwArg(Any)], Any])
+FuncT = Callable[[VarArg(Any), KwArg(Any)], Any]
 
 
-def time_wrapper(above_seconds=0.0, callback=None, *outer_args, **outer_kwargs):
-    def decorator(function):
-        def wrapper(*args, **kwargs):
+def time_wrapper(above_seconds: float = 0.0, callback: FuncT | None = None, *outer_args: Any,
+                 **outer_kwargs: Any) -> FuncT:
+    def decorator(function: FuncT) -> FuncT:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             start = time.time()
             result = function(*args, **kwargs)
             end = time.time()
@@ -23,18 +31,18 @@ def time_wrapper(above_seconds=0.0, callback=None, *outer_args, **outer_kwargs):
     return decorator
 
 
-def time_wrapper_old(f):
-    def wrapper(*args, **kwargs):
-        start = time.time()
-        ret = f(*args, **kwargs)
-        end = time.time()
-        print('{:s} function took {:.3f} ms'.format(f.__name__, (end - start) * 1000.0))
-        return ret
+# def time_wrapper_old(f):
+#     def wrapper(*args, **kwargs):
+#         start = time.time()
+#         ret = f(*args, **kwargs)
+#         end = time.time()
+#         print('{:s} function took {:.3f} ms'.format(f.__name__, (end - start) * 1000.0))
+#         return ret
+#
+#     return wrapper
 
-    return wrapper
 
-
-def wait_until(end: Union[date, datetime]):
+def wait_until(end: Union[date, datetime]) -> None:
     """
     When the function ends, it will be a little after `end`
     """
@@ -60,7 +68,7 @@ def first_day_next_month(today: Optional[date] = None) -> date:
     return dt
 
 
-def main_harness():
+def main_harness() -> None:
     now = datetime.now()
     nt = now + timedelta(seconds=2)
     new_time = datetime_mod.time(nt.hour, nt.minute, nt.second)

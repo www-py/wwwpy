@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import urllib
 import urllib.request
+from typing import Any
 
 from wwwpy.http_response import HttpResponse
 
@@ -13,7 +14,7 @@ async def async_fetch_str(url: str, method: str = 'GET', data: str = '') -> str:
 
 
 def sync_fetch_response(url: str, method: str = 'GET', data: str | bytes = '') -> HttpResponse:
-    def make_response(r) -> HttpResponse:
+    def make_response(r: Any) -> HttpResponse:
         return HttpResponse(
             r.read().decode("utf-8"),
             r.headers.get_content_type()
