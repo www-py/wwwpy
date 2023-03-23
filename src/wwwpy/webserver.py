@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from time import sleep
 from typing import Tuple
 
-from wwwpy.routes import Routes, HttpRoute
+from wwwpy.routes import  HttpRoute
 from wwwpy.server import wait_url
 
 
@@ -10,7 +10,6 @@ class Webserver(ABC):
     def __init__(self):
         self.host: str = '0.0.0.0'
         self.port: int = 7777
-        self.routes = Routes()
 
     def set_host(self, host: str) -> 'Webserver':
         self.host = host
