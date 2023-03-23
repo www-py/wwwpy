@@ -36,14 +36,14 @@ def test_webservers_post(webserver: Webserver):
         actual_request = req
         return response_a
 
-    http_route = HttpRoute('/rpc', handler)
+    http_route = HttpRoute('/route1', handler)
 
     webserver.set_http_route(http_route).set_port(find_port()).start_listen().wait_ready()
 
     url = webserver.localhost_url()
 
     # WHEN
-    actual_response = sync_fetch_response(url + '/rpc', method='POST', data='post-body')
+    actual_response = sync_fetch_response(url + '/route1', method='POST', data='post-body')
 
     # THEN
     assert actual_response == response_a
