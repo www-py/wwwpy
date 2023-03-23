@@ -39,7 +39,10 @@ class Webserver(ABC):
         self._start_listen()
         return self
 
-    # todo inline Route type
+    def set_http_route(self, http_route: HttpRoute) -> 'Webserver':
+        self._setup_route(http_route)
+        return self
+
     @abstractmethod
     def _setup_route(self, route: HttpRoute):
         pass

@@ -3,7 +3,7 @@ from __future__ import annotations
 from tests import for_all_webservers
 from wwwpy.response import HttpResponse
 from wwwpy.response import HttpRequest
-from wwwpy.routes import Routes
+from wwwpy.routes import Routes, HttpRoute
 from wwwpy.server import find_port
 from wwwpy.server.fetch import sync_fetch_response
 from wwwpy.webserver import Webserver
@@ -14,13 +14,10 @@ def test_webservers_get(webserver: Webserver):
     response_a = HttpResponse('a', 'text/plain')
     response_b = HttpResponse('b', 'text/html')
 
-    routes = (
-        Routes()
-        .add_route('/b', lambda req: response_b)
-        .add_route('/', lambda req: response_a)
-    )
+    webserver.set_http_route(HttpRoute('/b', lambda req: response_b))
+    webserver.set_http_route(HttpRoute('/', lambda req: response_a))
 
-    webserver.set_routes(routes).set_port(find_port()).start_listen().wait_ready()
+    webserver.set_port(find_port()).start_listen().wait_ready()
 
     url = webserver.localhost_url()
 
@@ -39,9 +36,9 @@ def test_webservers_post(webserver: Webserver):
         actual_request = req
         return response_a
 
-    routes = Routes().add_route('/rpc', handler)
+    http_route = HttpRoute('/rpc', handler)
 
-    webserver.set_routes(routes).set_port(find_port()).start_listen().wait_ready()
+    webserver.set_http_route(http_route).set_port(find_port()).start_listen().wait_ready()
 
     url = webserver.localhost_url()
 
