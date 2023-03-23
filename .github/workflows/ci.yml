@@ -10,6 +10,7 @@ on:
 
 env:
   FORCE_COLOR: "1" # Make tools pretty.
+  PLAYWRIGHT_PATCH_TIMEOUT: "30000"
 
 jobs:
   test:
