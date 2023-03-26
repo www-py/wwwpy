@@ -1,42 +1,28 @@
 from __future__ import annotations
 
+import zipfile
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from io import BytesIO
 from os import PathLike
 from pathlib import Path
 from typing import Iterator, Callable, Optional
-
-
-class Content(ABC):
-    @abstractmethod
-    def as_bytes(self, content: bytes) -> None: ...
-
-    @abstractmethod
-    def as_string(self, content: str) -> str: ...
+from zipfile import ZipFile
 
 
 @dataclass(frozen=True)
 class Resource(ABC):
     arcname: str
 
-    @abstractmethod
-    def access_content(self, content: Content) -> None: ...
-
 
 @dataclass(frozen=True)
 class StringResource(Resource):
     content: str
 
-    def access_content(self, content: Content) -> None:
-        content.as_string(self.content)
-
 
 @dataclass(frozen=True)
 class PathResource(Resource):
     filepath: Path
-
-    def access_content(self, content: Content) -> None:
-        content.as_bytes(self.filepath.read_bytes())
 
 
 ResourceIterator = Iterator[Resource]
@@ -73,3 +59,19 @@ def from_filesystem(
 
     yield from recurse(folder)
     return iter(())
+
+
+def build_archive(item_iterator: Iterator[Resource]) -> bytes:
+    stream = BytesIO()
+    zip_file = ZipFile(stream, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=1)
+    for item in item_iterator:
+        if isinstance(item, PathResource):
+            zip_file.write(item.filepath, item.arcname)
+        elif isinstance(item, StringResource):
+            zip_file.writestr(item.arcname, item.content)
+        else:
+            raise Exception(f'Unhandled class \n  type={type(item).__name__} \n  data={item}')
+    zip_file.close()
+
+    stream.seek(0)
+    return stream.getbuffer().tobytes()
