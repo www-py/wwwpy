@@ -19,7 +19,7 @@ def test_javascript_execution(page: Page, webserver: Webserver):
 
 
 @for_all_webservers()
-def test_python_execution(page: Page, webserver: Webserver):
+def test_bootstrap_execution(page: Page, webserver: Webserver):
     bootstrap = Bootstrap()
     bootstrap.add_python('from js import document\ndocument.getElementById("tag1").value = "foo1"')
     html = f'<input id="tag1" value="bar"><script>{bootstrap.get_javascript()}</script>'
