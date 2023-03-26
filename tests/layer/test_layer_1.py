@@ -1,36 +1,51 @@
-import io
-import zipfile
-from pathlib import Path
-from typing import Optional, NamedTuple
-
-from playwright.sync_api import Page, expect
+from __future__ import annotations
 
 from tests import for_all_webservers
-from wwwpy.bootstrap import get_javascript_for, wrap_in_tryexcept
+from wwwpy.http_request import HttpRequest
 from wwwpy.http_response import HttpResponse
 from wwwpy.http_route import HttpRoute
-from wwwpy.resource_iterator import from_filesystem, PathResource, default_item_filter, Resource, build_archive, \
-    StringResource
+from wwwpy.server import find_port
+from wwwpy.server.fetch import sync_fetch_response
 from wwwpy.webserver import Webserver
 
 
 @for_all_webservers()
-def test_python_execution(page: Page, webserver: Webserver):
-    python_code = 'from js import document\ndocument.getElementById("tag1").value = "foo1"'
-    javascript = get_javascript_for(python_code)
-    html = f'<input id="tag1" value="bar"><script>{javascript}</script>'
-    webserver.set_http_route(HttpRoute('/', lambda request: HttpResponse.text_html(html)))
-    webserver.start_listen()
-    page.goto(webserver.localhost_url())
-    expect(page.locator('id=tag1')).to_have_value('foo1')
+def test_webservers_get(webserver: Webserver):
+    response_a = HttpResponse('a', 'text/plain')
+    response_b = HttpResponse('b', 'text/html')
+
+    webserver.set_http_route(HttpRoute('/b', lambda req: response_b))
+    webserver.set_http_route(HttpRoute('/', lambda req: response_a))
+
+    webserver.set_port(find_port()).start_listen()
+
+    url = webserver.localhost_url()
+
+    assert sync_fetch_response(url) == response_a
+    assert sync_fetch_response(url + '/b') == response_b
 
 
-def test_python_code_execution():
-    tmp = []
-    code = wrap_in_tryexcept('1/0', (
-        'tmp.append("executed")\n'
-        'tmp.append("type=" + str(type(exception).__name__))'
-    ))
-    exec(code)
-    assert ['executed', 'type=ZeroDivisionError'] == tmp
+@for_all_webservers()
+def test_webservers_post(webserver: Webserver):
+    # GIVEN
+    response_a = HttpResponse('a', 'text/plain')
+    actual_request: HttpRequest | None = None
 
+    def handler(req: HttpRequest) -> HttpResponse:
+        nonlocal actual_request
+        actual_request = req
+        return response_a
+
+    http_route = HttpRoute('/route1', handler)
+
+    webserver.set_http_route(http_route).start_listen()
+
+    url = webserver.localhost_url()
+
+    # WHEN
+    actual_response = sync_fetch_response(url + '/route1', method='POST', data='post-body')
+
+    # THEN
+    assert actual_response == response_a
+    assert actual_request.method == 'POST'
+    assert actual_request.content.decode('utf8') == 'post-body'
