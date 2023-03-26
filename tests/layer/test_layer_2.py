@@ -9,7 +9,7 @@ from tests import for_all_webservers
 from wwwpy.bootstrap import get_javascript_for, wrap_in_tryexcept
 from wwwpy.http_response import HttpResponse
 from wwwpy.http_route import HttpRoute
-from wwwpy.resource_iterator import from_filesystem, PathResource, default_item_filter, Resource, build_archive, \
+from wwwpy.resource_iterator import from_filesystem, PathResource, default_resource_filter, Resource, build_archive, \
     StringResource
 from wwwpy.webserver import Webserver
 

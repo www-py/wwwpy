@@ -29,7 +29,7 @@ ResourceIterator = Iterator[Resource]
 ResourceFilter = Callable[[Resource], Optional[Resource]]
 
 
-def default_item_filter(resource: Resource) -> Optional[Resource]:
+def default_resource_filter(resource: Resource) -> Optional[Resource]:
     if not isinstance(resource, PathResource):
         return resource
     filepath = resource.filepath
@@ -42,7 +42,7 @@ def default_item_filter(resource: Resource) -> Optional[Resource]:
 
 def from_filesystem(
         folder: Path, relative_to: Path | None = None,
-        item_filter: ResourceFilter = default_item_filter
+        resource_filter: ResourceFilter = default_resource_filter
 ) -> ResourceIterator:
     relative_to_defined: Path = folder if relative_to is None else relative_to
 
@@ -50,7 +50,7 @@ def from_filesystem(
         for f in path.glob('*'):
             rel = f.relative_to(relative_to_defined)
             candidate = PathResource(str(rel), f)
-            item = item_filter(candidate)
+            item = resource_filter(candidate)
             if item is not None:
                 if f.is_file():
                     yield item
