@@ -1,18 +1,11 @@
-from typing import List
+import textwrap
 
 
-# todo this could be a single function
-class Bootstrap:
-    def __init__(self) -> None:
-        self._python: str = ''
-
-    def add_python(self, code: str) -> None:
-        self._python = code
-
-    def get_javascript(self) -> str:
-        return _js_content.replace('# python replace marker', self._python)
+def get_javascript_for(python_code: str) -> str:
+    return _js_content.replace('# python replace marker', python_code)
 
 
+# language=javascript
 _js_content = """
 if (typeof loadPyodide === 'undefined') {
     let script = document.createElement('script');
@@ -29,3 +22,10 @@ if (typeof loadPyodide === 'undefined') {
     document.body.append(script)
 }
 """
+
+
+def wrap_in_tryexcept(code: str, exception_block: str) -> str:
+    """It will wrap the code in try/except and catch `Exception as exception`"""
+    result = 'try:\n' + textwrap.indent(code, ' ' * 4) + '\n' + \
+             'except Exception as exception:\n' + textwrap.indent(exception_block, ' ' * 4)
+    return result
