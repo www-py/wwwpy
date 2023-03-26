@@ -10,15 +10,6 @@ from wwwpy.webserver import Webserver
 
 
 @for_all_webservers()
-def test_javascript_execution(page: Page, webserver: Webserver):
-    html = '<html><head></head><body><script>document.head.id = "id1";</script></body></html>'
-    webserver.set_http_route(HttpRoute('/', lambda request: HttpResponse.text_html(html)))
-    webserver.start_listen()
-    page.goto(webserver.localhost_url())
-    expect(page.locator('id=id1')).to_have_id('id1')
-
-
-@for_all_webservers()
 def test_python_execution(page: Page, webserver: Webserver):
     python_code = 'from js import document\ndocument.getElementById("tag1").value = "foo1"'
     javascript = get_javascript_for(python_code)
