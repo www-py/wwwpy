@@ -1,6 +1,6 @@
 import textwrap
 
-
+# todo this could go in bootstrap.py
 def add_exception_block(code: str, exception_block: str) -> str:
     """It will wrap the code in try/except and catch `Exception as exception`"""
     result = 'try:\n' + textwrap.indent(code, ' ' * 4) + '\n' + \

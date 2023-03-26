@@ -1,6 +1,7 @@
 from typing import List
 
 
+# todo this could be a single function
 class Bootstrap:
     def __init__(self) -> None:
         self._python: str = ''
