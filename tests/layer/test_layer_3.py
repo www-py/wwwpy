@@ -26,7 +26,7 @@ def test_python_execution(page: Page, webserver: Webserver):
     expect(page.locator('id=tag1')).to_have_value('foo1')
 
 
-def test_python_code_execution():
+def test_wrap_in_tryexcept():
     tmp = []
     code = wrap_in_tryexcept('1/0', (
         'tmp.append("executed")\n'
