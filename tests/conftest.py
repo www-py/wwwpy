@@ -17,8 +17,13 @@ def before_each_after_each(page: Page):
 
 
 def patch_playwright_assertions() -> None:
-    ga = os.environ.get("GITHUB_ACTIONS", '')
-    raise Exception(f'The environment setting did not work ga=`{ga}`')
+    def env(key: str) -> str:
+        v1 = os.environ.get(key, '')
+        v2 = os.getenv(key)
+        return f'\n{key} v1=`{v1}` v2=`{v2}`'
+
+    string = env('PLAYWRIGHT_PATCH_TIMEOUT') + env('GITHUB_ACTIONS') + env('HOME') + env('PATH')
+    raise Exception(f'Env = {string}')
     timeout_millis = int(os.environ.get('PLAYWRIGHT_PATCH_TIMEOUT', '4000'))
     print(f'Using PLAYWRIGHT_PATCH_TIMEOUT={timeout_millis}')
 
