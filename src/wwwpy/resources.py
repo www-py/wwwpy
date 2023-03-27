@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import inspect
 import zipfile
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass
 from io import BytesIO
-from os import PathLike
 from pathlib import Path
 from typing import Iterator, Callable, Optional
 from zipfile import ZipFile
@@ -83,7 +82,7 @@ def stacktrace_pathfinder(stack_backtrack: int = 1) -> Optional[Path]:
 
     for stack in inspect.stack():
         source_path = Path(stack.filename).resolve()
-        if not is_path_contained(source_path, wwwpy_root):
+        if not _is_path_contained(source_path, wwwpy_root):
             stack_backtrack -= 1
             if stack_backtrack == 0:
                 return source_path
@@ -91,7 +90,7 @@ def stacktrace_pathfinder(stack_backtrack: int = 1) -> Optional[Path]:
     return None
 
 
-def is_path_contained(child: Path, parent: Path) -> bool:
+def _is_path_contained(child: Path, parent: Path) -> bool:
     cl = len(child.parts)
     cp = len(parent.parts)
     if cl < cp:
