@@ -17,11 +17,10 @@ def before_each_after_each(page: Page):
 
 
 def patch_playwright_assertions() -> None:
+    ga = os.environ.get("GITHUB_ACTIONS", '')
+    raise Exception(f'The environment setting did not work ga=`{ga}`')
     timeout_millis = int(os.environ.get('PLAYWRIGHT_PATCH_TIMEOUT', '4000'))
     print(f'Using PLAYWRIGHT_PATCH_TIMEOUT={timeout_millis}')
-
-    if timeout_millis == 4000:
-        raise Exception(f'The environment setting did not work')
 
     # patch playwright assertion timeout to match our configuration
     # this is temporary solution until playwright supports setting custom timeout for assertions
