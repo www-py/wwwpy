@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import zipfile
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -75,3 +76,27 @@ def build_archive(item_iterator: Iterator[Resource]) -> bytes:
 
     stream.seek(0)
     return stream.getbuffer().tobytes()
+
+
+def stacktrace_pathfinder(stack_backtrack: int = 1) -> Optional[Path]:
+    wwwpy_root = Path(__file__).resolve().parent
+
+    for stack in inspect.stack():
+        source_path = Path(stack.filename).resolve()
+        if not is_path_contained(source_path, wwwpy_root):
+            stack_backtrack -= 1
+            if stack_backtrack == 0:
+                return source_path
+
+    return None
+
+
+def is_path_contained(child: Path, parent: Path) -> bool:
+    cl = len(child.parts)
+    cp = len(parent.parts)
+    if cl < cp:
+        return False
+    m = min(cl, cp)
+    child_parts = child.parts[:m]
+    parent_parts = parent.parts[:m]
+    return child_parts == parent_parts

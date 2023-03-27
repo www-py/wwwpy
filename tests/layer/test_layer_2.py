@@ -5,7 +5,7 @@ from io import BytesIO
 from zipfile import ZipFile
 
 from wwwpy.resource_iterator import from_filesystem, PathResource, Resource, default_resource_filter, build_archive, \
-    StringResource
+    StringResource, stacktrace_pathfinder, is_path_contained
 
 parent = Path(__file__).parent
 
@@ -77,6 +77,25 @@ class Test_build_archive:
         }
 
         assert expected_files == actual_files
+
+
+class Test_stacktrace_pathfinder:
+
+    def test_external_filename(self):
+        actual = stacktrace_pathfinder()
+        assert actual == Path(__file__).resolve()
+
+    def test_is_contained_into(self):
+        assert is_path_contained(Path('/foo/bar'), Path('/foo/bar/baz')) is False
+
+    def test_is_contained_into_2(self):
+        assert is_path_contained(Path('/foo/xxx'), Path('/foo/bar/baz')) is False
+
+    def test_is_contained_into_3(self):
+        assert is_path_contained(Path('/foo/bar/baz/yyy'), Path('/foo/bar/baz')) is True
+
+    def test_is_contained_into_4(self):
+        assert is_path_contained(Path('/foo/bar/baz'), Path('/foo/bar/baz')) is True
 
 
 def fix_sep(path: str) -> str:
