@@ -31,7 +31,7 @@ class Test_ResourceIterator_from_filesystem:
     def test_selective(self):
         folder = self.support_data / 'relative_to'
         actual = set(from_filesystem_once(folder / 'yes', relative_to=folder))
-        expect = {PathResource(_fix_sep('yes/yes.txt'), folder / 'yes/yes.txt')}
+        expect = {PathResource(fix_path('yes/yes.txt'), folder / 'yes/yes.txt')}
         assert expect == actual
 
     def test_resource_filter(self):
@@ -48,7 +48,7 @@ class Test_ResourceIterator_from_filesystem:
             return default_resource_filter(item)
 
         actual = set(from_filesystem_once(folder, resource_filter=resource_filter))
-        expect = {PathResource(_fix_sep('yes/yes.txt'), folder / 'yes/yes.txt')}
+        expect = {PathResource(fix_path('yes/yes.txt'), folder / 'yes/yes.txt')}
         assert expect == actual
 
 
@@ -105,12 +105,12 @@ def test_for_remote():
     repo_root = test_root.parent
     target = set(for_remote(user_filesystem=from_filesystem_once(test_root, relative_to=repo_root)))
     arc_names = {resource.arcname for resource in target}
-    minimum_expected = {
+    minimum_expected = set(fix_path_iterable({
         'wwwpy/__init__.py',
         'wwwpy/remote/__init__.py',
         'wwwpy/common/__init__.py',
         'tests/__init__.py',
-    }
+    }))
     actual = minimum_expected.intersection(arc_names)
     print('all arcnames:')
     for arcname in sorted(arc_names):
@@ -119,5 +119,9 @@ def test_for_remote():
     assert actual == minimum_expected
 
 
-def _fix_sep(path: str) -> str:
+def fix_path_iterable(iterable):
+    return [fix_path(i) for i in iterable]
+
+
+def fix_path(path: str) -> str:
     return path.replace('/', os.path.sep)
