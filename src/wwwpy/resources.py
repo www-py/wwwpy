@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import itertools
 import zipfile
 from abc import ABC
 from dataclasses import dataclass
@@ -8,6 +9,8 @@ from io import BytesIO
 from pathlib import Path
 from typing import Iterator, Callable, Optional
 from zipfile import ZipFile
+
+parent = Path(__file__).resolve().parent
 
 
 @dataclass(frozen=True)
@@ -25,8 +28,12 @@ class PathResource(Resource):
     filepath: Path
 
 
+# https://docs.python.org/3/library/collections.abc.html
+# https://wiki.python.org/moin/Iterator
 ResourceIterator = Iterator[Resource]
 ResourceFilter = Callable[[Resource], Optional[Resource]]
+
+_directory_blacklist = {'.mypy_cache', '__pycache__'}
 
 
 def default_resource_filter(resource: Resource) -> Optional[Resource]:
@@ -35,15 +42,16 @@ def default_resource_filter(resource: Resource) -> Optional[Resource]:
     filepath = resource.filepath
     if filepath.name == '.DS_Store':
         return None
-    if filepath.name == '__pycache__' and filepath.is_dir():
+    if filepath.is_dir() and filepath.name in _directory_blacklist:
         return None
     return resource
 
 
-def from_filesystem(
+def from_filesystem_once(
         folder: Path, relative_to: Path | None = None,
         resource_filter: ResourceFilter = default_resource_filter
 ) -> ResourceIterator:
+    """It can be used only once. It's not a `real Iterable`"""
     relative_to_defined: Path = folder if relative_to is None else relative_to
 
     def recurse(path: Path) -> ResourceIterator:
@@ -78,7 +86,7 @@ def build_archive(item_iterator: Iterator[Resource]) -> bytes:
 
 
 def stacktrace_pathfinder(stack_backtrack: int = 1) -> Optional[Path]:
-    wwwpy_root = Path(__file__).resolve().parent
+    wwwpy_root = parent
 
     for stack in inspect.stack():
         source_path = Path(stack.filename).resolve()
@@ -99,3 +107,7 @@ def _is_path_contained(child: Path, parent: Path) -> bool:
     child_parts = child.parts[:m]
     parent_parts = parent.parts[:m]
     return child_parts == parent_parts
+
+
+def for_remote(user_filesystem: ResourceIterator) -> ResourceIterator:
+    return itertools.chain(user_filesystem, from_filesystem_once(parent, relative_to=parent.parent))

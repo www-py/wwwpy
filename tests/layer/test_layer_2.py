@@ -4,8 +4,10 @@ from typing import Optional, NamedTuple
 from io import BytesIO
 from zipfile import ZipFile
 
-from wwwpy.resources import from_filesystem, PathResource, Resource, default_resource_filter, build_archive, \
-    StringResource, stacktrace_pathfinder, _is_path_contained
+import pytest
+
+from wwwpy.resources import from_filesystem_once, PathResource, Resource, default_resource_filter, build_archive, \
+    StringResource, stacktrace_pathfinder, _is_path_contained, for_remote
 
 parent = Path(__file__).parent
 
@@ -15,21 +17,21 @@ class Test_ResourceIterator_from_filesystem:
 
     def test_one_file(self):
         folder = self.support_data / 'one_file'
-        actual = set(from_filesystem(folder))
+        actual = set(from_filesystem_once(folder))
         expect = {PathResource('foo.py', folder / 'foo.py')}
         assert expect == actual
 
     def test_zero_file(self):
         folder = self.support_data / 'zero_file'
         folder.mkdir(exist_ok=True)  # git does not commit empty folders
-        actual = set(from_filesystem(folder))
+        actual = set(from_filesystem_once(folder))
         expect = set()
         assert expect == actual
 
     def test_selective(self):
         folder = self.support_data / 'relative_to'
-        actual = set(from_filesystem(folder / 'yes', relative_to=folder))
-        expect = {PathResource(fix_sep('yes/yes.txt'), folder / 'yes/yes.txt')}
+        actual = set(from_filesystem_once(folder / 'yes', relative_to=folder))
+        expect = {PathResource(_fix_sep('yes/yes.txt'), folder / 'yes/yes.txt')}
         assert expect == actual
 
     def test_resource_filter(self):
@@ -45,8 +47,8 @@ class Test_ResourceIterator_from_filesystem:
                 return None
             return default_resource_filter(item)
 
-        actual = set(from_filesystem(folder, resource_filter=resource_filter))
-        expect = {PathResource(fix_sep('yes/yes.txt'), folder / 'yes/yes.txt')}
+        actual = set(from_filesystem_once(folder, resource_filter=resource_filter))
+        expect = {PathResource(_fix_sep('yes/yes.txt'), folder / 'yes/yes.txt')}
         assert expect == actual
 
 
@@ -61,7 +63,7 @@ class Test_build_archive:
         folder = self.support_data / 'simple'
         (folder / 'empty_dir').mkdir(exist_ok=True)  # should be ignored by build_archive
 
-        archive_bytes = build_archive(list(from_filesystem(folder)) +
+        archive_bytes = build_archive(list(from_filesystem_once(folder)) +
                                       [StringResource('dir1/baz.txt', "#baz")])
 
         actual_files = set()
@@ -98,5 +100,24 @@ class Test_stacktrace_pathfinder:
         assert _is_path_contained(Path('/foo/bar/baz'), Path('/foo/bar/baz')) is True
 
 
-def fix_sep(path: str) -> str:
+def test_for_remote():
+    test_root = parent.parent
+    repo_root = test_root.parent
+    target = set(for_remote(user_filesystem=from_filesystem_once(test_root, relative_to=repo_root)))
+    arc_names = {resource.arcname for resource in target}
+    minimum_expected = {
+        'wwwpy/__init__.py',
+        'wwwpy/remote/__init__.py',
+        'wwwpy/common/__init__.py',
+        'tests/__init__.py',
+    }
+    actual = minimum_expected.intersection(arc_names)
+    print('all arcnames:')
+    for arcname in sorted(arc_names):
+        print(f'  {arcname}')
+
+    assert actual == minimum_expected
+
+
+def _fix_sep(path: str) -> str:
     return path.replace('/', os.path.sep)
