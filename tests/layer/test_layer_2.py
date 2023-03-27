@@ -4,7 +4,7 @@ from typing import Optional, NamedTuple
 from io import BytesIO
 from zipfile import ZipFile
 
-from wwwpy.resource_iterator import from_filesystem, PathResource, Resource, default_resource_filter, build_archive, \
+from wwwpy.resources import from_filesystem, PathResource, Resource, default_resource_filter, build_archive, \
     StringResource, stacktrace_pathfinder, is_path_contained
 
 parent = Path(__file__).parent
