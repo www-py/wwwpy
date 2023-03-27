@@ -23,7 +23,7 @@ def patch_playwright_assertions() -> None:
         return f'\n{key} v1=`{v1}` v2=`{v2}`'
 
     string = env('PLAYWRIGHT_PATCH_TIMEOUT') + env('GITHUB_ACTIONS') + env('HOME') + env('PATH')
-    raise Exception(f'Env = {string}')
+    raise Exception(f'Env = {string}\nos.environ:\n{os.environ}\n\n')
     timeout_millis = int(os.environ.get('PLAYWRIGHT_PATCH_TIMEOUT', '4000'))
     print(f'Using PLAYWRIGHT_PATCH_TIMEOUT={timeout_millis}')
 
