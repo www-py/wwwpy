@@ -6,7 +6,7 @@ from zipfile import ZipFile
 
 import pytest
 
-from wwwpy.resources import from_filesystem_once, PathResource, Resource, default_resource_accept, build_archive, \
+from wwwpy.resources import from_filesystem, PathResource, Resource, default_resource_accept, build_archive, \
     StringResource, stacktrace_pathfinder, _is_path_contained, for_remote
 
 parent = Path(__file__).parent
@@ -17,20 +17,20 @@ class Test_ResourceIterator_from_filesystem:
 
     def test_one_file(self):
         folder = self.support_data / 'one_file'
-        actual = set(from_filesystem_once(folder))
+        actual = set(from_filesystem(folder))
         expect = {PathResource('foo.py', folder / 'foo.py')}
         assert expect == actual
 
     def test_zero_file(self):
         folder = self.support_data / 'zero_file'
         folder.mkdir(exist_ok=True)  # git does not commit empty folders
-        actual = set(from_filesystem_once(folder))
+        actual = set(from_filesystem(folder))
         expect = set()
         assert expect == actual
 
     def test_selective(self):
         folder = self.support_data / 'relative_to'
-        actual = set(from_filesystem_once(folder / 'yes', relative_to=folder))
+        actual = set(from_filesystem(folder / 'yes', relative_to=folder))
         expect = {PathResource(fix_path('yes/yes.txt'), folder / 'yes/yes.txt')}
         assert expect == actual
 
@@ -47,7 +47,7 @@ class Test_ResourceIterator_from_filesystem:
                 return False
             return default_resource_accept(resource)
 
-        actual = set(from_filesystem_once(folder, resource_accept=resource_accept))
+        actual = set(from_filesystem(folder, resource_accept=resource_accept))
         expect = {PathResource(fix_path('yes/yes.txt'), folder / 'yes/yes.txt')}
         assert expect == actual
 
@@ -63,7 +63,7 @@ class Test_build_archive:
         folder = self.support_data / 'simple'
         (folder / 'empty_dir').mkdir(exist_ok=True)  # should be ignored by build_archive
 
-        archive_bytes = build_archive(list(from_filesystem_once(folder)) +
+        archive_bytes = build_archive(list(from_filesystem(folder)) +
                                       [StringResource('dir1/baz.txt', "#baz")])
 
         actual_files = set()
@@ -103,7 +103,7 @@ class Test_stacktrace_pathfinder:
 def test_for_remote():
     test_root = parent.parent
     repo_root = test_root.parent
-    target = set(for_remote(user_filesystem=from_filesystem_once(test_root, relative_to=repo_root)))
+    target = set(for_remote(user_filesystem=from_filesystem(test_root, relative_to=repo_root)))
     arc_names = {resource.arcname for resource in target}
     minimum_expected = set(fix_path_iterable({
         'wwwpy/__init__.py',

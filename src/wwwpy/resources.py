@@ -7,8 +7,10 @@ from abc import ABC
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
-from typing import Iterator, Callable, Optional, TypeVar
+from typing import Iterator, Callable, Optional, TypeVar, Generic, Iterable
 from zipfile import ZipFile
+
+from wwwpy.common.iterlib import CallableToIterable
 
 parent = Path(__file__).resolve().parent
 
@@ -31,9 +33,9 @@ class PathResource(Resource):
 # https://docs.python.org/3/library/collections.abc.html
 # https://wiki.python.org/moin/Iterator
 TResource = TypeVar("TResource", bound=Resource)
-ResourceIterator = Iterator[TResource]
+
 ResourceAccept = Callable[[TResource], bool]
-CallableResourceIterator = Callable[[], ResourceIterator]
+
 _directory_blacklist = {'.mypy_cache', '__pycache__'}
 
 
@@ -48,22 +50,14 @@ def default_resource_accept(resource: Resource) -> bool:
     return True
 
 
-def from_filesystem_once(
-        folder: Path, relative_to: Path | None = None,
-        resource_accept: ResourceAccept = default_resource_accept
-) -> ResourceIterator:
-    """It can be used only once. It's not a `real Iterable`"""
-    return from_filesystem(folder, relative_to, resource_accept)()
-
-
 def from_filesystem(
         folder: Path, relative_to: Path | None = None,
         resource_accept: ResourceAccept = default_resource_accept
-) -> CallableResourceIterator:
+) -> Iterable[PathResource]:
     relative_to_defined: Path = folder if relative_to is None else relative_to
 
-    def bundle() -> ResourceIterator:
-        def recurse(path: Path) -> ResourceIterator:
+    def bundle() -> Iterator[PathResource]:
+        def recurse(path: Path) -> Iterator[PathResource]:
             for f in path.glob('*'):
                 rel = f.relative_to(relative_to_defined)
                 candidate = PathResource(str(rel), f)
@@ -75,7 +69,7 @@ def from_filesystem(
 
         yield from recurse(folder)
 
-    return bundle
+    return CallableToIterable(bundle)
 
 
 def build_archive(resource_iterator: Iterator[Resource]) -> bytes:
@@ -118,5 +112,6 @@ def _is_path_contained(child: Path, parent: Path) -> bool:
     return child_parts == parent_parts
 
 
-def for_remote(user_filesystem: ResourceIterator) -> ResourceIterator:
-    return itertools.chain(user_filesystem, from_filesystem_once(parent, relative_to=parent.parent))
+# fixme this does not respect the Iterator contract
+def for_remote(user_filesystem: Iterator[PathResource]) -> Iterator[PathResource]:
+    return itertools.chain(user_filesystem, from_filesystem(parent, relative_to=parent.parent))
