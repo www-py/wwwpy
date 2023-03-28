@@ -7,7 +7,7 @@ from abc import ABC
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
-from typing import Iterator, Callable, Optional
+from typing import Iterator, Callable, Optional, TypeVar
 from zipfile import ZipFile
 
 parent = Path(__file__).resolve().parent
@@ -30,43 +30,52 @@ class PathResource(Resource):
 
 # https://docs.python.org/3/library/collections.abc.html
 # https://wiki.python.org/moin/Iterator
-ResourceIterator = Iterator[Resource]
-ResourceFilter = Callable[[Resource], Optional[Resource]]
-
+TResource = TypeVar("TResource", bound=Resource)
+ResourceIterator = Iterator[TResource]
+ResourceAccept = Callable[[TResource], bool]
+Bundle = Callable[[], ResourceIterator]
 _directory_blacklist = {'.mypy_cache', '__pycache__'}
 
 
-def default_resource_filter(resource: Resource) -> Optional[Resource]:
+def default_resource_accept(resource: Resource) -> bool:
     if not isinstance(resource, PathResource):
-        return resource
+        return True
     filepath = resource.filepath
     if filepath.name == '.DS_Store':
-        return None
+        return False
     if filepath.is_dir() and filepath.name in _directory_blacklist:
-        return None
-    return resource
+        return False
+    return True
 
 
 def from_filesystem_once(
         folder: Path, relative_to: Path | None = None,
-        resource_filter: ResourceFilter = default_resource_filter
+        resource_accept: ResourceAccept = default_resource_accept
 ) -> ResourceIterator:
     """It can be used only once. It's not a `real Iterable`"""
+    return from_filesystem(folder, relative_to, resource_accept)()
+
+
+def from_filesystem(
+        folder: Path, relative_to: Path | None = None,
+        resource_accept: ResourceAccept = default_resource_accept
+) -> Bundle:
     relative_to_defined: Path = folder if relative_to is None else relative_to
 
-    def recurse(path: Path) -> ResourceIterator:
-        for f in path.glob('*'):
-            rel = f.relative_to(relative_to_defined)
-            candidate = PathResource(str(rel), f)
-            item = resource_filter(candidate)
-            if item is not None:
-                if f.is_file():
-                    yield item
-                else:
-                    yield from recurse(f)
+    def bundle() -> ResourceIterator:
+        def recurse(path: Path) -> ResourceIterator:
+            for f in path.glob('*'):
+                rel = f.relative_to(relative_to_defined)
+                candidate = PathResource(str(rel), f)
+                if resource_accept(candidate):
+                    if f.is_file():
+                        yield candidate
+                    else:
+                        yield from recurse(f)
 
-    yield from recurse(folder)
-    return iter(())
+        yield from recurse(folder)
+
+    return bundle
 
 
 def build_archive(item_iterator: Iterator[Resource]) -> bytes:

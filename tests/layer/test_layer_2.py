@@ -6,7 +6,7 @@ from zipfile import ZipFile
 
 import pytest
 
-from wwwpy.resources import from_filesystem_once, PathResource, Resource, default_resource_filter, build_archive, \
+from wwwpy.resources import from_filesystem_once, PathResource, Resource, default_resource_accept, build_archive, \
     StringResource, stacktrace_pathfinder, _is_path_contained, for_remote
 
 parent = Path(__file__).parent
@@ -42,12 +42,12 @@ class Test_ResourceIterator_from_filesystem:
         pycache.mkdir(exist_ok=True)
         (pycache / 'cache.txt').write_text('some cache')
 
-        def resource_filter(item: Resource) -> Optional[Resource]:
+        def resource_accept(item: Resource) -> bool:
             if item.filepath == reject:
-                return None
-            return default_resource_filter(item)
+                return False
+            return default_resource_accept(item)
 
-        actual = set(from_filesystem_once(folder, resource_filter=resource_filter))
+        actual = set(from_filesystem_once(folder, resource_accept=resource_accept))
         expect = {PathResource(fix_path('yes/yes.txt'), folder / 'yes/yes.txt')}
         assert expect == actual
 
