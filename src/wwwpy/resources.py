@@ -78,16 +78,16 @@ def from_filesystem(
     return bundle
 
 
-def build_archive(item_iterator: Iterator[Resource]) -> bytes:
+def build_archive(resource_iterator: Iterator[Resource]) -> bytes:
     stream = BytesIO()
     zip_file = ZipFile(stream, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=1)
-    for item in item_iterator:
-        if isinstance(item, PathResource):
-            zip_file.write(item.filepath, item.arcname)
-        elif isinstance(item, StringResource):
-            zip_file.writestr(item.arcname, item.content)
+    for resource in resource_iterator:
+        if isinstance(resource, PathResource):
+            zip_file.write(resource.filepath, resource.arcname)
+        elif isinstance(resource, StringResource):
+            zip_file.writestr(resource.arcname, resource.content)
         else:
-            raise Exception(f'Unhandled class \n  type={type(item).__name__} \n  data={item}')
+            raise Exception(f'Unhandled class \n  type={type(resource).__name__} \n  data={resource}')
     zip_file.close()
 
     stream.seek(0)

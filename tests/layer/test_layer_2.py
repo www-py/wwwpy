@@ -35,17 +35,17 @@ class Test_ResourceIterator_from_filesystem:
         assert expect == actual
 
     def test_resource_filter(self):
-        folder = self.support_data / 'item_filter'
+        folder = self.support_data / 'resource_filter'
         reject = folder / 'yes/reject'
 
         pycache = folder / 'yes/__pycache__'
         pycache.mkdir(exist_ok=True)
         (pycache / 'cache.txt').write_text('some cache')
 
-        def resource_accept(item: Resource) -> bool:
-            if item.filepath == reject:
+        def resource_accept(resource: Resource) -> bool:
+            if resource.filepath == reject:
                 return False
-            return default_resource_accept(item)
+            return default_resource_accept(resource)
 
         actual = set(from_filesystem_once(folder, resource_accept=resource_accept))
         expect = {PathResource(fix_path('yes/yes.txt'), folder / 'yes/yes.txt')}
