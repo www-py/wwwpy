@@ -33,7 +33,7 @@ class PathResource(Resource):
 TResource = TypeVar("TResource", bound=Resource)
 ResourceIterator = Iterator[TResource]
 ResourceAccept = Callable[[TResource], bool]
-Bundle = Callable[[], ResourceIterator]
+CallableResourceIterator = Callable[[], ResourceIterator]
 _directory_blacklist = {'.mypy_cache', '__pycache__'}
 
 
@@ -59,7 +59,7 @@ def from_filesystem_once(
 def from_filesystem(
         folder: Path, relative_to: Path | None = None,
         resource_accept: ResourceAccept = default_resource_accept
-) -> Bundle:
+) -> CallableResourceIterator:
     relative_to_defined: Path = folder if relative_to is None else relative_to
 
     def bundle() -> ResourceIterator:
