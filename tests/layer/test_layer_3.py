@@ -1,17 +1,9 @@
-import io
-import zipfile
-from pathlib import Path
-from typing import Optional, NamedTuple
-
 from playwright.sync_api import Page, expect
 
 from tests import for_all_webservers
-
 from wwwpy.bootstrap import get_javascript_for, wrap_in_tryexcept
 from wwwpy.http_response import HttpResponse
 from wwwpy.http_route import HttpRoute
-from wwwpy.resources import from_filesystem_once, PathResource, default_resource_filter, Resource, build_archive, \
-    StringResource
 from wwwpy.webserver import Webserver
 
 
