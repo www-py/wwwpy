@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Iterator, Callable, Optional, TypeVar, Generic, Iterable
 from zipfile import ZipFile
 
+from wwwpy.common import iterlib
 from wwwpy.common.iterlib import CallableToIterable
 
 parent = Path(__file__).resolve().parent
@@ -112,6 +113,5 @@ def _is_path_contained(child: Path, parent: Path) -> bool:
     return child_parts == parent_parts
 
 
-# fixme this does not respect the Iterator contract
-def for_remote(user_filesystem: Iterator[PathResource]) -> Iterator[PathResource]:
-    return itertools.chain(user_filesystem, from_filesystem(parent, relative_to=parent.parent))
+def for_remote(user_filesystem: Iterable[PathResource]) -> Iterable[PathResource]:
+    return iterlib.repeatable_chain(user_filesystem, from_filesystem(parent, relative_to=parent.parent))

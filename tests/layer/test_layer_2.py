@@ -103,19 +103,22 @@ class Test_stacktrace_pathfinder:
 def test_for_remote():
     test_root = parent.parent
     repo_root = test_root.parent
-    target = set(for_remote(user_filesystem=from_filesystem(test_root, relative_to=repo_root)))
-    arc_names = {resource.arcname for resource in target}
     minimum_expected = set(fix_path_iterable({
         'wwwpy/__init__.py',
         'wwwpy/remote/__init__.py',
         'wwwpy/common/__init__.py',
         'tests/__init__.py',
     }))
-    actual = minimum_expected.intersection(arc_names)
-    print('all arcnames:')
-    for arcname in sorted(arc_names):
-        print(f'  {arcname}')
 
+    target = for_remote(user_filesystem=from_filesystem(test_root, relative_to=repo_root))
+    arc_names = {resource.arcname for resource in target}
+    actual = minimum_expected.intersection(arc_names)
+
+    assert actual == minimum_expected
+
+    # use the iterable again
+    arc_names = {resource.arcname for resource in target}
+    actual = minimum_expected.intersection(arc_names)
     assert actual == minimum_expected
 
 

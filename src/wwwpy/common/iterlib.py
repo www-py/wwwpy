@@ -8,7 +8,7 @@ class repeatable_chain:
         self._iterables = iterables
 
     def __iter__(self) -> Iterable[_T]:
-        def it():
+        def it() -> Iterable[_T]:
             for iterable in self._iterables:
                 yield from iterable
 
