@@ -1,13 +1,11 @@
 import os
-from pathlib import Path
-from typing import Optional, NamedTuple
 from io import BytesIO
+from pathlib import Path
+from typing import NamedTuple
 from zipfile import ZipFile
 
-import pytest
-
 from wwwpy.resources import from_filesystem, PathResource, Resource, default_resource_accept, build_archive, \
-    StringResource, stacktrace_pathfinder, _is_path_contained, for_remote
+    StringResource, stacktrace_pathfinder, _is_path_contained, library_resources
 
 parent = Path(__file__).parent
 
@@ -100,20 +98,17 @@ class Test_stacktrace_pathfinder:
         assert _is_path_contained(Path('/foo/bar/baz'), Path('/foo/bar/baz')) is True
 
 
-def test_for_remote():
-    test_root = parent.parent
-    repo_root = test_root.parent
+def test_library_resources():
     expected_minimum = set(fix_path_iterable({
         'wwwpy/__init__.py',
         'wwwpy/remote/__init__.py',
         'wwwpy/common/__init__.py',
-        'tests/__init__.py',
     }))
 
     def actual_minimum(iterable):
         return expected_minimum.intersection({resource.arcname for resource in iterable})
 
-    target = for_remote(user_filesystem=from_filesystem(test_root, relative_to=repo_root))
+    target = library_resources()
 
     assert actual_minimum(target) == expected_minimum
     assert actual_minimum(target) == expected_minimum  # use the iterable again

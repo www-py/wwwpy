@@ -113,5 +113,5 @@ def _is_path_contained(child: Path, parent: Path) -> bool:
     return child_parts == parent_parts
 
 
-def for_remote(user_filesystem: Iterable[PathResource]) -> Iterable[PathResource]:
-    return iterlib.repeatable_chain(user_filesystem, from_filesystem(parent, relative_to=parent.parent))
+def library_resources() -> Iterable[PathResource]:
+    return from_filesystem(parent, relative_to=parent.parent)
