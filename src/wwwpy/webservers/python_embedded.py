@@ -7,9 +7,7 @@ from threading import Thread
 from typing import Optional, Callable, Dict, AnyStr, Tuple, Any
 from urllib.parse import urlparse, parse_qs
 
-from ..http_request import HttpRequest
-from wwwpy.http_response import HttpResponse
-from ..http_route import HttpRoute
+from wwwpy.http import HttpRoute, HttpResponse, HttpRequest
 from ..webserver import Webserver
 from ..webserver import wait_forever
 

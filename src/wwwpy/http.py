@@ -1,4 +1,10 @@
-from typing import NamedTuple, Union
+from typing import NamedTuple, Callable, Union
+
+
+class HttpRequest(NamedTuple):
+    method: str
+    content: Union[str, bytes]
+    content_type: str
 
 
 class HttpResponse(NamedTuple):
@@ -13,3 +19,8 @@ class HttpResponse(NamedTuple):
     @staticmethod
     def text_html(content: str) -> 'HttpResponse':
         return HttpResponse(content, 'text/html')
+
+
+class HttpRoute(NamedTuple):
+    path: str
+    callback: Callable[[HttpRequest], HttpResponse]

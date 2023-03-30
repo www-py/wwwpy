@@ -4,7 +4,7 @@ import urllib
 import urllib.request
 from typing import Any
 
-from wwwpy.http_response import HttpResponse
+from wwwpy.http import HttpResponse
 
 
 async def async_fetch_str(url: str, method: str = 'GET', data: str = '') -> str:

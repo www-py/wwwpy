@@ -116,8 +116,7 @@ def test_for_remote():
     target = for_remote(user_filesystem=from_filesystem(test_root, relative_to=repo_root))
 
     assert actual_minimum(target) == expected_minimum
-    # use the iterable again
-    assert actual_minimum(target) == expected_minimum
+    assert actual_minimum(target) == expected_minimum  # use the iterable again
 
 
 def fix_path_iterable(iterable):
