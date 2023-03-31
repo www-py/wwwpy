@@ -9,7 +9,7 @@ bootstrap_javascript_placeholder = '// #bootstrap-placeholder#'
 
 def bootstrap_routes(
         iterable_resource: Iterable[Resource],
-        html: str = f'<script>{bootstrap_javascript_placeholder}</script>',
+        html: str = f'<h1>Loading...</h1><script>{bootstrap_javascript_placeholder}</script>',
 ) -> Tuple[HttpRoute, HttpRoute]:
     def zip_response() -> HttpResponse:
         zip_bytes = build_archive(iter(iterable_resource))
