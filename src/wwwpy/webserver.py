@@ -23,8 +23,9 @@ class Webserver(ABC):
         self.wait_ready()
         return self
 
-    def set_http_route(self, http_route: HttpRoute) -> 'Webserver':
-        self._setup_route(http_route)
+    def set_http_route(self, *http_routes: HttpRoute) -> 'Webserver':
+        for http_route in http_routes:
+            self._setup_route(http_route)
         return self
 
     @abstractmethod

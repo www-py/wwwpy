@@ -1,4 +1,38 @@
 import textwrap
+from typing import List, Iterable, Tuple
+
+from wwwpy.http import HttpRoute, HttpResponse
+from wwwpy.resources import Resource, build_archive
+
+bootstrap_javascript_placeholder = '// #bootstrap-placeholder#'
+
+
+def bootstrap_routes(
+        iterable_resource: Iterable[Resource],
+        html: str = f'<script>{bootstrap_javascript_placeholder}</script>',
+) -> Tuple[HttpRoute, HttpRoute]:
+    def zip_response() -> HttpResponse:
+        zip_bytes = build_archive(iter(iterable_resource))
+        return HttpResponse.application_zip(zip_bytes)
+
+    zip_path = '/wwwpy/bundle.zip'
+    zip_route = HttpRoute(zip_path, lambda request: zip_response())
+
+    bootstrap_python = f"""
+import sys
+from pyodide.http import pyfetch
+response = await pyfetch('{zip_route.path}')
+await response.unpack_archive(extract_dir='/wwwpy_bundle')
+sys.path.insert(0, '/wwwpy_bundle')
+import remote
+# if remote.main is not None:
+#    await remote.main()
+    """
+
+    javascript = get_javascript_for(bootstrap_python)
+    html_replaced = html.replace(bootstrap_javascript_placeholder, javascript)
+    bootstrap_route = HttpRoute('/', lambda request: HttpResponse.text_html(html_replaced))
+    return bootstrap_route, zip_route
 
 
 def get_javascript_for(python_code: str) -> str:
