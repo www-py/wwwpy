@@ -10,13 +10,14 @@ bootstrap_javascript_placeholder = '// #bootstrap-placeholder#'
 def bootstrap_routes(
         iterable_resource: Iterable[Resource],
         html: str = f'<h1>Loading...</h1><script>{bootstrap_javascript_placeholder}</script>',
+        python: str = 'import remote',
+        zip_route_path: str = '/wwwpy/bundle.zip',
 ) -> Tuple[HttpRoute, HttpRoute]:
     def zip_response() -> HttpResponse:
         zip_bytes = build_archive(iter(iterable_resource))
         return HttpResponse.application_zip(zip_bytes)
 
-    zip_path = '/wwwpy/bundle.zip'
-    zip_route = HttpRoute(zip_path, lambda request: zip_response())
+    zip_route = HttpRoute(zip_route_path, lambda request: zip_response())
 
     bootstrap_python = f"""
 import sys
@@ -24,9 +25,8 @@ from pyodide.http import pyfetch
 response = await pyfetch('{zip_route.path}')
 await response.unpack_archive(extract_dir='/wwwpy_bundle')
 sys.path.insert(0, '/wwwpy_bundle')
-import remote
-# if remote.main is not None:
-#    await remote.main()
+
+{python}
     """
 
     javascript = get_javascript_for(bootstrap_python)
@@ -42,6 +42,7 @@ def get_javascript_for(python_code: str) -> str:
 # language=javascript
 _js_content = """
 if (typeof loadPyodide === 'undefined') {
+    console.log('loading pyodide...');
     let script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js';
     script.onload = async () => {

@@ -21,25 +21,26 @@ def test_python_execution(page: Page, webserver: Webserver):
 
 
 @for_all_webservers()
-def test_zipped_python_execution(page: Page, webserver: Webserver):
-    resource_iterable = [StringResource(
-        'remote.py',
-        """from js import document\ndocument.body.innerHTML = '<input id="tag1" value="foo1">' """
-    )]
-    html = f"""<input id="tag1" value="bar"><script> {bootstrap_javascript_placeholder}  </script>"""
-    webserver.set_http_route(*bootstrap_routes(resource_iterable, html=html))
-    webserver.start_listen()
-    page.goto(webserver.localhost_url())
-    expect(page.locator('id=tag1')).to_have_value('foo1')
-
-
-@for_all_webservers()
 def test_zipped_python_execution_default(page: Page, webserver: Webserver):
     resource_iterable = [StringResource(
         'remote.py',
         """from js import document\ndocument.body.innerHTML = '<input id="tag1" value="foo1">' """
     )]
     webserver.set_http_route(*bootstrap_routes(resource_iterable))
+    webserver.start_listen()
+    page.goto(webserver.localhost_url())
+    expect(page.locator('id=tag1')).to_have_value('foo1')
+
+
+@for_all_webservers()
+def test_zipped_python_execution_no_default(page: Page, webserver: Webserver):
+    my_entrypoint = StringResource(
+        'some_file.py',
+        """from js import document\ndocument.body.innerHTML = '<input id="tag1" value="foo1">' """
+    )
+    html = f"""<input id="tag1" value="bar"><script> {bootstrap_javascript_placeholder}  </script>"""
+    webserver.set_http_route(*bootstrap_routes(
+        [my_entrypoint], html=html, python='import some_file', zip_route_path='/foo.zip'))
     webserver.start_listen()
     page.goto(webserver.localhost_url())
     expect(page.locator('id=tag1')).to_have_value('foo1')
