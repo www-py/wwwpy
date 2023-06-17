@@ -13,6 +13,7 @@ def bootstrap_routes(
         python: str = 'import remote',
         zip_route_path: str = '/wwwpy/bundle.zip',
 ) -> Tuple[HttpRoute, HttpRoute]:
+    """Returns a tuple of two routes: (bootstrap_route, zip_route)"""
     def zip_response() -> HttpResponse:
         zip_bytes = build_archive(iter(iterable_resource))
         return HttpResponse.application_zip(zip_bytes)

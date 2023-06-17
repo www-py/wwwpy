@@ -18,6 +18,7 @@ parent = Path(__file__).resolve().parent
 
 @dataclass(frozen=True)
 class Resource(ABC):
+    """represents something (a file) to be transferred to the remote"""
     arcname: str
 
 
@@ -74,6 +75,7 @@ def from_filesystem(
 
 
 def build_archive(resource_iterator: Iterator[Resource]) -> bytes:
+    """builds a zip archive from the given resources and returns the bytes"""
     stream = BytesIO()
     zip_file = ZipFile(stream, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=1)
     for resource in resource_iterator:
@@ -114,4 +116,5 @@ def _is_path_contained(child: Path, parent: Path) -> bool:
 
 
 def library_resources() -> Iterable[PathResource]:
+    """returns the resources from the wwwpy library itself"""
     return from_filesystem(parent, relative_to=parent.parent)
