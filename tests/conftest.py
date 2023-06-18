@@ -8,6 +8,7 @@ from typing import Callable, Any
 import pytest
 from playwright.sync_api import Page, PageAssertions, LocatorAssertions, APIResponseAssertions
 from py._path.local import LocalPath
+from xvirt.events import EvtCollectionFinish, Evt, EvtRuntestLogreport
 
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.common import iterlib
@@ -109,6 +110,9 @@ def pytest_xvirt_collect_file(file_path, path, parent):
     # queue to receive json events from remote
     events = Queue()
 
+    def get_next_event():
+        return Evt.from_json(events.get(timeout=10))
+
     # define route to receive events from remote
     def xvirt_notify_handler(req: HttpRequest) -> HttpResponse:
         print('server side xvirt_notify_handler')
@@ -146,11 +150,23 @@ def pytest_xvirt_collect_file(file_path, path, parent):
         page.goto(webserver.localhost_url())
         # magic start
         # page.wait_for_selector('text=All tests passed')
-        print('events.get()')
-        json = events.get()
-        print(f'json received" {json}')
-        assert json is not None
+        evt_cf = get_next_event()
         # magic end
+        assert isinstance(evt_cf, EvtCollectionFinish)
+        from xvirt.collectors import VirtCollector
+        result = VirtCollector.from_parent(parent, name=file_path.name)
+        result.nodeid_array = evt_cf.node_ids
+
+        # report phase
+        config = parent.config
+        recv_count = 0
+        while recv_count < len(evt_cf.node_ids):
+            evt_rep = get_next_event()
+            assert isinstance(evt_rep, EvtRuntestLogreport)
+            rep = config.hook.pytest_report_from_serializable(config=config, data=evt_rep.data)
+            config.hook.pytest_runtest_logreport(report=rep)
+            recv_count += 1
 
         page.close()
         browser.close()
+    return result
