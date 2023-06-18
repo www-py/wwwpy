@@ -7,6 +7,8 @@ from wwwpy.resources import Resource, build_archive
 bootstrap_javascript_placeholder = '// #bootstrap-placeholder#'
 
 
+# todo 1) parametrize where the zip is expanded (now in /wwwpy_bundle
+# todo 2) parametrize the bootstrap route (now /)
 def bootstrap_routes(
         iterable_resource: Iterable[Resource],
         html: str = f'<h1>Loading...</h1><script>{bootstrap_javascript_placeholder}</script>',
@@ -14,6 +16,7 @@ def bootstrap_routes(
         zip_route_path: str = '/wwwpy/bundle.zip',
 ) -> Tuple[HttpRoute, HttpRoute]:
     """Returns a tuple of two routes: (bootstrap_route, zip_route)"""
+
     def zip_response() -> HttpResponse:
         zip_bytes = build_archive(iter(iterable_resource))
         return HttpResponse.application_zip(zip_bytes)
