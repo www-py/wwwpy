@@ -142,8 +142,8 @@ def pytest_xvirt_collect_file(file_path, path, parent):
     # start remote with playwright
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
-        # browser = p.chromium.launch()
+        # browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch()
         page = browser.new_page()
         _setup_page_logger(page)
         page.goto(webserver.localhost_url())
