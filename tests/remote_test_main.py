@@ -14,5 +14,7 @@ async def main():
     import pytest
     print('-=-' * 20 + 'pytest imported')
 
-    print(str(os.listdir('/wwwpy_bundle')))
-    pytest.main([str("/wwwpy_bundle/remote")])
+    from wwwpy.common.tree import print_tree
+    print_tree('/wwwpy_bundle')
+
+    pytest.main([str("/wwwpy_bundle/tests/remote/test_in_pyodide_bis.py::test_bis_first")])

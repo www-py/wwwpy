@@ -127,12 +127,11 @@ def pytest_xvirt_collect_file(file_path, path, parent):
                                                                            '/xvirt_notify')
 
     resources = iterlib.repeatable_chain(library_resources(),
-                                         from_filesystem(parent2 / 'remote', relative_to=parent2),
+                                         from_filesystem(parent2 / 'remote', relative_to=parent2.parent),
                                          [StringResource('conftest.py', remote_conftest),
                                           StringResource('remote_test_main.py',
                                                          (parent2 / 'remote_test_main.py').read_text()),
                                           ],
-                                         # from_filesystem(pytest_xvirt_abs, relative_to=pytest_xvirt_abs.parent)
                                          )
     webserver = WsPythonEmbedded()
     webserver.set_http_route(
@@ -143,8 +142,8 @@ def pytest_xvirt_collect_file(file_path, path, parent):
     # start remote with playwright
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
-        # browser = p.chromium.launch(headless=False)
-        browser = p.chromium.launch()
+        browser = p.chromium.launch(headless=False)
+        # browser = p.chromium.launch()
         page = browser.new_page()
         _setup_page_logger(page)
         page.goto(webserver.localhost_url())
