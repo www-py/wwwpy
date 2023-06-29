@@ -169,3 +169,6 @@ def pytest_xvirt_collect_file(file_path, path, parent):
         page.close()
         browser.close()
     return result
+
+# TODO eseguendo il test su tests dice 'no tests were found'
+# pero se si esegue su `remote` funziona
