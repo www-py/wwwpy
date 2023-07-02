@@ -106,7 +106,7 @@ parent2 = parent
 pytest_xvirt_abs = Path('/home/simone/Documents/python/pytest-xvirt/src/xvirt')
 
 
-def pytest_xvirt_collect_file(file_path, path, parent, events_handler):
+def pytest_xvirt_collect_file(events_handler):
     # queue to receive json events from remote
     events = Queue()
 
@@ -142,36 +142,19 @@ def pytest_xvirt_collect_file(file_path, path, parent, events_handler):
     # start remote with playwright
     from playwright.sync_api import sync_playwright
 
-    # with sync_playwright() as p:
-    p = sync_playwright().__enter__()
-    # browser = p.chromium.launch(headless=False)
-    browser = p.chromium.launch()
-    page = browser.new_page()
-    _setup_page_logger(page)
-    page.goto(webserver.localhost_url())
-    # magic start
-    # page.wait_for_selector('text=All tests passed')
-    return events_handler(get_next_event)
-    evt_cf = get_next_event()
-    # magic end
-    assert isinstance(evt_cf, EvtCollectionFinish)
-    from xvirt.collectors import VirtCollector
-    result = VirtCollector.from_parent(parent, name=file_path.name)
-    result.nodeid_array = evt_cf.node_ids
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+        _setup_page_logger(page)
+        page.goto(webserver.localhost_url())
+        # page.wait_for_selector('text=All tests passed')
 
-    # report phase
-    config = parent.config
-    recv_count = 0
-    while recv_count < len(evt_cf.node_ids):
-        evt_rep = get_next_event()
-        assert isinstance(evt_rep, EvtRuntestLogreport)
-        rep = config.hook.pytest_report_from_serializable(config=config, data=evt_rep.data)
-        config.hook.pytest_runtest_logreport(report=rep)
-        recv_count += 1
+        handler = events_handler(get_next_event)
 
-    # page.close()
-    # browser.close()
-    return result
+        page.close()
+        browser.close()
+
+        return handler
 
 # TODO eseguendo il test su tests dice 'no tests were found'
 # pero se si esegue su `remote` funziona
