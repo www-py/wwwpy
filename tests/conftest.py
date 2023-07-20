@@ -115,15 +115,14 @@ class XVirtImpl(XVirt):
     def remote_path(self) -> str:
         return parent_remote
 
+    def _http_handler(self, req: HttpRequest) -> HttpResponse:
+        print('server side xvirt_notify_handler')
+        self.events.put(req.content)
+        return HttpResponse('', 'text/plain')
+
     def run(self):
-        def xvirt_notify_handler(req: HttpRequest) -> HttpResponse:
-            print('server side xvirt_notify_handler')
-            self.events.put(req.content)
-            return HttpResponse('', 'text/plain')
+        xvirt_notify_route = HttpRoute('/xvirt_notify', self._http_handler)
 
-        xvirt_notify_route = HttpRoute('/xvirt_notify', xvirt_notify_handler)
-
-        # start webserver
         # read remote conftest content
         remote_conftest = (parent2 / 'remote_conftest.py').read_text().replace('#xvirt_notify_path_marker#',
                                                                                '/xvirt_notify')
@@ -144,9 +143,8 @@ class XVirtImpl(XVirt):
         # start remote with playwright
         from playwright.sync_api import sync_playwright
         self.p = sync_playwright().start()
-        p = self.p
         # browser = p.chromium.launch(headless=True)
-        browser = p.chromium.launch()
+        browser = self.p.chromium.launch()
         page = browser.new_page()
         _setup_page_logger(page)
         page.goto(webserver.localhost_url())
