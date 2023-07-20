@@ -7,9 +7,7 @@ from typing import Callable, Any
 
 import pytest
 from playwright.sync_api import Page, PageAssertions, LocatorAssertions, APIResponseAssertions
-from py._path.local import LocalPath
 from xvirt import XVirt
-from xvirt.events import EvtCollectionFinish, Evt, EvtRuntestLogreport
 
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.common import iterlib
@@ -111,6 +109,7 @@ class XVirtImpl(XVirt):
 
     def __init__(self):
         self.events = Queue()
+        self.p = None
 
     def remote_path(self) -> str:
         return parent_remote
@@ -121,12 +120,22 @@ class XVirtImpl(XVirt):
         return HttpResponse('', 'text/plain')
 
     def run(self):
-        xvirt_notify_route = HttpRoute('/xvirt_notify', self._http_handler)
+        webserver = self._start_webserver()
 
+        # start remote with playwright
+        from playwright.sync_api import sync_playwright
+        self.p = sync_playwright().start()
+        # browser = p.chromium.launch(headless=True)
+        browser = self.p.chromium.launch()
+        page = browser.new_page()
+        _setup_page_logger(page)
+        page.goto(webserver.localhost_url())
+
+    def _start_webserver(self):
+        xvirt_notify_route = HttpRoute('/xvirt_notify', self._http_handler)
         # read remote conftest content
         remote_conftest = (parent2 / 'remote_conftest.py').read_text().replace('#xvirt_notify_path_marker#',
                                                                                '/xvirt_notify')
-
         resources = iterlib.repeatable_chain(library_resources(),
                                              from_filesystem(parent2 / 'remote', relative_to=parent2.parent),
                                              [StringResource('conftest.py', remote_conftest),
@@ -139,15 +148,7 @@ class XVirtImpl(XVirt):
             *bootstrap_routes(resources, python='import remote_test_main; await remote_test_main.main()'),
             xvirt_notify_route)
         webserver.set_port(find_port()).start_listen()
-
-        # start remote with playwright
-        from playwright.sync_api import sync_playwright
-        self.p = sync_playwright().start()
-        # browser = p.chromium.launch(headless=True)
-        browser = self.p.chromium.launch()
-        page = browser.new_page()
-        _setup_page_logger(page)
-        page.goto(webserver.localhost_url())
+        return webserver
 
     def finalize(self):
         self.p.stop()
