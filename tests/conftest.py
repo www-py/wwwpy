@@ -143,21 +143,16 @@ class XVirtImpl(XVirt):
 
         # start remote with playwright
         from playwright.sync_api import sync_playwright
-        self.p = sync_playwright().__enter__()
+        self.p = sync_playwright().start()
         p = self.p
-        browser = p.chromium.launch(headless=False)
-        # browser = p.chromium.launch()
+        # browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch()
         page = browser.new_page()
         _setup_page_logger(page)
         page.goto(webserver.localhost_url())
-        # page.wait_for_selector('text=All tests passed')
 
-        # handler = events_handler(get_next_event)
-
-        # page.close()
-        # browser.close()
-
-        # return handler
+    def finalize(self):
+        self.p.stop()
 
     def recv_event(self) -> str:
         return self.events.get(timeout=10)
