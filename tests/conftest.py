@@ -8,6 +8,7 @@ from typing import Callable, Any
 import pytest
 from playwright.sync_api import Page, PageAssertions, LocatorAssertions, APIResponseAssertions
 from py._path.local import LocalPath
+from xvirt import XVirt
 from xvirt.events import EvtCollectionFinish, Evt, EvtRuntestLogreport
 
 from wwwpy.bootstrap import bootstrap_routes
@@ -97,8 +98,8 @@ def pytest_sessionstart(session: pytest.Session):
 parent_remote = str(parent / 'remote')
 
 
-def pytest_xvirt_setup(config, xvirt_packages):
-    xvirt_packages.append(parent_remote)
+def pytest_xvirt_setup():
+    return XVirtImpl()
 
 
 parent2 = parent
@@ -106,55 +107,60 @@ parent2 = parent
 pytest_xvirt_abs = Path('/home/simone/Documents/python/pytest-xvirt/src/xvirt')
 
 
-def pytest_xvirt_collect_file(events_handler):
-    # queue to receive json events from remote
-    events = Queue()
+class XVirtImpl(XVirt):
 
-    def get_next_event():
-        return Evt.from_json(events.get(timeout=10))
+    def __init__(self):
+        self.events = Queue()
 
-    # define route to receive events from remote
-    def xvirt_notify_handler(req: HttpRequest) -> HttpResponse:
-        print('server side xvirt_notify_handler')
-        events.put(req.content)
-        return HttpResponse('', 'text/plain')
+    def remote_path(self) -> str:
+        return parent_remote
 
-    xvirt_notify_route = HttpRoute('/xvirt_notify', xvirt_notify_handler)
+    def run(self):
+        def xvirt_notify_handler(req: HttpRequest) -> HttpResponse:
+            print('server side xvirt_notify_handler')
+            self.events.put(req.content)
+            return HttpResponse('', 'text/plain')
 
-    # start webserver
-    # read remote conftest content
-    remote_conftest = (parent2 / 'remote_conftest.py').read_text().replace('#xvirt_notify_path_marker#',
-                                                                           '/xvirt_notify')
+        xvirt_notify_route = HttpRoute('/xvirt_notify', xvirt_notify_handler)
 
-    resources = iterlib.repeatable_chain(library_resources(),
-                                         from_filesystem(parent2 / 'remote', relative_to=parent2.parent),
-                                         [StringResource('conftest.py', remote_conftest),
-                                          StringResource('remote_test_main.py',
-                                                         (parent2 / 'remote_test_main.py').read_text()),
-                                          ],
-                                         )
-    webserver = WsPythonEmbedded()
-    webserver.set_http_route(
-        *bootstrap_routes(resources, python='import remote_test_main; await remote_test_main.main()'),
-        xvirt_notify_route)
-    webserver.set_port(find_port()).start_listen()
+        # start webserver
+        # read remote conftest content
+        remote_conftest = (parent2 / 'remote_conftest.py').read_text().replace('#xvirt_notify_path_marker#',
+                                                                               '/xvirt_notify')
 
-    # start remote with playwright
-    from playwright.sync_api import sync_playwright
+        resources = iterlib.repeatable_chain(library_resources(),
+                                             from_filesystem(parent2 / 'remote', relative_to=parent2.parent),
+                                             [StringResource('conftest.py', remote_conftest),
+                                              StringResource('remote_test_main.py',
+                                                             (parent2 / 'remote_test_main.py').read_text()),
+                                              ],
+                                             )
+        webserver = WsPythonEmbedded()
+        webserver.set_http_route(
+            *bootstrap_routes(resources, python='import remote_test_main; await remote_test_main.main()'),
+            xvirt_notify_route)
+        webserver.set_port(find_port()).start_listen()
 
-    with sync_playwright() as p:
-        browser = p.chromium.launch()
+        # start remote with playwright
+        from playwright.sync_api import sync_playwright
+        self.p = sync_playwright().__enter__()
+        p = self.p
+        browser = p.chromium.launch(headless=False)
+        # browser = p.chromium.launch()
         page = browser.new_page()
         _setup_page_logger(page)
         page.goto(webserver.localhost_url())
         # page.wait_for_selector('text=All tests passed')
 
-        handler = events_handler(get_next_event)
+        # handler = events_handler(get_next_event)
 
-        page.close()
-        browser.close()
+        # page.close()
+        # browser.close()
 
-        return handler
+        # return handler
+
+    def recv_event(self) -> str:
+        return self.events.get(timeout=10)
 
 # TODO eseguendo il test su tests dice 'no tests were found'
 # pero se si esegue su `remote` funziona
