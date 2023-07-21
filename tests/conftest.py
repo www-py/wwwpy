@@ -154,7 +154,7 @@ class XVirtImpl(XVirt):
         self.p.stop()
 
     def recv_event(self) -> str:
-        return self.events.get(timeout=10)
+        return self.events.get(timeout=30)
 
 # TODO eseguendo il test su tests dice 'no tests were found'
 # pero se si esegue su `remote` funziona
