@@ -2,12 +2,12 @@ from js import window
 from pyodide.ffi import create_once_callable
 
 
-def pytest_xvirt_notify(event):
+def pytest_xvirt_send_event(event_json):
     print('siamo arrivati qui')
 
     async def callback():
         path = '#xvirt_notify_path_marker#'
-        await async_fetch_str(path, method='POST', data=event.to_json())
+        await async_fetch_str(path, method='POST', data=event_json)
 
     set_timeout(callback)
 

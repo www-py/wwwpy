@@ -125,7 +125,7 @@ class XVirtImpl(XVirt):
         # start remote with playwright
         from playwright.sync_api import sync_playwright
         self.p = sync_playwright().start()
-        # browser = p.chromium.launch(headless=True)
+        # browser = self.p.chromium.launch(headless=False)
         browser = self.p.chromium.launch()
         page = browser.new_page()
         _setup_page_logger(page)
@@ -154,7 +154,7 @@ class XVirtImpl(XVirt):
         self.p.stop()
 
     def recv_event(self) -> str:
-        return self.events.get(timeout=300)
+        return self.events.get(timeout=30)
 
 # TODO eseguendo il test su tests dice 'no tests were found'
 # pero se si esegue su `remote` funziona
