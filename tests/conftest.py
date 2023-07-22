@@ -115,7 +115,7 @@ class XVirtImpl(XVirt):
         return parent_remote
 
     def _http_handler(self, req: HttpRequest) -> HttpResponse:
-        print('server side xvirt_notify_handler')
+        print(f'server side xvirt_notify_handler({req})')
         self.events.put(req.content)
         return HttpResponse('', 'text/plain')
 
