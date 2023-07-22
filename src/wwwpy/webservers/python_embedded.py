@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import partial
 from http import HTTPStatus
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer, HTTPServer
 from threading import Thread
 from typing import Optional, Callable, Dict, AnyStr, Tuple, Any
 from urllib.parse import urlparse, parse_qs
@@ -22,7 +22,7 @@ class WsPythonEmbedded(Webserver):
         self._routes[route.path] = route
 
     def _start_listen(self) -> None:
-        httpd = ThreadingHTTPServer((self.host, self.port), partial(RequestHandler, handler=self._handler))
+        httpd = HTTPServer((self.host, self.port), partial(RequestHandler, handler=self._handler))
 
         def run() -> None:
             print(f'Starting embedded python web server on:\n'
