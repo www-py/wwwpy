@@ -18,4 +18,9 @@ async def main():
     print_tree('/wwwpy_bundle')
 
     # pytest.main([str("/wwwpy_bundle/tests/remote/test_in_pyodide_bis.py::test_bis_first")])
-    pytest.main([str("/wwwpy_bundle/tests/remote")])
+
+    os.chdir('#xvirt_pytest_invocation_dir_marker#')
+    # the following line will be replaced by a python list
+    pytest.main(  # xvirt_pytest_args_marker#)
+    # pytest.main([str("/wwwpy_bundle/tests/remote/test_in_pyodide_bis.py")])
+    # pytest.main([str("/wwwpy_bundle/tests/remote")])

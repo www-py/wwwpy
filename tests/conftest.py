@@ -1,4 +1,5 @@
 import inspect
+import json
 import os
 from pathlib import Path
 from queue import Queue
@@ -134,18 +135,23 @@ class XVirtImpl(XVirt):
     def _start_webserver(self):
         xvirt_notify_route = HttpRoute('/xvirt_notify', self._http_handler)
         # read remote conftest content
-        remote_conftest = (parent2 / 'remote_conftest.py').read_text().replace('#xvirt_notify_path_marker#',
-                                                                               '/xvirt_notify')
+        remote_conftest = (parent2 / 'remote_conftest.py').read_text() \
+            .replace('#xvirt_notify_path_marker#', '/xvirt_notify')
+
+        args = [x.replace('/home/simone/Documents/python/wwwpy', '/wwwpy_bundle') for x in self.config.args]
+        remote_test_main = (parent2 / 'remote_test_main.py').read_text() \
+            .replace('#xvirt_pytest_invocation_dir_marker#',
+                     str(self.config.invocation_dir).replace('/home/simone/Documents/python/wwwpy', '/wwwpy_bundle')) \
+            .replace('#xvirt_pytest_args_marker#', json.dumps(args))
+        Path('/tmp/remote_test_main.py').write_text(remote_test_main)
         resources = iterlib.repeatable_chain(library_resources(),
                                              from_filesystem(parent2 / 'remote', relative_to=parent2.parent),
                                              [StringResource('conftest.py', remote_conftest),
-                                              StringResource('remote_test_main.py',
-                                                             (parent2 / 'remote_test_main.py').read_text()),
-                                              ],
+                                              StringResource('remote_test_main.py', remote_test_main)],
                                              )
         webserver = WsPythonEmbedded()
         webserver.set_http_route(
-            *bootstrap_routes(resources, python='import remote_test_main; await remote_test_main.main()'),
+            *bootstrap_routes(resources, python=f'import remote_test_main; await remote_test_main.main()'),
             xvirt_notify_route)
         webserver.set_port(find_port()).start_listen()
         return webserver
@@ -156,5 +162,11 @@ class XVirtImpl(XVirt):
     def recv_event(self) -> str:
         return self.events.get(timeout=30)
 
+
 # TODO eseguendo il test su tests dice 'no tests were found'
 # pero se si esegue su `remote` funziona
+
+
+def pytest_cmdline_main(config):
+    # assert config.invocation_dir == ''
+    return None
