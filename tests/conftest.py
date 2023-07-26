@@ -146,9 +146,10 @@ class XVirtImpl(XVirt):
                                              )
         webserver = WsPythonEmbedded()
         invocation_dir = json.dumps(
-            str(self.config.invocation_dir).replace('/home/simone/Documents/python/wwwpy', '/wwwpy_bundle'))
-        args = json.dumps([x.replace('/home/simone/Documents/python/wwwpy', '/wwwpy_bundle') for x in self.config.args])
+            str(self.config.invocation_dir).replace(self.remote_path(), '/wwwpy_bundle/tests/remote'))
+        args = json.dumps([x.replace(self.remote_path(), '/wwwpy_bundle/tests/remote') for x in self.config.args])
         bootstrap_python = f'import remote_test_main; await remote_test_main.main({invocation_dir},{args})'
+        Path('/tmp/bootstrap_python').write_text(self.remote_path() + '\n\n' + bootstrap_python)
         webserver.set_http_route(*bootstrap_routes(resources, python=bootstrap_python), xvirt_notify_route)
         webserver.set_port(find_port()).start_listen()
         return webserver
