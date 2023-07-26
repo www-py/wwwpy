@@ -8,7 +8,7 @@ async def install(package):
     await micropip.install([package])
 
 
-async def main():
+async def main(invocation_dir, args):
     await install('pytest')
     await install('pytest-xvirt')
     import pytest
@@ -17,10 +17,5 @@ async def main():
     from wwwpy.common.tree import print_tree
     print_tree('/wwwpy_bundle')
 
-    # pytest.main([str("/wwwpy_bundle/tests/remote/test_in_pyodide_bis.py::test_bis_first")])
-
-    os.chdir('#xvirt_pytest_invocation_dir_marker#')
-    # the following line will be replaced by a python list
-    pytest.main(  # xvirt_pytest_args_marker#)
-    # pytest.main([str("/wwwpy_bundle/tests/remote/test_in_pyodide_bis.py")])
-    # pytest.main([str("/wwwpy_bundle/tests/remote")])
+    os.chdir(invocation_dir)
+    pytest.main(args)
