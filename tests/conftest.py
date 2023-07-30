@@ -155,7 +155,6 @@ class XVirtImpl(XVirt):
         args_json = json.dumps(args)
         rootpath = json.dumps('/wwwpy_bundle')
         bootstrap_python = f'import remote_test_main; await remote_test_main.main({rootpath},{invocation_dir_json},{args_json})'
-        Path('/tmp/bootstrap_python').write_text(self.virtual_path() + '\n\n' + bootstrap_python)
         webserver.set_http_route(*bootstrap_routes(resources, python=bootstrap_python), xvirt_notify_route)
         webserver.set_port(find_port()).start_listen()
         return webserver
