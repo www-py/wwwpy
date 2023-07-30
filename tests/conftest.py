@@ -9,6 +9,7 @@ from typing import Callable, Any
 import pytest
 from playwright.sync_api import Page, PageAssertions, LocatorAssertions, APIResponseAssertions
 from xvirt import XVirt
+import xvirt
 
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.common import iterlib
@@ -87,7 +88,8 @@ def load_dotenv(env: Path):
 
 def pytest_sessionstart(session: pytest.Session):
     load_dotenv(session.config.rootpath / '.env')
-
+    print(f'invocation_dir={session.config.invocation_dir}')
+    print(f'rootpath={session.config.rootpath}')
     pluginmanager = session.config.pluginmanager
     # _playwright = pluginmanager.get_plugin('playwright')
     # pluginmanager.unregister(name='playwright') # weird it does not change th
@@ -112,7 +114,7 @@ class XVirtImpl(XVirt):
         self.events = Queue()
         self.p = None
 
-    def remote_path(self) -> str:
+    def virtual_path(self) -> str:
         return parent_remote
 
     def _http_handler(self, req: HttpRequest) -> HttpResponse:
@@ -126,8 +128,8 @@ class XVirtImpl(XVirt):
         # start remote with playwright
         from playwright.sync_api import sync_playwright
         self.p = sync_playwright().start()
-        # browser = self.p.chromium.launch(headless=False)
-        browser = self.p.chromium.launch()
+        browser = self.p.chromium.launch(headless=False)
+        # browser = self.p.chromium.launch()
         page = browser.new_page()
         _setup_page_logger(page)
         page.goto(webserver.localhost_url())
@@ -140,16 +142,19 @@ class XVirtImpl(XVirt):
 
         resources = iterlib.repeatable_chain(library_resources(),
                                              from_filesystem(parent2 / 'remote', relative_to=parent2.parent),
-                                             [StringResource('conftest.py', remote_conftest),
+                                             [StringResource('tests/__init__.py', ''),
+                                              StringResource('pytest.ini', ''),
+                                              StringResource('conftest.py', remote_conftest),
                                               StringResource('remote_test_main.py',
                                                              (parent2 / 'remote_test_main.py').read_text())],
                                              )
         webserver = WsPythonEmbedded()
-        invocation_dir = json.dumps(
-            str(self.config.invocation_dir).replace(self.remote_path(), '/wwwpy_bundle/tests/remote'))
-        args = json.dumps([x.replace(self.remote_path(), '/wwwpy_bundle/tests/remote') for x in self.config.args])
-        bootstrap_python = f'import remote_test_main; await remote_test_main.main({invocation_dir},{args})'
-        Path('/tmp/bootstrap_python').write_text(self.remote_path() + '\n\n' + bootstrap_python)
+        invocation_dir, args = self.remote_invocation_params('/wwwpy_bundle')
+        invocation_dir_json = json.dumps(invocation_dir)
+        args_json = json.dumps(args)
+        rootpath = json.dumps('/wwwpy_bundle')
+        bootstrap_python = f'import remote_test_main; await remote_test_main.main({rootpath},{invocation_dir_json},{args_json})'
+        Path('/tmp/bootstrap_python').write_text(self.virtual_path() + '\n\n' + bootstrap_python)
         webserver.set_http_route(*bootstrap_routes(resources, python=bootstrap_python), xvirt_notify_route)
         webserver.set_port(find_port()).start_listen()
         return webserver

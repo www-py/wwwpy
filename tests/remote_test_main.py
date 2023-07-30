@@ -8,7 +8,7 @@ async def install(package):
     await micropip.install([package])
 
 
-async def main(invocation_dir, args):
+async def main(rootpath, invocation_dir, args):
     await install('pytest')
     await install('pytest-xvirt')
     import pytest
