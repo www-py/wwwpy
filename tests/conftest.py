@@ -128,8 +128,8 @@ class XVirtImpl(XVirt):
         # start remote with playwright
         from playwright.sync_api import sync_playwright
         self.p = sync_playwright().start()
-        browser = self.p.chromium.launch(headless=False)
-        # browser = self.p.chromium.launch()
+        # browser = self.p.chromium.launch(headless=False)
+        browser = self.p.chromium.launch()
         page = browser.new_page()
         _setup_page_logger(page)
         page.goto(webserver.localhost_url())
@@ -142,11 +142,12 @@ class XVirtImpl(XVirt):
 
         resources = iterlib.repeatable_chain(library_resources(),
                                              from_filesystem(parent2 / 'remote', relative_to=parent2.parent),
-                                             [StringResource('tests/__init__.py', ''),
-                                              StringResource('pytest.ini', ''),
-                                              StringResource('conftest.py', remote_conftest),
-                                              StringResource('remote_test_main.py',
-                                                             (parent2 / 'remote_test_main.py').read_text())],
+                                             [
+                                                 # StringResource('tests/__init__.py', ''),
+                                                 # StringResource('pytest.ini', ''),
+                                                 StringResource('conftest.py', remote_conftest),
+                                                 StringResource('remote_test_main.py',
+                                                                (parent2 / 'remote_test_main.py').read_text())],
                                              )
         webserver = WsPythonEmbedded()
         invocation_dir, args = self.remote_invocation_params('/wwwpy_bundle')
