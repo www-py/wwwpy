@@ -105,8 +105,6 @@ def pytest_xvirt_setup():
 
 parent2 = parent
 
-pytest_xvirt_abs = Path('/home/simone/Documents/python/pytest-xvirt/src/xvirt')
-
 
 class XVirtImpl(XVirt):
 
