@@ -1,15 +1,16 @@
 import inspect
 import json
 import os
+import threading
 from pathlib import Path
 from queue import Queue
+from threading import Thread
 from types import FunctionType
 from typing import Callable, Any
 
 import pytest
-from playwright.sync_api import Page, PageAssertions, LocatorAssertions, APIResponseAssertions
+from playwright.sync_api import Page, PageAssertions, LocatorAssertions, APIResponseAssertions, sync_playwright
 from xvirt import XVirt
-import xvirt
 
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.common import iterlib
@@ -18,7 +19,7 @@ from wwwpy.resources import library_resources, from_filesystem, StringResource
 from wwwpy.server import find_port
 from wwwpy.webservers.python_embedded import WsPythonEmbedded
 
-parent = Path(__file__).parent
+_file_parent = Path(__file__).parent
 
 
 def _setup_page_logger(page: Page):
@@ -96,21 +97,18 @@ def pytest_sessionstart(session: pytest.Session):
     pass
 
 
-parent_remote = str(parent / 'remote')
+parent_remote = str(_file_parent / 'remote')
 
 
 def pytest_xvirt_setup():
     return XVirtImpl()
 
 
-parent2 = parent
-
-
 class XVirtImpl(XVirt):
 
     def __init__(self):
         self.events = Queue()
-        self.p = None
+        self.close_pw = threading.Event()
 
     def virtual_path(self) -> str:
         return parent_remote
@@ -121,31 +119,39 @@ class XVirtImpl(XVirt):
         return HttpResponse('', 'text/plain')
 
     def run(self):
+        with sync_playwright() as pw: pass  # workaround to run playwright in a new thread. see: https://github.com/microsoft/playwright-python/issues/1685
+
         webserver = self._start_webserver()
 
         # start remote with playwright
-        from playwright.sync_api import sync_playwright
-        self.p = sync_playwright().start()
-        # browser = self.p.chromium.launch(headless=False)
-        browser = self.p.chromium.launch()
-        page = browser.new_page()
-        _setup_page_logger(page)
-        page.goto(webserver.localhost_url())
+        def start_playwright():
+            from playwright.sync_api import sync_playwright
+            p = sync_playwright().start()
+            # browser = p.chromium.launch(headless=False)
+            browser = p.chromium.launch()
+            page = browser.new_page()
+            _setup_page_logger(page)
+            page.goto(webserver.localhost_url())
+            self.close_pw.wait(30)
+            # p.stop()
+
+        self._thread = Thread(target=start_playwright, daemon=True)
+        self._thread.start()
 
     def _start_webserver(self):
         xvirt_notify_route = HttpRoute('/xvirt_notify', self._http_handler)
         # read remote conftest content
-        remote_conftest = (parent2 / 'remote_conftest.py').read_text() \
+        remote_conftest = (_file_parent / 'remote_conftest.py').read_text() \
             .replace('#xvirt_notify_path_marker#', '/xvirt_notify')
 
         resources = iterlib.repeatable_chain(library_resources(),
-                                             from_filesystem(parent2 / 'remote', relative_to=parent2.parent),
+                                             from_filesystem(_file_parent / 'remote', relative_to=_file_parent.parent),
                                              [
                                                  # StringResource('tests/__init__.py', ''),
                                                  # StringResource('pytest.ini', ''),
                                                  StringResource('conftest.py', remote_conftest),
                                                  StringResource('remote_test_main.py',
-                                                                (parent2 / 'remote_test_main.py').read_text())],
+                                                                (_file_parent / 'remote_test_main.py').read_text())],
                                              )
         webserver = WsPythonEmbedded()
         invocation_dir, args = self.remote_invocation_params('/wwwpy_bundle')
@@ -158,7 +164,8 @@ class XVirtImpl(XVirt):
         return webserver
 
     def finalize(self):
-        self.p.stop()
+        self.close_pw.set()
+        # self._thread.join()
 
     def recv_event(self) -> str:
         return self.events.get(timeout=30)

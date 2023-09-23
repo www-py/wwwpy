@@ -1,16 +1,14 @@
 from __future__ import annotations
 
 import inspect
-import itertools
 import zipfile
 from abc import ABC
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
-from typing import Iterator, Callable, Optional, TypeVar, Generic, Iterable
+from typing import Iterator, Callable, Optional, TypeVar, Iterable
 from zipfile import ZipFile
 
-from wwwpy.common import iterlib
 from wwwpy.common.iterlib import CallableToIterable
 
 parent = Path(__file__).resolve().parent
@@ -52,6 +50,26 @@ def default_resource_accept(resource: Resource) -> bool:
     return True
 
 
+def from_filepath(file: Path, relative_to: Path) -> Iterable[PathResource]:
+    def bundle() -> Iterator[PathResource]:
+        rel = file.relative_to(relative_to)
+        if file.is_file() and file.exists():
+            yield PathResource(str(rel), file)
+
+    return CallableToIterable(bundle)
+
+
+def _recurse(path: Path, relative_to: Path, resource_accept: ResourceAccept) -> Iterator[PathResource]:
+    for f in path.glob('*'):
+        rel = f.relative_to(relative_to)
+        candidate = PathResource(str(rel), f)
+        if resource_accept(candidate):
+            if f.is_file():
+                yield candidate
+            else:
+                yield from _recurse(f, relative_to, resource_accept)
+
+
 def from_filesystem(
         folder: Path, relative_to: Path | None = None,
         resource_accept: ResourceAccept = default_resource_accept
@@ -59,17 +77,7 @@ def from_filesystem(
     relative_to_defined: Path = folder if relative_to is None else relative_to
 
     def bundle() -> Iterator[PathResource]:
-        def recurse(path: Path) -> Iterator[PathResource]:
-            for f in path.glob('*'):
-                rel = f.relative_to(relative_to_defined)
-                candidate = PathResource(str(rel), f)
-                if resource_accept(candidate):
-                    if f.is_file():
-                        yield candidate
-                    else:
-                        yield from recurse(f)
-
-        yield from recurse(folder)
+        yield from _recurse(folder, relative_to_defined, resource_accept)
 
     return CallableToIterable(bundle)
 
