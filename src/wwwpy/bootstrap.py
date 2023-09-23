@@ -48,7 +48,7 @@ _js_content = """
 if (typeof loadPyodide === 'undefined') {
     console.log('loading pyodide...');
     let script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/pyodide/v0.23.2/full/pyodide.js';
+    script.src = 'https://cdn.jsdelivr.net/pyodide/v0.24.0/full/pyodide.js';
     script.onload = async () => {
         let pyodide = await loadPyodide();
         window.pyodide = pyodide;
