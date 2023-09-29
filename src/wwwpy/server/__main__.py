@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 
 from wwwpy.server import configure
-from wwwpy.server.configure import convention
 
 
 def main():
@@ -20,12 +19,7 @@ def main():
     args = parser.parse_args()
 
     working_dir = Path(args.directory).absolute()
-    port = args.port
-
-    webserver = configure.start_default(port, working_dir)
-
-    webserver.set_port(port).start_listen()
-    webserver.wait_forever()
+    configure.start_default(args.port, working_dir)
 
 
 if __name__ == '__main__':
