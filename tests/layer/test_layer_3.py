@@ -48,11 +48,20 @@ def test_zipped_python_execution_no_default(page: Page, webserver: Webserver):
 
 
 @for_all_webservers()
-def test_server_convention(page: Page, webserver: Webserver):
-    configure.convention(Path(__file__).parent / 'layer_3_support' / 'convention_a', webserver)
+def test_server_convention_a(page: Page, webserver: Webserver):
+    _test_convention('convention_a', page, webserver)
+
+
+@for_all_webservers()
+def test_server_convention_b(page: Page, webserver: Webserver):
+    _test_convention('convention_b', page, webserver)
+
+
+def _test_convention(directory, page, webserver):
+    configure.convention(Path(__file__).parent / 'layer_3_support' / directory, webserver)
     webserver.start_listen()
     page.goto(webserver.localhost_url())
-    expect(page.locator('id=tag1')).to_have_value('convention_a')
+    expect(page.locator('id=tag1')).to_have_value(directory)
 
 
 def test_wrap_in_tryexcept():
