@@ -10,24 +10,24 @@ from wwwpy.webserver import Webserver, wait_forever
 from wwwpy.webservers.available_webservers import available_webservers
 
 
-def start_default(port: int, working_dir: Path):
+def start_default(port: int, directory: Path):
     webserver = available_webservers().new_instance()
 
-    convention(working_dir, webserver)
+    convention(directory, webserver)
 
     webserver.set_port(port).start_listen()
     wait_forever()
 
 
-def convention(working_dir, webserver):
+def convention(directory, webserver):
     """
     Convention for a wwwpy server.
     It configures the webserver to serve the files from the working directory.
     It also configures the webserver to serve the files from the library.
     """
-
+    print(f'applying convention to working_dir: {directory}')
     import sys
-    sys.path.insert(0, str(working_dir))
+    sys.path.insert(0, str(directory))
     stubber_resources = []
     try:
         import server.rpc as rpc_module
@@ -42,10 +42,10 @@ def convention(working_dir, webserver):
 
     resources = iterlib.repeatable_chain(
         library_resources(),
-        from_filesystem(working_dir / 'remote', relative_to=working_dir),
-        from_filesystem(working_dir / 'common', relative_to=working_dir),
-        from_filepath(working_dir / 'common.py', relative_to=working_dir),
-        from_filepath(working_dir / 'remote.py', relative_to=working_dir),
+        from_filesystem(directory / 'remote', relative_to=directory),
+        from_filesystem(directory / 'common', relative_to=directory),
+        from_filepath(directory / 'common.py', relative_to=directory),
+        from_filepath(directory / 'remote.py', relative_to=directory),
         *stubber_resources,
     )
     bootstrap_python = f'from wwwpy.remote.main import entry_point; await entry_point()'
