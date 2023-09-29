@@ -19,6 +19,11 @@ def start_default(port: int, working_dir: Path):
 
 
 def convention(working_dir, webserver):
+    """
+    Convention for a wwwpy server.
+    It configures the webserver to serve the files from the working directory.
+    It also configures the webserver to serve the files from the library.
+    """
     resources = iterlib.repeatable_chain(
         library_resources(),
         from_filesystem(working_dir / 'remote', relative_to=working_dir),
