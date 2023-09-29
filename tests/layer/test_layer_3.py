@@ -57,6 +57,16 @@ def test_server_convention_b(page: Page, webserver: Webserver):
     _test_convention('convention_b', page, webserver)
 
 
+@for_all_webservers()
+def test_server_convention_c_async(page: Page, webserver: Webserver):
+    _test_convention('convention_c_async', page, webserver)
+
+
+@for_all_webservers()
+def test_server_convention_c_sync(page: Page, webserver: Webserver):
+    _test_convention('convention_c_sync', page, webserver)
+
+
 def _test_convention(directory, page, webserver):
     configure.convention(Path(__file__).parent / 'layer_3_support' / directory, webserver)
     webserver.start_listen()
