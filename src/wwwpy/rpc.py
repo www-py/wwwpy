@@ -2,8 +2,9 @@ import json
 import traceback
 from inspect import getmembers, isfunction, signature, iscoroutinefunction, Signature
 from types import ModuleType, FunctionType
-from typing import NamedTuple, List, Tuple, Any, Optional, Dict, Callable, Awaitable, Iterable
+from typing import NamedTuple, List, Tuple, Any, Optional, Dict, Callable, Awaitable, Iterable, Iterator
 
+from wwwpy.common.iterlib import CallableToIterable
 from wwwpy.exceptions import RemoteException
 from wwwpy.http import HttpRoute, HttpResponse, HttpRequest
 from wwwpy.resources import Resource, StringResource
@@ -148,12 +149,14 @@ class Stubber:
         self._module: Optional[Module] = rpc_module
 
     def remote_stub_resources(self) -> Iterable[Resource]:
-        if self._module is None:
-            return
-        imports = 'from wwwpy.remote.fetch import async_fetch_str'
-        stub_source = generate_stub_source(self._module, self._rpc_url, imports)
-        yield StringResource(self._module.name.replace('.', '/') + '.py', stub_source)
+        def bundle() -> Iterator[Resource]:
+            if self._module is None:
+                return
+            imports = 'from wwwpy.remote.fetch import async_fetch_str'
+            stub_source = generate_stub_source(self._module, self._rpc_url, imports)
+            yield StringResource(self._module.name.replace('.', '/') + '.py', stub_source)
 
+        return CallableToIterable(bundle)
 
 def generate_stub_source(module: Module, rpc_url: str, imports: str):
     module_name = module.name
