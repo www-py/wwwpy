@@ -11,7 +11,7 @@ parent = Path(__file__).parent
 
 
 class Test_ResourceIterator_from_filesystem:
-    support_data = parent / 'support_data/from_filesystem'
+    support_data = parent / 'layer_2_support/from_filesystem'
 
     def test_one_file(self):
         folder = self.support_data / 'one_file'
@@ -51,7 +51,7 @@ class Test_ResourceIterator_from_filesystem:
 
 
 class Test_build_archive:
-    support_data = parent / 'support_data/build_archive'
+    support_data = parent / 'layer_2_support/build_archive'
 
     def test_build_archive(self):
         class ZFile(NamedTuple):
