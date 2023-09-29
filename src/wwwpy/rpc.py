@@ -150,17 +150,18 @@ class Stubber:
     def remote_stub_resources(self) -> Iterable[Resource]:
         if self._module is None:
             return
-        stub_source = generate_stub_source(self._module, self._rpc_url)
+        imports = 'from wwwpy.remote.fetch import async_fetch_str'
+        stub_source = generate_stub_source(self._module, self._rpc_url, imports)
         yield StringResource(self._module.name.replace('.', '/') + '.py', stub_source)
 
 
-def generate_stub_source(module: Module, rpc_url: str):
+def generate_stub_source(module: Module, rpc_url: str, imports: str):
     module_name = module.name
     # language=python
     stub_header = f"""
 from __future__ import annotations
 from wwwpy.rpc import Proxy
-from wwwpy.remote.fetch import async_fetch_str
+{imports}
 
 rpc_url = '{rpc_url}'
 module_name = '{module_name}'
