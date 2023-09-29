@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 from typing import Iterator, List
 
 from ..webserver import Webserver
@@ -20,6 +19,21 @@ class AvailableWebservers:
 
 def _webservers_classes() -> List[type[Webserver]]:
     result: List[type[Webserver]] = []
+    try:
+        from .fastapi import WsFastapi
+        result.append(WsFastapi)
+    except:
+        pass
+    try:
+        from .flask import WsFlask
+        result.append(WsFlask)
+    except:
+        pass
+    try:
+        from .tornado import WsTornado
+        result.append(WsTornado)
+    except:
+        pass
 
     from .python_embedded import WsPythonEmbedded
     result.append(WsPythonEmbedded)
@@ -33,8 +47,5 @@ _available_webservers: AvailableWebservers | None = None
 def available_webservers() -> AvailableWebservers:
     global _available_webservers
     if _available_webservers is None:
-        av = AvailableWebservers()
-        _available_webservers = av
-    else:
-        av = _available_webservers
-    return av
+        _available_webservers = AvailableWebservers()
+    return _available_webservers
