@@ -15,5 +15,5 @@ async def entry_point():
                 remote.main()
     except ImportError as e:
         import traceback
-        msg = 'module remote load failed. Error: ' + str(e) + '\n\n' + traceback.format_exc()
+        msg = 'module remote load failed. Error: ' + str(e) + '\n\n' + traceback.format_exc() + '\n\n'
         js.document.body.innerHTML = msg.replace('\n', '<br>')

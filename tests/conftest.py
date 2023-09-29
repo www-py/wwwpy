@@ -83,7 +83,7 @@ def load_dotenv(env: Path):
         parts = line.split('=', 1)
         if len(parts) == 2:
             key, value = tuple(map(lambda s: s.strip(), parts))
-            print(f'.env loading `{key}={value}`')
+            print(f'.env loading key `{key}`')
             os.environ[key] = value
 
 
