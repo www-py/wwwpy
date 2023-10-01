@@ -139,20 +139,23 @@ class XVirtImpl(XVirt):
         self._thread.start()
 
     def _start_webserver(self):
+        from wwwpy.server.configure import _convention
+
         xvirt_notify_route = HttpRoute('/xvirt_notify', self._http_handler)
         # read remote conftest content
         remote_conftest = (_file_parent / 'remote_conftest.py').read_text() \
             .replace('#xvirt_notify_path_marker#', '/xvirt_notify')
 
-        resources = iterlib.repeatable_chain(library_resources(),
-                                             from_directory(_file_parent / 'remote', relative_to=_file_parent.parent),
-                                             [
-                                                 # StringResource('tests/__init__.py', ''),
-                                                 # StringResource('pytest.ini', ''),
-                                                 StringResource('conftest.py', remote_conftest),
-                                                 StringResource('remote_test_main.py',
-                                                                (_file_parent / 'remote_test_main.py').read_text())],
-                                             )
+        resources = [library_resources(),
+                     from_directory(_file_parent / 'remote', relative_to=_file_parent.parent),
+                     [
+                         # StringResource('tests/__init__.py', ''),
+                         # StringResource('pytest.ini', ''),
+                         StringResource('conftest.py', remote_conftest),
+                         StringResource('remote_test_main.py',
+                                        (_file_parent / 'remote_test_main.py').read_text())],
+
+                     ]
         webserver = WsPythonEmbedded()
         invocation_dir, args = self.remote_invocation_params('/wwwpy_bundle')
         invocation_dir_json = json.dumps(invocation_dir)

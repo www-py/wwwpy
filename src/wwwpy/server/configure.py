@@ -50,11 +50,12 @@ def _convention(directory, webserver):
     except:
         pass
 
-    resources = iterlib.repeatable_chain(
+    resources = [
         library_resources(),
         *_conventional_resources(directory),
         *stubber_resources,
-    )
+    ]
+
     bootstrap_python = f'from wwwpy.remote.main import entry_point; await entry_point()'
     webserver.set_http_route(*bootstrap_routes(resources, python=bootstrap_python))
 

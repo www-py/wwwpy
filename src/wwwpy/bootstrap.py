@@ -10,7 +10,7 @@ bootstrap_javascript_placeholder = '// #bootstrap-placeholder#'
 # todo 1) parametrize where the zip is expanded (now in /wwwpy_bundle
 # todo 2) parametrize the bootstrap route (now /)
 def bootstrap_routes(
-        iterable_resource: Iterable[Resource],
+        resources: List[Iterable[Resource]],
         html: str = f'<h1>Loading...</h1><script>{bootstrap_javascript_placeholder}</script>',
         python: str = 'import remote',
         zip_route_path: str = '/wwwpy/bundle.zip',
@@ -18,7 +18,8 @@ def bootstrap_routes(
     """Returns a tuple of two routes: (bootstrap_route, zip_route)"""
 
     def zip_response() -> HttpResponse:
-        zip_bytes = build_archive(iter(iterable_resource))
+        from itertools import chain
+        zip_bytes = build_archive(chain.from_iterable(resources))
         return HttpResponse.application_zip(zip_bytes)
 
     zip_route = HttpRoute(zip_route_path, lambda request: zip_response())
