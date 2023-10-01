@@ -51,8 +51,8 @@ def _convention(webserver, directory) -> List[ResourceIterable]:
         webserver.set_http_route(services.route)
 
         resources.append(Stubber(services.route.path, services, rpc_module).remote_stub_resources())
-    except:
-        pass
+    except Exception as e:
+        print(f'could not load rpc module: {e}')
 
     _add_conventional_resources(resources, directory)
 
