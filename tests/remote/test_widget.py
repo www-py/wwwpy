@@ -95,6 +95,20 @@ class WidgetHolderTestCase(unittest.TestCase):
 
         self.assertIn('one', target.container.innerHTML)
 
+    def test_holder_custom_class(self):
+        class CustomHolderWidget(HolderWidget):
+            def __init__(self):
+                super().__init__("<div id='custom_holder'></div>")
+                self.custom_holder: HTMLElement = self
+                self.bind_self_elements()
+
+            def _custom_holder(self):
+                return self.custom_holder
+
+        target = CustomHolderWidget()
+        target.show(Widget('one'))
+        self.assertIn('one', target.custom_holder.innerHTML)
+
     def test_holder_twoWidgets(self):
         target = HolderWidget()
         target.show(Widget('one'))

@@ -122,13 +122,13 @@ class HolderWidget(Widget):
 
     def show(self, widget: Widget):
         widget.holder = self
-        c = self.container
+        c = self._custom_holder()
         while c.hasChildNodes():
             c.removeChild(c.firstChild)
 
         self._remove(widget)
         self.stack.append(widget)
-        widget.append_to(self.container)
+        widget.append_to(c)
         self.on_show(widget)
 
     def close(self, widget: Widget):
@@ -139,3 +139,6 @@ class HolderWidget(Widget):
         s = self.stack
         if widget in s:
             s.remove(widget)
+
+    def _custom_holder(self) -> HTMLElement:
+        return self.container
