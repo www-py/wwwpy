@@ -4,32 +4,36 @@ from pathlib import Path
 from typing import List
 
 from wwwpy.bootstrap import bootstrap_routes
-from wwwpy.common import iterlib
 from wwwpy.resources import library_resources, from_directory, from_file, \
-    FilesystemIterable
+    FilesystemIterable, ResourceIterable
 from wwwpy.rpc import Services, Module, Stubber
-from wwwpy.webserver import Webserver, wait_forever
+from wwwpy.webserver import wait_forever
 from wwwpy.webservers.available_webservers import available_webservers
 
 
 def start_default(port: int, directory: Path):
     webserver = available_webservers().new_instance()
 
-    _convention(directory, webserver)
+    _convention(webserver, directory)
 
     webserver.set_port(port).start_listen()
     wait_forever()
 
 
-def _conventional_resources(directory: Path):
-    return [from_directory(directory / 'remote', relative_to=directory),
-            from_directory(directory / 'common', relative_to=directory),
-            from_file(directory / 'common.py', relative_to=directory),
-            from_file(directory / 'remote.py', relative_to=directory),
-            *_conventional_resources_additional]
+def _add_conventional_resources(resources: List[ResourceIterable], directory: Path, relative_to: Path = None):
+    if relative_to is None:
+        relative_to = directory
+
+    resources.extend([
+        from_directory(directory / 'remote', relative_to=relative_to),
+        from_directory(directory / 'common', relative_to=relative_to),
+        from_file(directory / 'common.py', relative_to=relative_to),
+        from_file(directory / 'remote.py', relative_to=relative_to),
+        *_conventional_resources_additional
+    ])
 
 
-def _convention(directory, webserver):
+def _convention(webserver, directory) -> List[ResourceIterable]:
     """
     Convention for a wwwpy server.
     It configures the webserver to serve the files from the working directory.
@@ -38,7 +42,7 @@ def _convention(directory, webserver):
     print(f'applying convention to working_dir: {directory}')
     import sys
     sys.path.insert(0, str(directory))
-    stubber_resources = []
+    resources = []
     try:
         import server.rpc as rpc_module
         services = Services()
@@ -46,20 +50,23 @@ def _convention(directory, webserver):
         services.add_module(rpc_module)
         webserver.set_http_route(services.route)
 
-        stubber_resources = [Stubber(services.route.path, services, rpc_module).remote_stub_resources()]
+        resources.append(Stubber(services.route.path, services, rpc_module).remote_stub_resources())
     except:
         pass
 
-    resources = [
-        library_resources(),
-        *_conventional_resources(directory),
-        *stubber_resources,
-    ]
+    _add_conventional_resources(resources, directory)
 
+    resources.append(library_resources())
     bootstrap_python = f'from wwwpy.remote.main import entry_point; await entry_point()'
     webserver.set_http_route(*bootstrap_routes(resources, python=bootstrap_python))
 
-    return webserver
+    return resources
+
+
+def _setup_default_bootrap(resources, webserver):
+    resources.append(library_resources())
+    bootstrap_python = f'from wwwpy.remote.main import entry_point; await entry_point()'
+    webserver.set_http_route(*bootstrap_routes(resources, python=bootstrap_python))
 
 
 _conventional_resources_additional: List[FilesystemIterable] = []

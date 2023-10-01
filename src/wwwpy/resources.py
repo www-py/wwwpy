@@ -24,6 +24,9 @@ class Resource(ABC):
         pass
 
 
+ResourceIterable = Iterable[Resource]
+
+
 @dataclass(frozen=True)
 class StringResource(Resource):
     content: str

@@ -9,7 +9,7 @@ from wwwpy.webserver import Webserver
 
 @for_all_webservers()
 def test_rpc(page: Page, webserver: Webserver):
-    configure._convention(Path(__file__).parent / 'layer_5_support', webserver)
+    configure._convention(webserver, Path(__file__).parent / 'layer_5_support')
     webserver.start_listen()
 
     page.goto(webserver.localhost_url())
@@ -19,7 +19,7 @@ def test_rpc(page: Page, webserver: Webserver):
 @for_all_webservers()
 def test_rpc_issue_double_load(page: Page, webserver: Webserver):
     # related to the stubber to being loaded twice
-    configure._convention(Path(__file__).parent / 'layer_5_support', webserver)
+    configure._convention(webserver, Path(__file__).parent / 'layer_5_support')
     webserver.start_listen()
 
     page.goto(webserver.localhost_url())
