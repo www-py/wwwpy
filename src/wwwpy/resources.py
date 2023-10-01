@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 import zipfile
-from abc import ABC
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
@@ -19,15 +19,25 @@ class Resource(ABC):
     """represents something (a file) to be transferred to the remote"""
     arcname: str
 
+    @abstractmethod
+    def _bytes(self) -> bytes:
+        pass
+
 
 @dataclass(frozen=True)
 class StringResource(Resource):
     content: str
 
+    def _bytes(self) -> bytes:
+        return self.content.encode('utf-8')
+
 
 @dataclass(frozen=True)
 class PathResource(Resource):
     filepath: Path
+
+    def _bytes(self) -> bytes:
+        raise Exception('this has a special method to get the bytes')
 
 
 # https://docs.python.org/3/library/collections.abc.html
@@ -92,8 +102,8 @@ def build_archive(resource_iterator: Iterator[Resource]) -> bytes:
     for resource in resource_iterator:
         if isinstance(resource, PathResource):
             zip_file.write(resource.filepath, resource.arcname)
-        elif isinstance(resource, StringResource):
-            zip_file.writestr(resource.arcname, resource.content)
+        elif isinstance(resource, Resource):
+            zip_file.writestr(resource.arcname, resource._bytes())
         else:
             raise Exception(f'Unhandled class \n  type={type(resource).__name__} \n  data={resource}')
     zip_file.close()
