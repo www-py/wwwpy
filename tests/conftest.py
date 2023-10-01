@@ -15,7 +15,7 @@ from xvirt import XVirt
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.common import iterlib
 from wwwpy.http import HttpRoute, HttpRequest, HttpResponse
-from wwwpy.resources import library_resources, from_filesystem, StringResource
+from wwwpy.resources import library_resources, from_directory, StringResource
 from wwwpy.server import find_port
 from wwwpy.webservers.python_embedded import WsPythonEmbedded
 
@@ -145,7 +145,7 @@ class XVirtImpl(XVirt):
             .replace('#xvirt_notify_path_marker#', '/xvirt_notify')
 
         resources = iterlib.repeatable_chain(library_resources(),
-                                             from_filesystem(_file_parent / 'remote', relative_to=_file_parent.parent),
+                                             from_directory(_file_parent / 'remote', relative_to=_file_parent.parent),
                                              [
                                                  # StringResource('tests/__init__.py', ''),
                                                  # StringResource('pytest.ini', ''),

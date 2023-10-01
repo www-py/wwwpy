@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import NamedTuple
 from zipfile import ZipFile
 
-from wwwpy.resources import from_filesystem, PathResource, Resource, default_resource_accept, build_archive, \
+from wwwpy.resources import from_directory, PathResource, Resource, default_resource_accept, build_archive, \
     StringResource, stacktrace_pathfinder, _is_path_contained, library_resources
 
 parent = Path(__file__).parent
@@ -15,20 +15,20 @@ class Test_ResourceIterator_from_filesystem:
 
     def test_one_file(self):
         folder = self.support_data / 'one_file'
-        actual = set(from_filesystem(folder))
+        actual = set(from_directory(folder))
         expect = {PathResource('foo.py', folder / 'foo.py')}
         assert expect == actual
 
     def test_zero_file(self):
         folder = self.support_data / 'zero_file'
         folder.mkdir(exist_ok=True)  # git does not commit empty folders
-        actual = set(from_filesystem(folder))
+        actual = set(from_directory(folder))
         expect = set()
         assert expect == actual
 
     def test_selective(self):
         folder = self.support_data / 'relative_to'
-        actual = set(from_filesystem(folder / 'yes', relative_to=folder))
+        actual = set(from_directory(folder / 'yes', relative_to=folder))
         expect = {PathResource(fix_path('yes/yes.txt'), folder / 'yes/yes.txt')}
         assert expect == actual
 
@@ -45,7 +45,7 @@ class Test_ResourceIterator_from_filesystem:
                 return False
             return default_resource_accept(resource)
 
-        actual = set(from_filesystem(folder, resource_accept=resource_accept))
+        actual = set(from_directory(folder, resource_accept=resource_accept))
         expect = {PathResource(fix_path('yes/yes.txt'), folder / 'yes/yes.txt')}
         assert expect == actual
 
@@ -61,7 +61,7 @@ class Test_build_archive:
         folder = self.support_data / 'simple'
         (folder / 'empty_dir').mkdir(exist_ok=True)  # should be ignored by build_archive
 
-        archive_bytes = build_archive(list(from_filesystem(folder)) +
+        archive_bytes = build_archive(list(from_directory(folder)) +
                                       [StringResource('dir1/baz.txt', "#baz")])
 
         actual_files = set()

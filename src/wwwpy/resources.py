@@ -50,7 +50,10 @@ def default_resource_accept(resource: Resource) -> bool:
     return True
 
 
-def from_filepath(file: Path, relative_to: Path) -> Iterable[PathResource]:
+FilesystemIterable = Iterable[PathResource]
+
+
+def from_file(file: Path, relative_to: Path) -> FilesystemIterable:
     def bundle() -> Iterator[PathResource]:
         rel = file.relative_to(relative_to)
         if file.is_file() and file.exists():
@@ -70,10 +73,10 @@ def _recurse(path: Path, relative_to: Path, resource_accept: ResourceAccept) -> 
                 yield from _recurse(f, relative_to, resource_accept)
 
 
-def from_filesystem(
+def from_directory(
         folder: Path, relative_to: Path | None = None,
         resource_accept: ResourceAccept = default_resource_accept
-) -> Iterable[PathResource]:
+) -> FilesystemIterable:
     relative_to_defined: Path = folder if relative_to is None else relative_to
 
     def bundle() -> Iterator[PathResource]:
@@ -125,4 +128,4 @@ def _is_path_contained(child: Path, parent: Path) -> bool:
 
 def library_resources() -> Iterable[PathResource]:
     """returns the resources from the wwwpy library itself"""
-    return from_filesystem(parent, relative_to=parent.parent)
+    return from_directory(parent, relative_to=parent.parent)
