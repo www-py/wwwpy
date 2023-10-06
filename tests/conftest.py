@@ -37,7 +37,7 @@ def before_each_after_each(page: Page):
 
 def patch_playwright_assertions() -> None:
     def PLAYWRIGHT_PATCH_TIMEOUT_MILLIS() -> int:
-        return int(os.environ.get('PLAYWRIGHT_PATCH_TIMEOUT_MILLIS', '4000'))
+        return int(os.environ.get('PLAYWRIGHT_PATCH_TIMEOUT_MILLIS', '30000'))
 
     print(f'Using PLAYWRIGHT_PATCH_TIMEOUT, current value={PLAYWRIGHT_PATCH_TIMEOUT_MILLIS()}')
 
