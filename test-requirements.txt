@@ -75,7 +75,7 @@ pytest-base-url==2.0.0
     # via pytest-playwright
 pytest-playwright==0.3.2
     # via wwwpy (pyproject.toml)
-pytest-xvirt==0.1.2
+pytest-xvirt==0.1.10
     # via wwwpy (pyproject.toml)
 python-slugify==6.1.2
     # via pytest-playwright
