@@ -4,10 +4,10 @@ from pathlib import Path
 from queue import Queue
 from threading import Thread
 
-from playwright.sync_api import Page, sync_playwright
+from playwright.sync_api import sync_playwright
 from xvirt import XVirt
 
-from tests.playwright import playwright_setup_page_logger
+from wwwpy.server.pytest.playwright import playwright_setup_page_logger
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.http import HttpRoute, HttpRequest, HttpResponse
 from wwwpy.resources import library_resources, from_directory, StringResource
