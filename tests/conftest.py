@@ -35,7 +35,7 @@ pytest_plugins = ['pytester']
 
 playwright_patch_timeout()
 
-parent_remote = str(_file_parent / 'remote')
+parent_remote = _file_parent / 'remote'
 
 
 def pytest_xvirt_setup():
@@ -49,7 +49,7 @@ class XVirtImpl(XVirt):
         self.close_pw = threading.Event()
 
     def virtual_path(self) -> str:
-        return parent_remote
+        return str(parent_remote)
 
     def _http_handler(self, req: HttpRequest) -> HttpResponse:
         print(f'server side xvirt_notify_handler({req})')
@@ -83,7 +83,7 @@ class XVirtImpl(XVirt):
             .replace('#xvirt_notify_path_marker#', '/xvirt_notify')
 
         resources = [library_resources(),
-                     from_directory(_file_parent / 'remote', relative_to=_file_parent.parent),
+                     from_directory(parent_remote, relative_to=_file_parent.parent),
                      [
                          # StringResource('tests/__init__.py', ''),
                          # StringResource('pytest.ini', ''),
