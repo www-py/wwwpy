@@ -4,7 +4,7 @@ import pytest
 from playwright.sync_api import Page
 
 from wwwpy.server.pytest.playwright import playwright_patch_timeout, playwright_setup_page_logger
-from tests.xvirt_impl import XVirtImpl
+from wwwpy.server.pytest.xvirt_impl import XVirtImpl
 
 _file_parent = Path(__file__).parent
 
