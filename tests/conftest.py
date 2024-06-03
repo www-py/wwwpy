@@ -1,19 +1,15 @@
-import inspect
 import json
-import os
 import threading
 from pathlib import Path
 from queue import Queue
 from threading import Thread
-from types import FunctionType
-from typing import Callable, Any
 
 import pytest
-from playwright.sync_api import Page, PageAssertions, LocatorAssertions, APIResponseAssertions, sync_playwright
+from playwright.sync_api import Page, sync_playwright
 from xvirt import XVirt
 
+from tests.playwright import playwright_patch_timeout
 from wwwpy.bootstrap import bootstrap_routes
-from wwwpy.common import iterlib
 from wwwpy.http import HttpRoute, HttpRequest, HttpResponse
 from wwwpy.resources import library_resources, from_directory, StringResource
 from wwwpy.server import find_port
@@ -35,67 +31,9 @@ def before_each_after_each(page: Page):
     # print("I just experienced that this is not printed if the test fails")
 
 
-def patch_playwright_assertions() -> None:
-    def PLAYWRIGHT_PATCH_TIMEOUT_MILLIS() -> int:
-        return int(os.environ.get('PLAYWRIGHT_PATCH_TIMEOUT_MILLIS', '30000'))
-
-    print(f'Using PLAYWRIGHT_PATCH_TIMEOUT, current value={PLAYWRIGHT_PATCH_TIMEOUT_MILLIS()}')
-
-    # patch playwright assertion timeout to match our configuration
-    # this is temporary solution until playwright supports setting custom timeout for assertions
-    # github issue: https://github.com/microsoft/playwright-python/issues/1358
-
-    def patch_timeout(_member_obj: FunctionType) -> Callable:
-        def patch_timeout_inner(*args, **kwargs) -> Any:
-            timeout_millis = PLAYWRIGHT_PATCH_TIMEOUT_MILLIS()
-            parameters = inspect.signature(_member_obj).parameters
-            timeout_arg_index = list(parameters.keys()).index("timeout")
-            if timeout_arg_index >= 0:
-                if len(args) > timeout_arg_index:
-                    args = list(args)  # type: ignore
-                    args[timeout_arg_index] = timeout_millis  # type: ignore
-                elif 'timeout' not in kwargs:
-                    kwargs["timeout"] = timeout_millis
-            return _member_obj(*args, **kwargs)
-
-        return patch_timeout_inner
-
-    for assertion_cls in [PageAssertions, LocatorAssertions, APIResponseAssertions]:
-        for member_name, member_obj in inspect.getmembers(assertion_cls):
-            if isinstance(member_obj, FunctionType):
-                if "timeout" in inspect.signature(member_obj).parameters:
-                    setattr(assertion_cls, member_name, patch_timeout(member_obj))
-
-
 pytest_plugins = ['pytester']
 
-patch_playwright_assertions()
-
-
-def load_dotenv(env: Path):
-    if not env.exists():
-        return
-
-    for line in env.read_text().splitlines():
-        line = line.strip()
-        if line.startswith('#') or line == '':
-            continue
-        parts = line.split('=', 1)
-        if len(parts) == 2:
-            key, value = tuple(map(lambda s: s.strip(), parts))
-            print(f'.env loading key `{key}`')
-            os.environ[key] = value
-
-
-def pytest_sessionstart(session: pytest.Session):
-    load_dotenv(session.config.rootpath / '.env')
-    print(f'invocation_dir={session.config.invocation_dir}')
-    print(f'rootpath={session.config.rootpath}')
-    pluginmanager = session.config.pluginmanager
-    # _playwright = pluginmanager.get_plugin('playwright')
-    # pluginmanager.unregister(name='playwright') # weird it does not change th
-    pass
-
+playwright_patch_timeout()
 
 parent_remote = str(_file_parent / 'remote')
 
@@ -139,8 +77,6 @@ class XVirtImpl(XVirt):
         self._thread.start()
 
     def _start_webserver(self):
-        from wwwpy.server.configure import _convention
-
         xvirt_notify_route = HttpRoute('/xvirt_notify', self._http_handler)
         # read remote conftest content
         remote_conftest = (_file_parent / 'remote_conftest.py').read_text() \
@@ -172,12 +108,3 @@ class XVirtImpl(XVirt):
 
     def recv_event(self) -> str:
         return self.events.get(timeout=30)
-
-
-# TODO eseguendo il test su tests dice 'no tests were found'
-# pero se si esegue su `remote` funziona
-
-
-def pytest_cmdline_main(config):
-    # assert config.invocation_dir == ''
-    return None
