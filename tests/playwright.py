@@ -3,7 +3,13 @@ import os
 from types import FunctionType
 from typing import Callable, Any
 
-from playwright.sync_api import PageAssertions, LocatorAssertions, APIResponseAssertions
+from playwright.sync_api import PageAssertions, LocatorAssertions, APIResponseAssertions, Page
+
+
+def playwright_setup_page_logger(page: Page):
+    page.on('console', lambda msg: print(f'console [{msg.type}] ==== {msg.text}'))
+    sep = '\n' + ('=' * 60) + '\n'
+    page.on('pageerror', lambda exc: print(f'{sep}uncaught exception through pageerror: {sep}{exc}{sep}'))
 
 
 def playwright_patch_timeout() -> None:
