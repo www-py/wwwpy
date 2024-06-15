@@ -6,7 +6,7 @@ from pyodide.ffi import create_proxy
 
 
 class ComponentMetadata:
-    def __init__(self, tag_name: str | None, clazz=None, auto_define=True):
+    def __init__(self, tag_name: str | None = None, clazz=None, auto_define=True):
         if clazz is not None:
             if not issubclass(clazz, Component):
                 raise Exception(f'clazz must be a subclass of {Component.__name__}')
@@ -29,8 +29,8 @@ class ComponentMetadata:
         if not issubclass(owner, Component):
             raise Exception(f'attribute {name} must be in a subclass of {Component.__name__}')
         self.clazz = owner
-        if self.auto_define:
-            self.define_element()
+        # if self.auto_define:
+        #     self.define_element()
 
     def define_element(self):
         if self.registered:
@@ -57,7 +57,13 @@ class Component:
     def __init_subclass__(cls):
         super().__init_subclass__()
         if cls.component_metadata is None:
-            cls.component_metadata = ComponentMetadata(None, clazz=cls)
+            cls.component_metadata = ComponentMetadata(clazz=cls)
+
+        for name, value in cls.__dict__.items():
+            if isinstance(value, attribute):
+                cls.component_metadata.observed_attributes.add(name)
+
+        if cls.component_metadata.auto_define:
             cls.component_metadata.define_element()
 
     def __init__(self, element_from_js=None):
@@ -90,7 +96,6 @@ class $ClassName extends HTMLElement {
     static observedAttributes = [ $observedAttributes ];
     constructor(python_instance) {
         super();
-        //throw Exception('python_instance=' + python_instance);
         if (python_instance) 
             this._py = python_instance;
         else 
@@ -106,3 +111,20 @@ class $ClassName extends HTMLElement {
 customElements.define('$tagName', $ClassName);
 window.$ClassName = $ClassName;
 """
+
+
+class attribute:
+
+    def __init__(self):
+        self.name = None
+
+    def __set_name__(self, owner, name):
+        if not issubclass(owner, Component):
+            raise Exception(f'attribute {name} must be in a subclass of {Component.__qualname__}')
+        self.name = name
+
+    def __get__(self, obj, objtype=None):
+        return obj.element.getAttribute(self.name)
+
+    def __set__(self, obj, value):
+        obj.element.setAttribute(self.name, value)
