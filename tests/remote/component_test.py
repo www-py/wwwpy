@@ -4,8 +4,7 @@ from wwwpy.remote.component import Component, Metadata, attribute
 
 
 def test_component_metadata():
-    class Comp1(Component):
-        component_metadata = Metadata('comp-1')
+    class Comp1(Component, metadata=Metadata('comp-1')): ...
 
     assert Comp1.component_metadata.clazz == Comp1
     assert 'comp' in Comp1.component_metadata.tag_name
@@ -22,8 +21,7 @@ def test_simple_html():
 
 
 def test_define_custom_metadata():
-    class Comp1(Component):
-        component_metadata = Metadata('tag-1')
+    class Comp1(Component, metadata=Metadata('tag-1')): ...
 
     assert Comp1.component_metadata.clazz == Comp1
     assert Comp1.component_metadata.tag_name == 'tag-1'
@@ -31,15 +29,13 @@ def test_define_custom_metadata():
 
 
 def test_define_custom_metadata__auto_define_False():
-    class Comp1(Component):
-        component_metadata = Metadata('tag-1', auto_define=False)
+    class Comp1(Component, metadata=Metadata('tag-1', auto_define=False)): ...
 
     assert not Comp1.component_metadata.registered
 
 
 def test_no_custom_metadata__auto_define_True():
-    class Comp1(Component):
-        pass
+    class Comp1(Component): ...
 
     assert Comp1.component_metadata.registered
 
@@ -87,8 +83,7 @@ def test_observed_attributes__with_default_metadata():
 def test_observed_attributes__with_custom_metadata():
     calls = []
 
-    class Comp4(Component):
-        component_metadata = Metadata('comp-4')
+    class Comp4(Component, metadata=Metadata('comp-4')):
         text = attribute()
 
         def attributeChangedCallback(self, name, oldValue, newValue):
@@ -102,6 +97,7 @@ def test_observed_attributes__with_custom_metadata():
 
     comp.element.setAttribute('text', 'def')
     assert calls == [('text', 'abc', 'def')]
+
 
 def to_js(o):
     import js

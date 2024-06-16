@@ -54,9 +54,14 @@ class Component:
     component_metadata: Metadata = None
     element: HTMLElement = None
 
-    def __init_subclass__(cls):
-        super().__init_subclass__()
-        if cls.component_metadata is None:
+    def __init_subclass__(cls, metadata: Metadata = None, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if metadata is not None:
+            cls.component_metadata = metadata
+            if metadata.clazz is None:
+                metadata.clazz = cls
+            cls.component_metadata = metadata
+        elif cls.component_metadata is None:
             cls.component_metadata = Metadata(clazz=cls)
 
         for name, value in cls.__dict__.items():
