@@ -23,5 +23,11 @@ playwright_patch_timeout()
 parent_remote = _file_parent / 'remote'
 
 
-def pytest_xvirt_setup():
-    return XVirtImpl(parent_remote, _file_parent.parent)
+def pytest_addoption(parser):
+    parser.addoption("--headful", action="store_true", default=False, help="run tests in headfull mode")
+
+
+def pytest_xvirt_setup(config):
+    headfull = config.getoption("--headful")
+    # Now you can use the headfull variable in your setup
+    return XVirtImpl(parent_remote, _file_parent.parent, headless=not headfull)
