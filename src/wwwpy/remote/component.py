@@ -5,7 +5,7 @@ from js import window, HTMLElement
 from pyodide.ffi import create_proxy
 
 
-class ComponentMetadata:
+class Metadata:
     def __init__(self, tag_name: str | None = None, clazz=None, auto_define=True):
         if clazz is not None:
             if not issubclass(clazz, Component):
@@ -51,13 +51,13 @@ class ComponentMetadata:
 
 
 class Component:
-    component_metadata: ComponentMetadata = None
+    component_metadata: Metadata = None
     element: HTMLElement = None
 
     def __init_subclass__(cls):
         super().__init_subclass__()
         if cls.component_metadata is None:
-            cls.component_metadata = ComponentMetadata(clazz=cls)
+            cls.component_metadata = Metadata(clazz=cls)
 
         for name, value in cls.__dict__.items():
             if isinstance(value, attribute):
