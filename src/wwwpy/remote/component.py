@@ -56,13 +56,11 @@ class Component:
 
     def __init_subclass__(cls, metadata: Metadata = None, **kwargs):
         super().__init_subclass__(**kwargs)
-        if metadata is not None:
-            cls.component_metadata = metadata
-            if metadata.clazz is None:
-                metadata.clazz = cls
-            cls.component_metadata = metadata
-        elif cls.component_metadata is None:
-            cls.component_metadata = Metadata(clazz=cls)
+        if metadata is None:
+            metadata = Metadata(clazz=cls)
+        cls.component_metadata = metadata
+        if metadata.clazz is None:
+            metadata.clazz = cls
 
         for name, value in cls.__dict__.items():
             if isinstance(value, attribute):
