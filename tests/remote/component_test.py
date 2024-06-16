@@ -99,23 +99,42 @@ def test_observed_attributes__with_custom_metadata():
     assert calls == [('text', 'abc', 'def')]
 
 
-def test_element_attribute():
-    class Comp5(Component):
-        div1: HTMLElement = element()
-        foo1: HTMLElement = element()
+class Comp5(Component):
+    div1: HTMLElement = element()
+    foo1: HTMLElement = element()
 
-        def init_component(self):
-            self.element.innerHTML = '<div name="div1">789</div>'
+    def init_component(self):
+        self.element.innerHTML = '<div name="div1">789</div>'
 
-    comp = Comp5()
-    assert comp.div1.innerHTML == '789'
 
-    try:
-        foo1 = comp.foo1
-        assert False, 'Should raise AttributeError'
-    except AttributeError:
-        pass
+class TestElementAttribute:
 
+    def test_HTMLElement_attribute(self):
+
+        comp = Comp5()
+        assert comp.div1.innerHTML == '789'
+
+        try:
+            foo1 = comp.foo1
+            assert False, 'Should raise AttributeError'
+        except AttributeError:
+            pass
+
+    def test_Component_attribute(self):
+        class Comp6(Component , metadata=Metadata('comp-6')):
+            div1: HTMLElement = element()
+
+            def init_component(self):
+                self.element.innerHTML = '<div name="div1">abc</div>'
+
+        class Comp7(Component):
+            c6: Comp6 = element()
+
+            def init_component(self):
+                self.element.innerHTML = '<comp-6 name="c6"></comp-6>'
+
+        comp7 = Comp7()
+        assert comp7.c6.div1.innerHTML == 'abc'
 
 def to_js(o):
     import js

@@ -153,4 +153,7 @@ class element:
         self.name = name
 
     def __get__(self, obj: Component, objtype=None):
-        return obj.find_element(self.name)
+        target = obj.find_element(self.name)
+        if hasattr(target, '_py'):
+            return target._py
+        return target
