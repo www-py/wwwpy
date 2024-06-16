@@ -1,6 +1,6 @@
-from js import document
+from js import document, HTMLElement
 
-from wwwpy.remote.component import Component, Metadata, attribute
+from wwwpy.remote.component import Component, Metadata, attribute, element
 
 
 def test_component_metadata():
@@ -97,6 +97,24 @@ def test_observed_attributes__with_custom_metadata():
 
     comp.element.setAttribute('text', 'def')
     assert calls == [('text', 'abc', 'def')]
+
+
+def test_element_attribute():
+    class Comp5(Component):
+        div1: HTMLElement = element()
+        foo1: HTMLElement = element()
+
+        def init_component(self):
+            self.element.innerHTML = '<div name="div1">789</div>'
+
+    comp = Comp5()
+    assert comp.div1.innerHTML == '789'
+
+    try:
+        foo1 = comp.foo1
+        assert False, 'Should raise AttributeError'
+    except AttributeError:
+        pass
 
 
 def to_js(o):

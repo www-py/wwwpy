@@ -92,6 +92,15 @@ class Component:
     def attributeChangedCallback(self, name: str, oldValue: str, newValue: str):
         pass
 
+    def find_element(self, name: str):
+        selector = self.element.querySelector(f'[name="{name}"]')
+        if selector is None:
+            raise ElementNotFound(f'Name: [{name}] html: [{self.element.outerHTML}]')
+        return selector
+
+
+class ElementNotFound(AttributeError): pass
+
 
 # language=javascript
 _custom_element_class_template = """
@@ -126,8 +135,22 @@ class attribute:
             raise Exception(f'attribute {name} must be in a subclass of {Component.__qualname__}')
         self.name = name
 
-    def __get__(self, obj, objtype=None):
+    def __get__(self, obj: Component, objtype=None):
         return obj.element.getAttribute(self.name)
 
-    def __set__(self, obj, value):
+    def __set__(self, obj: Component, value):
         obj.element.setAttribute(self.name, value)
+
+
+class element:
+
+    def __init__(self):
+        self.name = None
+
+    def __set_name__(self, owner, name):
+        if not issubclass(owner, Component):
+            raise Exception(f'attribute {name} must be in a subclass of {Component.__qualname__}')
+        self.name = name
+
+    def __get__(self, obj: Component, objtype=None):
+        return obj.find_element(self.name)
