@@ -104,7 +104,14 @@ class Comp5(Component):
     foo1: HTMLElement = element()
 
     def init_component(self):
-        self.element.innerHTML = '<div name="div1">789</div>'
+        self.element.innerHTML = '<div data-name="div1">789</div>'
+
+
+class Comp6(Component, metadata=Metadata('comp-6')):
+    div1: HTMLElement = element()
+
+    def init_component(self):
+        self.element.innerHTML = '<div data-name="div1">abc</div>'
 
 
 class TestElementAttribute:
@@ -121,20 +128,33 @@ class TestElementAttribute:
             pass
 
     def test_Component_attribute(self):
-        class Comp6(Component , metadata=Metadata('comp-6')):
-            div1: HTMLElement = element()
-
-            def init_component(self):
-                self.element.innerHTML = '<div name="div1">abc</div>'
 
         class Comp7(Component):
             c6: Comp6 = element()
 
             def init_component(self):
-                self.element.innerHTML = '<comp-6 name="c6"></comp-6>'
+                self.element.innerHTML = '<comp-6 data-name="c6"></comp-6>'
 
         comp7 = Comp7()
         assert comp7.c6.div1.innerHTML == 'abc'
+
+    def test_Component_attribute_type(self):
+        class CompUnused(Component):
+            ...
+
+        class CompWrongType(Component):
+            c6: CompUnused = element()  # this is actually a Comp6!
+
+            def init_component(self):
+                self.element.innerHTML = '<comp-6 data-name="c6"></comp-6>'
+
+        try:
+            comp = CompWrongType()
+            nop = comp.c6
+            assert False, 'Should raise a TypeError'
+        except TypeError:
+            pass
+
 
 def to_js(o):
     import js

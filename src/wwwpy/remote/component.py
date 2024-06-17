@@ -92,14 +92,39 @@ class Component:
     def attributeChangedCallback(self, name: str, oldValue: str, newValue: str):
         pass
 
-    def find_element(self, name: str):
-        selector = self.element.querySelector(f'[name="{name}"]')
+    def find_element_field(self, name: str):
+        selector = self.element.querySelector(f'[data-name="{name}"]')
         if selector is None:
             raise ElementNotFound(f'Name: [{name}] html: [{self.element.outerHTML}]')
+        if hasattr(selector, '_py'):
+            selector = selector._py
+        self._check_type(name, selector)
         return selector
 
+    def _check_type(self, name, selector):
+        import inspect
+        annotations = inspect.get_annotations(self.__class__)
+
+        expected_type = annotations.get(name, None)
+        if expected_type is None:
+            # raise Exception(f'No type defined for field: {name}')
+            return
+        # raise Exception(f'type of expected_type: {type(expected_type)}')
+        # test if expected_type is a class
+        if not inspect.isclass(expected_type):
+            return
+        if not issubclass(expected_type, Component):
+            return
+        # raise Exception(f'Expected type: {expected_type} for field: {name} but found: {type(selector)}')
+        isinst = not isinstance(selector, expected_type)
+        # raise Exception(f'isinst: {isinst}')
+        if isinst:
+            raise WrongTypeDefinition(f'Expected type: {expected_type} for field: {name} but found: {type(selector)}')
 
 class ElementNotFound(AttributeError): pass
+
+
+class WrongTypeDefinition(TypeError): pass
 
 
 # language=javascript
@@ -153,7 +178,4 @@ class element:
         self.name = name
 
     def __get__(self, obj: Component, objtype=None):
-        target = obj.find_element(self.name)
-        if hasattr(target, '_py'):
-            return target._py
-        return target
+        return obj.find_element_field(self.name)
