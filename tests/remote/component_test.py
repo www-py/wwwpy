@@ -155,6 +155,21 @@ class TestElementAttribute:
         except TypeError:
             pass
 
+    def test_define_new_root(self):
+        class Comp8(Component):
+            root: HTMLElement
+            div1: HTMLElement = element()
+
+            def root_element(self):
+                return self.root
+
+            def init_component(self):
+                self.root = document.createElement('div')
+                self.root.innerHTML = '<div data-name="div1">root</div>'
+
+        comp = Comp8()
+        assert comp.div1.innerHTML == 'root'
+
 
 def to_js(o):
     import js

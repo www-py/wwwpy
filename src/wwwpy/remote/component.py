@@ -92,10 +92,14 @@ class Component:
     def attributeChangedCallback(self, name: str, oldValue: str, newValue: str):
         pass
 
+    def root_element(self):
+        return self.element
+
     def find_element_field(self, name: str):
-        selector = self.element.querySelector(f'[data-name="{name}"]')
+        root = self.root_element()
+        selector = root.querySelector(f'[data-name="{name}"]')
         if selector is None:
-            raise ElementNotFound(f'Name: [{name}] html: [{self.element.outerHTML}]')
+            raise ElementNotFound(f'Not found data-name: [{name}] html: [{root.outerHTML}]')
         if hasattr(selector, '_py'):
             selector = selector._py
         self._check_type(name, selector)
