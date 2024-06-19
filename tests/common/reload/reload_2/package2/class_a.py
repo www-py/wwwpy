@@ -1,5 +1,5 @@
 print('loading ClassA... 123')
-from tests.common.reload.reload_2.class_b import ClassB
+from tests.common.reload.reload_2.package2.class_b import ClassB
 
 
 class ClassA:
