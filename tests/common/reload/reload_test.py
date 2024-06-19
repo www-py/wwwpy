@@ -12,8 +12,13 @@ from pathlib import Path
 
 def test_reload__component(pytester):
     # GIVEN
-    content = Path(__file__).parent / 'reload_1.py'
-    (pytester.path / 'reload_1_test.py').write_text(content.read_text())
+    # copy all the content of test_files to the pytester path
+    test_files = Path(__file__).parent / 'reload_1'
+    for file in test_files.iterdir():
+        if file.is_dir():
+            continue
+        filename = file.name.replace('_test_disable.py','_test.py')
+        (pytester.path / filename).write_text(file.read_text())
 
     # WHEN
     result = pytester.runpytest()
