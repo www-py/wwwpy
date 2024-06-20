@@ -4,6 +4,8 @@ import js
 from js import window, HTMLElement
 from pyodide.ffi import create_proxy
 
+namespace = "window.python_custom_elements"
+
 
 class Metadata:
     def __init__(self, tag_name: str | None = None, clazz=None, auto_define=True):
@@ -16,6 +18,7 @@ class Metadata:
                 tag_name = ('wwwpy-auto-' + fully_qualified_class_name.lower()
                             .replace('<', '-')
                             .replace('>', '-')
+                            .replace('.', '-')
                             )
 
         self.tag_name = tag_name
@@ -35,18 +38,27 @@ class Metadata:
     def define_element(self):
         if self.registered:
             return
-        js_class_name = self.clazz.__name__
-        self._js_class_name = js_class_name
-        setattr(window, f'python_constructor_{js_class_name}', self.clazz)
+        if js.eval(f'typeof {namespace}') == 'undefined':
+            js.eval(namespace + ' = {}')
 
-        obs_attr = ', '.join(f'"{attr}"' for attr in self.observed_attributes)
-        code = (_custom_element_class_template
-                .replace('$ClassName', js_class_name)
-                .replace('$tagName', self.tag_name)
-                .replace('$observedAttributes', obs_attr)
-                )
-        self._custom_element_class_template = code
-        js.eval(code)
+        js_class_name = self.tag_name.replace('-', '_').replace('.', '_')
+        self._js_class_name = js_class_name
+
+        pc = js.eval(namespace)
+        already_defined = hasattr(pc, js_class_name)
+        setattr(pc, js_class_name, self.clazz)  # set the python constructor, in any case
+        if not already_defined:
+            obs_attr = ', '.join(f'"{attr}"' for attr in self.observed_attributes)
+            code = (_custom_element_class_template
+                    .replace('$ClassName', js_class_name)
+                    .replace('$tagName', self.tag_name)
+                    .replace('$observedAttributes', obs_attr)
+                    .replace('$namespace', namespace)
+                    )
+            self._custom_element_class_template = code
+            # raise Exception(code)
+            js.eval(code)
+
         self.registered = True
 
 
@@ -125,6 +137,7 @@ class Component:
         if isinst:
             raise WrongTypeDefinition(f'Expected type: {expected_type} for field: {name} but found: {type(selector)}')
 
+
 class ElementNotFound(AttributeError): pass
 
 
@@ -140,7 +153,7 @@ class $ClassName extends HTMLElement {
         if (python_instance) 
             this._py = python_instance;
         else 
-            this._py = window.python_constructor_$ClassName(this);
+            this._py = $namespace.$ClassName(this);
     }
 
     connectedCallback()    { this._py.connectedCallback(); }

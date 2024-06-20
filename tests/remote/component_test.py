@@ -48,6 +48,13 @@ def test_document_tag_creation():
             self.element.shadowRoot.innerHTML = '<h1>hello123</h1>'
 
     ele = document.createElement(Comp2.component_metadata.tag_name)
+    # import js
+    # js.console.log(ele)
+    # setattr(js.window,'ciccio',ele)
+    # js.eval('debugger;')
+    # count = 0
+    # for _ in range(100000):
+    #     count += 1
     assert 'hello123' in ele.shadowRoot.innerHTML
 
 
@@ -99,24 +106,49 @@ def test_observed_attributes__with_custom_metadata():
     assert calls == [('text', 'abc', 'def')]
 
 
-class Comp5(Component):
-    div1: HTMLElement = element()
-    foo1: HTMLElement = element()
+def test_redefining_an_element_should_be_ok():
+    class Comp10a(Component, metadata=Metadata('comp-10')):
+        pass
 
-    def init_component(self):
-        self.element.innerHTML = '<div data-name="div1">789</div>'
+    class Comp10b(Component, metadata=Metadata('comp-10')):
+        pass
 
 
-class Comp6(Component, metadata=Metadata('comp-6')):
-    div1: HTMLElement = element()
+def test_redefined_element_should_be_ok():
+    class Comp9a(Component, metadata=Metadata('comp-9')):
+        attr1 = attribute()
 
-    def init_component(self):
-        self.element.innerHTML = '<div data-name="div1">abc</div>'
+        def attributeChangedCallback(self, name: str, oldValue: str, newValue: str):
+            self.element.innerHTML = f'Comp9a'
+
+    comp = document.createElement('comp-9')
+    comp.setAttribute('attr1', 'x')
+    assert 'Comp9a' == comp.innerHTML
+
+    class Comp9b(Component, metadata=Metadata('comp-9')):
+        attr1 = attribute()
+
+        def attributeChangedCallback(self, name: str, oldValue: str, newValue: str):
+            self.element.innerHTML = f'Comp9b'
+
+    comp = document.createElement('comp-9')
+    comp.setAttribute('attr1', 'x')
+    assert 'Comp9b' == comp.innerHTML
+
+
+
+
 
 
 class TestElementAttribute:
 
     def test_HTMLElement_attribute(self):
+        class Comp5(Component):
+            div1: HTMLElement = element()
+            foo1: HTMLElement = element()
+
+            def init_component(self):
+                self.element.innerHTML = '<div data-name="div1">789</div>'
 
         comp = Comp5()
         assert comp.div1.innerHTML == '789'
@@ -128,6 +160,11 @@ class TestElementAttribute:
             pass
 
     def test_Component_attribute(self):
+        class Comp6(Component, metadata=Metadata('comp-6')):
+            div1: HTMLElement = element()
+
+            def init_component(self):
+                self.element.innerHTML = '<div data-name="div1">abc</div>'
 
         class Comp7(Component):
             c6: Comp6 = element()
