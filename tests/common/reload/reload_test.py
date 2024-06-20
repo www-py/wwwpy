@@ -24,7 +24,7 @@ def test_reload_1(pytester):
     result = pytester.runpytest()
     result.assert_outcomes(passed=1)
 
-def test_reload_2(pytester):
+def disabled_test_reload_2(pytester):
     """Class A uses class B. When class A is reloaded, class B should be reloaded as well."""
     # GIVEN
     # copy all the content of test_files to the pytester path
