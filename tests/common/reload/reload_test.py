@@ -21,7 +21,7 @@ def test_reload_1(pytester):
         (pytester.path / filename).write_text(file.read_text())
 
     # WHEN
-    result = pytester.runpytest()
+    result = pytester.runpytest('-p', 'no:wwwpy')
     result.assert_outcomes(passed=1)
 
 def disabled_test_reload_2(pytester):
