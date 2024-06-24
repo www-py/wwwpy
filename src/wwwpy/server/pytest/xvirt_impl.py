@@ -7,7 +7,7 @@ from threading import Thread
 from playwright.sync_api import sync_playwright
 from xvirt import XVirt
 
-from wwwpy.server.pytest.playwright import playwright_setup_page_logger, start_playwright
+from wwwpy.server.pytest.playwright import playwright_setup_page_logger, start_playwright, start_playwright_in_thread
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.http import HttpRoute, HttpRequest, HttpResponse
 from wwwpy.resources import library_resources, from_directory, StringResource
@@ -36,16 +36,8 @@ class XVirtImpl(XVirt):
         return HttpResponse('', 'text/plain')
 
     def run(self):
-
         webserver = self._start_webserver()
-
-        def start_remote_with_playwright():
-            playwright = start_playwright(webserver.localhost_url(), self.headless)
-            self.close_pw.wait(30)
-            # playwright.stop()
-
-        self._thread = Thread(target=start_remote_with_playwright, daemon=True)
-        self._thread.start()
+        start_playwright_in_thread(webserver.localhost_url(), self.headless)
 
     def _start_webserver(self):
         xvirt_notify_route = HttpRoute('/xvirt_notify', self._http_handler)

@@ -1,11 +1,21 @@
 import inspect
 import os
+from threading import Thread
 from types import FunctionType
 from typing import Callable, Any
 
-from playwright.sync_api import PageAssertions, LocatorAssertions, APIResponseAssertions, Page, sync_playwright
+from playwright.sync_api import PageAssertions, LocatorAssertions, APIResponseAssertions, Page, sync_playwright, \
+    Playwright
 
 with sync_playwright() as pw: pass  # workaround to run playwright in a new thread. see: https://github.com/microsoft/playwright-python/issues/1685
+
+
+def start_playwright_in_thread(url: str, headless: bool):
+    def in_thread():
+        start_playwright(url, headless)
+
+    thread = Thread(target=in_thread, daemon=True)
+    thread.start()
 
 
 def start_playwright(url: str, headless: bool):
