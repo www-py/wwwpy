@@ -7,7 +7,7 @@ from threading import Thread
 from playwright.sync_api import sync_playwright
 from xvirt import XVirt
 
-from wwwpy.server.pytest.playwright import playwright_setup_page_logger
+from wwwpy.server.pytest.playwright import playwright_setup_page_logger, start_playwright
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.http import HttpRoute, HttpRequest, HttpResponse
 from wwwpy.resources import library_resources, from_directory, StringResource
@@ -36,19 +36,13 @@ class XVirtImpl(XVirt):
         return HttpResponse('', 'text/plain')
 
     def run(self):
-        with sync_playwright() as pw: pass  # workaround to run playwright in a new thread. see: https://github.com/microsoft/playwright-python/issues/1685
 
         webserver = self._start_webserver()
 
         def start_remote_with_playwright():
-            from playwright.sync_api import sync_playwright
-            p = sync_playwright().start()
-            browser = p.chromium.launch(headless=self.headless)
-            page = browser.new_page()
-            playwright_setup_page_logger(page)
-            page.goto(webserver.localhost_url())
+            playwright = start_playwright(webserver.localhost_url(), self.headless)
             self.close_pw.wait(30)
-            # p.stop()
+            # playwright.stop()
 
         self._thread = Thread(target=start_remote_with_playwright, daemon=True)
         self._thread.start()

@@ -3,7 +3,18 @@ import os
 from types import FunctionType
 from typing import Callable, Any
 
-from playwright.sync_api import PageAssertions, LocatorAssertions, APIResponseAssertions, Page
+from playwright.sync_api import PageAssertions, LocatorAssertions, APIResponseAssertions, Page, sync_playwright
+
+with sync_playwright() as pw: pass  # workaround to run playwright in a new thread. see: https://github.com/microsoft/playwright-python/issues/1685
+
+
+def start_playwright(url: str, headless: bool):
+    playwright = sync_playwright().start()
+    browser = playwright.chromium.launch(headless=headless)
+    page = browser.new_page()
+    playwright_setup_page_logger(page)
+    page.goto(url)
+    return playwright
 
 
 def playwright_setup_page_logger(page: Page):
