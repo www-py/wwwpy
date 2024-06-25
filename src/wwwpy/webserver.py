@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from time import sleep
 
 from wwwpy.http import HttpRoute
+from wwwpy.http_sansio import SansIOHttpRoute
 from wwwpy.server import wait_url
 
 
@@ -25,13 +28,13 @@ class Webserver(ABC):
         self.wait_ready()
         return self
 
-    def set_http_route(self, *http_routes: HttpRoute) -> 'Webserver':
+    def set_http_route(self, *http_routes: HttpRoute | SansIOHttpRoute) -> 'Webserver':
         for http_route in http_routes:
             self._setup_route(http_route)
         return self
 
     @abstractmethod
-    def _setup_route(self, route: HttpRoute) -> None:
+    def _setup_route(self, route: HttpRoute | SansIOHttpRoute) -> None:
         pass
 
     @abstractmethod

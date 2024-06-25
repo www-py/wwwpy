@@ -8,6 +8,7 @@ from typing import Optional, Callable, Dict, AnyStr, Tuple, Any
 from urllib.parse import urlparse, parse_qs
 
 from wwwpy.http import HttpRoute, HttpResponse, HttpRequest
+from wwwpy.http_sansio import SansIOHttpRoute, SansIOHttpRequest, SansIOHttpResponse
 from ..webserver import Webserver
 from ..webserver import wait_forever
 
@@ -16,9 +17,9 @@ class WsPythonEmbedded(Webserver):
     def __init__(self) -> None:
         super().__init__()
         self.thread: Thread | None = None
-        self._routes: Dict[str, HttpRoute] = {}
+        self._routes: Dict[str, HttpRoute | SansIOHttpRoute] = {}
 
-    def _setup_route(self, route: HttpRoute) -> None:
+    def _setup_route(self, route: HttpRoute | SansIOHttpRoute) -> None:
         self._routes[route.path] = route
 
     def _start_listen(self) -> None:
@@ -40,14 +41,29 @@ class WsPythonEmbedded(Webserver):
             nf = HTTPStatus.NOT_FOUND
             request.send_bytes(bytes(nf.phrase, 'utf8'), code=nf.value)
         else:
-            req = HttpRequest(request.command, request.get_body(), request.get_content_type())
-            resp = route.callback(req)
-            content = resp.content
-            if isinstance(content, str):
-                content = bytes(content, 'utf8')
-            if not isinstance(content, bytes):
-                raise Exception(f'type of the content not supported: {type(content)}')
-            request.send_bytes(content, content_type=resp.content_type)
+            if isinstance(route, HttpRoute):
+                req = HttpRequest(request.command, request.get_body(), request.get_content_type())
+                resp = route.callback(req)
+                content = resp.content
+                if isinstance(content, str):
+                    content = bytes(content, 'utf8')
+                if not isinstance(content, bytes):
+                    raise Exception(f'type of the content not supported: {type(content)}')
+                request.send_bytes(content, content_type=resp.content_type)
+            elif isinstance(route, SansIOHttpRoute):
+                sansio_request = SansIOHttpRequest(request.command, request.get_content_type())
+                protocol = route.protocol_factory(sansio_request)
+
+                def send_request(data: SansIOHttpResponse | bytes | None):
+                    if isinstance(data, SansIOHttpResponse):
+                        request.send_bytes(content=None, content_type=data.content_type)
+                    elif isinstance(data, bytes):
+                        request.wfile.write(data)
+                    elif data is None:
+                        pass
+                        # request.wfile.close()
+
+                protocol.on_send(send_request)
         return True
 
 
@@ -85,16 +101,18 @@ class RequestHandler(SimpleHTTPRequestHandler):
         params = {k: v[0] for k, v in di.items()}
         return params, rpath
 
-    def send_bytes(self, content: bytes, code: int = 200, content_type: str = 'text/plain') -> int:
+    def send_bytes(self, content: bytes | None, code: int = 200, content_type: str = 'text/plain') -> None:
         self.protocol_version = "HTTP/1.1"
         self.send_response(code)
         self.send_header("Content-Type", content_type)
-        self.send_header("Content-Length", str(len(content)))
+        if content is not None:
+            self.send_header("Content-Length", str(len(content)))
         self.send_header("Access-Control-Allow-Headers", "*")
         self.send_header("Access-Control-Allow-Methods", "*")
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
-        return self.wfile.write(content)
+        if content is not None:
+            self.wfile.write(content)
 
     def serve_file(self, directory: str, filename: str) -> None:
         self.directory = directory
