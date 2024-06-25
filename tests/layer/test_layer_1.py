@@ -92,22 +92,19 @@ class TestSansIOHttpRoute:
     @for_all_webservers()
     def test_webservers_post(self, webserver: Webserver):
         # GIVEN
+        received = []
 
         class SimpleProtocol(SansIOHttpProtocol):
-            received = None
 
             def on_send(self, send: Callable[[SansIOHttpResponse | bytes | None], None]) -> None:
                 send(SansIOHttpResponse('text/plain'))
                 send(b'hello')
                 send(None)
-                self.received = []
 
             def receive(self, data: bytes | None) -> None:
-                self.received.append(data)
+                received.append(data)
 
-        protocol = SimpleProtocol()
-
-        webserver.set_http_route(SansIOHttpRoute('/route1', lambda req: protocol)).start_listen()
+        webserver.set_http_route(SansIOHttpRoute('/route1', lambda req: SimpleProtocol())).start_listen()
 
         url = webserver.localhost_url()
 
@@ -116,11 +113,12 @@ class TestSansIOHttpRoute:
 
         # THEN
         assert actual_response == HttpResponse('hello', 'text/plain')
-        assert protocol.received == [b'post-body', None]
+        assert received == [b'post-body', None]
 
     @for_all_webservers()
     def test_webservers_post__response_delayed(self, webserver: Webserver):
         # GIVEN
+        received = []
 
         class SimpleProtocol(SansIOHttpProtocol):
             received = None
@@ -128,7 +126,6 @@ class TestSansIOHttpRoute:
             def on_send(self, send: Callable[[SansIOHttpResponse | bytes | None], None]) -> None:
                 send(SansIOHttpResponse('text/plain'))
                 send(b'hello')
-                self.received = []
 
                 def continue_protocol():
                     sleep(0.1)
@@ -139,11 +136,9 @@ class TestSansIOHttpRoute:
                 request_thread.start()
 
             def receive(self, data: bytes | None) -> None:
-                self.received.append(data)
+                received.append(data)
 
-        protocol = SimpleProtocol()
-
-        webserver.set_http_route(SansIOHttpRoute('/route1', lambda req: protocol)).start_listen()
+        webserver.set_http_route(SansIOHttpRoute('/route1', lambda req: SimpleProtocol())).start_listen()
 
         url = webserver.localhost_url()
 
@@ -152,4 +147,4 @@ class TestSansIOHttpRoute:
 
         # THEN
         assert actual_response == HttpResponse('hello world!', 'text/plain')
-        assert protocol.received == [b'post-body', None]
+        assert received == [b'post-body', None]
