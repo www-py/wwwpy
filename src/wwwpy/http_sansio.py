@@ -48,8 +48,11 @@ class SansIOHttpProtocol:
         The client code is responsible for sending the bytes to the network.
         The send() callback should be called in three phases:
         1. SansIOHttpResponse, to signal the start of the response, this can be called only once.
-        2. bytes, the protocol can call this as many times as needed.
-        3. None, when the protocol is terminated, this signals the IO implementation to close the connection.
+        2. bytes, the protocol can call this as many times as it pleases (0+).
+        3. None, when the protocol is terminated, this signals the IO implementation to close the connection. This step is mandatory, otherwise the connection will be kept open indefinitely.
+
+        The IO implementation should be ready to receive send() calls even before on_send() is terminated;
+        this is because the protocol implementation can call send() immediately in the on_send() call.
         """
 
     def receive(self, data: bytes | None) -> None:

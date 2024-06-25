@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import threading
 from http import HTTPStatus
+from time import sleep
 from typing import Callable
 
 from tests import for_all_webservers
@@ -69,9 +71,9 @@ class TestSansIOHttpRoute:
                 requests.append(request)
 
             def on_send(self, send: Callable[[SansIOHttpResponse | bytes | None], None]) -> None:
-                self.send = send
-                self.send(SansIOHttpResponse(self.content_type))
-                self.send(self.response.encode('utf8'))
+                send(SansIOHttpResponse(self.content_type))
+                send(self.response.encode('utf8'))
+                send(None)
 
             def receive(self, data: bytes | None) -> None:
                 raise Exception('This should not be called, it is a GET request, so no bytes should be received.')
@@ -92,13 +94,12 @@ class TestSansIOHttpRoute:
         # GIVEN
 
         class SimpleProtocol(SansIOHttpProtocol):
-            send = None
             received = None
 
             def on_send(self, send: Callable[[SansIOHttpResponse | bytes | None], None]) -> None:
-                self.send = send
-                self.send(SansIOHttpResponse('text/plain'))
-                self.send('hello'.encode('utf8'))
+                send(SansIOHttpResponse('text/plain'))
+                send(b'hello')
+                send(None)
                 self.received = []
 
             def receive(self, data: bytes | None) -> None:
@@ -115,4 +116,40 @@ class TestSansIOHttpRoute:
 
         # THEN
         assert actual_response == HttpResponse('hello', 'text/plain')
+        assert protocol.received == [b'post-body', None]
+
+    @for_all_webservers()
+    def test_webservers_post__response_delayed(self, webserver: Webserver):
+        # GIVEN
+
+        class SimpleProtocol(SansIOHttpProtocol):
+            received = None
+
+            def on_send(self, send: Callable[[SansIOHttpResponse | bytes | None], None]) -> None:
+                send(SansIOHttpResponse('text/plain'))
+                send(b'hello')
+                self.received = []
+
+                def continue_protocol():
+                    sleep(0.1)
+                    send(b' world!')
+                    send(None)
+
+                request_thread = threading.Thread(target=continue_protocol)
+                request_thread.start()
+
+            def receive(self, data: bytes | None) -> None:
+                self.received.append(data)
+
+        protocol = SimpleProtocol()
+
+        webserver.set_http_route(SansIOHttpRoute('/route1', lambda req: protocol)).start_listen()
+
+        url = webserver.localhost_url()
+
+        # WHEN
+        actual_response = sync_fetch_response(url + '/route1', method='POST', data='post-body')
+
+        # THEN
+        assert actual_response == HttpResponse('hello world!', 'text/plain')
         assert protocol.received == [b'post-body', None]

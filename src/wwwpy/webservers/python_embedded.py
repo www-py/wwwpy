@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import threading
 from functools import partial
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -53,6 +54,7 @@ class WsPythonEmbedded(Webserver):
             elif isinstance(route, SansIOHttpRoute):
                 sansio_request = SansIOHttpRequest(request.command, request.get_content_type())
                 protocol = route.protocol_factory(sansio_request)
+                protocol_terminated = threading.Event()
 
                 def send_request(data: SansIOHttpResponse | bytes | None):
                     if isinstance(data, SansIOHttpResponse):
@@ -60,7 +62,7 @@ class WsPythonEmbedded(Webserver):
                     elif isinstance(data, bytes):
                         request.wfile.write(data)
                     elif data is None:
-                        pass
+                        protocol_terminated.set()
                         # request.wfile.close()
 
                 # tell the protocol who to call when it wants to send data
@@ -70,6 +72,8 @@ class WsPythonEmbedded(Webserver):
                     protocol.receive(body)
                 # the following is not right; the body above should loop and
                 # coordinate also with send_request(None) above
+                while not protocol_terminated.wait(0.5):
+                    pass
                 protocol.receive(None)
 
         return True
