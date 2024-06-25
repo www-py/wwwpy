@@ -73,7 +73,7 @@ class TestSansIOHttpRoute:
                 self.send(SansIOHttpResponse(self.content_type))
                 self.send(self.response.encode('utf8'))
 
-            def receive(self, data: SansIOHttpRequest | bytes | None) -> None:
+            def receive(self, data: bytes | None) -> None:
                 raise Exception('This should not be called, it is a GET request, so no bytes should be received.')
 
         webserver.set_http_route(SansIOHttpRoute('/b', lambda req: SimpleProtocol(req, 'b', 'text/html')))
@@ -86,28 +86,27 @@ class TestSansIOHttpRoute:
         assert sync_fetch_response(url) == HttpResponse('a', 'text/plain')
         assert sync_fetch_response(url + '/b') == HttpResponse('b', 'text/html')
         assert len(requests) == 2
-        # reqa = requests[0]
-        # reqb = requests[1]
-        # assert reqa.method == 'GET'
-        # assert reqa.content_type == 'text/plain'
-        # assert reqb.method == 'GET'
-        # assert reqb.content_type == 'text/html'
-
 
     @for_all_webservers()
     def test_webservers_post(self, webserver: Webserver):
         # GIVEN
-        response_a = HttpResponse('a', 'text/plain')
-        actual_request: HttpRequest | None = None
 
-        def handler(req: HttpRequest) -> HttpResponse:
-            nonlocal actual_request
-            actual_request = req
-            return response_a
+        class SimpleProtocol(SansIOHttpProtocol):
+            send = None
+            received = None
 
-        http_route = HttpRoute('/route1', handler)
+            def on_send(self, send: Callable[[SansIOHttpResponse | bytes | None], None]) -> None:
+                self.send = send
+                self.send(SansIOHttpResponse('text/plain'))
+                self.send('hello'.encode('utf8'))
+                self.received = []
 
-        webserver.set_http_route(http_route).start_listen()
+            def receive(self, data: bytes | None) -> None:
+                self.received.append(data)
+
+        protocol = SimpleProtocol()
+
+        webserver.set_http_route(SansIOHttpRoute('/route1', lambda req: protocol)).start_listen()
 
         url = webserver.localhost_url()
 
@@ -115,6 +114,5 @@ class TestSansIOHttpRoute:
         actual_response = sync_fetch_response(url + '/route1', method='POST', data='post-body')
 
         # THEN
-        assert actual_response == response_a
-        assert actual_request.method == 'POST'
-        assert actual_request.content.decode('utf8') == 'post-body'
+        assert actual_response == HttpResponse('hello', 'text/plain')
+        assert protocol.received == [b'post-body', None]

@@ -47,15 +47,16 @@ class SansIOHttpProtocol:
         """send_bytes will be called when bytes are ready to be sent to the network.
         The client code is responsible for sending the bytes to the network.
         The send() callback should be called in three phases:
-        1. SansIOHttpResponse, to signal the start of the response, this will include the status code and headers
-        2. bytes, the protocol can call this as many times as needed
+        1. SansIOHttpResponse, to signal the start of the response, this can be called only once.
+        2. bytes, the protocol can call this as many times as needed.
         3. None, when the protocol is terminated, this signals the IO implementation to close the connection.
         """
 
-    def receive(self, data: SansIOHttpRequest | bytes | None) -> None:
+    def receive(self, data: bytes | None) -> None:
         """This is called when bytes are available for the protocol, usually as a consequence of
         some bytes received from the network.
-        When the client code detects the end of the stream, it should call receive(None)"""
+        When the IO implementation detects the end of the stream, it should call receive(None) so the protocol implementation is aware of it.
+        """
 
 
 class SansIOHttpRoute(NamedTuple):

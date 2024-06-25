@@ -63,7 +63,15 @@ class WsPythonEmbedded(Webserver):
                         pass
                         # request.wfile.close()
 
+                # tell the protocol who to call when it wants to send data
                 protocol.on_send(send_request)
+                body = request.get_body()
+                if body:
+                    protocol.receive(body)
+                # the following is not right; the body above should loop and
+                # coordinate also with send_request(None) above
+                protocol.receive(None)
+
         return True
 
 
