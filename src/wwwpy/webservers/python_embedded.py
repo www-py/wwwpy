@@ -67,14 +67,16 @@ class WsPythonEmbedded(Webserver):
 
                 # tell the protocol who to call when it wants to send data
                 protocol.on_send(send_request)
-                body = request.get_body()
-                if body:
-                    protocol.receive(body)
-                # the following is not right; the body above should loop and
-                # coordinate also with send_request(None) above
+                if request.headers.get('Transfer-Encoding', '') == 'chunked':
+                    raise Exception('chunked not supported')
+                else:
+                    body = request.get_body()
+                    if body:
+                        protocol.receive(body)
+                protocol.receive(None)
+
                 while not protocol_terminated.wait(0.5):
                     pass
-                protocol.receive(None)
 
         return True
 

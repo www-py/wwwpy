@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import http.client
 import threading
+import urllib.parse
 from http import HTTPStatus
 from time import sleep
 from typing import Callable
@@ -148,3 +150,66 @@ class TestSansIOHttpRoute:
         # THEN
         assert actual_response == HttpResponse('hello world!', 'text/plain')
         assert received == [b'post-body', None]
+
+#     @for_all_webservers()
+#     def test_webservers_streaming_post(self, webserver: Webserver):
+#         # GIVEN
+#         received = []
+#
+#         class SimpleProtocol(SansIOHttpProtocol):
+#             received = None
+#
+#             def on_send(self, send: Callable[[SansIOHttpResponse | bytes | None], None]) -> None:
+#                 send(SansIOHttpResponse('text/plain'))
+#                 send(b'hello')
+#                 send(None)
+#
+#             def receive(self, data: bytes | None) -> None:
+#                 received.append(data)
+#
+#         webserver.set_http_route(SansIOHttpRoute('/route1', lambda req: SimpleProtocol())).start_listen()
+#
+#         url = webserver.localhost_url()
+#
+#         def data_generator():
+#             yield b'I am'
+#             sleep(0.1)
+#             yield b' a stream'
+#             sleep(0.1)
+#             yield b' of data'
+#
+#         # WHEN
+#         actual_response = _streaming_post(url + '/route1', data_generator())
+#
+#         # THEN
+#         assert actual_response == HttpResponse('hello world!', 'text/plain')
+#         assert received[-1] is None
+#         #  cannot make assumptions about buffers, so we join them
+#         bytes_received = b''.join(received[:-1])
+#         assert bytes_received == b'I am a stream of data'
+#
+#
+# def _streaming_post(url, data_gen):
+#     parsed_url = urllib.parse.urlparse(url)
+#     connection = http.client.HTTPConnection(parsed_url.netloc)
+#
+#     # Start the request
+#     connection.putrequest('POST', parsed_url.path)
+#     connection.putheader('Transfer-Encoding', 'chunked')
+#     connection.putheader('Content-Type', 'application/octet-stream')
+#     connection.endheaders()
+#
+#     # Send the data in chunks
+#     for chunk in data_gen:
+#         chunk_length = '{:x}\r\n'.format(len(chunk))
+#         connection.send(chunk_length.encode('utf-8'))
+#         connection.send(chunk)
+#         connection.send(b'\r\n')
+#
+#     # End the request
+#     connection.send(b'0\r\n\r\n')
+#     response = connection.getresponse()
+#     print(response.status, response.reason)
+#     content = response.read().decode()
+#     connection.close()
+#     return HttpResponse(content, response.headers.get_content_type())
