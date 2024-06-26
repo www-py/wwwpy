@@ -21,19 +21,6 @@ def start_default(port: int, directory: Path):
     wait_forever()
 
 
-def _conventional_resources(directory: Path, relative_to: Path = None) -> List[ResourceIterable]:
-    if relative_to is None:
-        relative_to = directory
-
-    return [
-        from_directory(directory / 'remote', relative_to=relative_to),
-        from_directory(directory / 'common', relative_to=relative_to),
-        from_file(directory / 'common.py', relative_to=relative_to),
-        from_file(directory / 'remote.py', relative_to=relative_to),
-        *_conventional_resources_additional
-    ]
-
-
 def convention(directory: Path, webserver: Webserver) -> List[HttpRoute]:
     """
     Convention for a wwwpy server.
@@ -65,10 +52,17 @@ def convention(directory: Path, webserver: Webserver) -> List[HttpRoute]:
     return routes
 
 
-def _setup_default_bootrap(resources, webserver):
-    resources.append(library_resources())
-    bootstrap_python = f'from wwwpy.remote.main import entry_point; await entry_point()'
-    webserver.set_http_route(*bootstrap_routes(resources, python=bootstrap_python))
+def _conventional_resources(directory: Path, relative_to: Path = None) -> List[ResourceIterable]:
+    if relative_to is None:
+        relative_to = directory
+
+    return [
+        from_directory(directory / 'remote', relative_to=relative_to),
+        from_directory(directory / 'common', relative_to=relative_to),
+        from_file(directory / 'common.py', relative_to=relative_to),
+        from_file(directory / 'remote.py', relative_to=relative_to),
+        *_conventional_resources_additional
+    ]
 
 
 _conventional_resources_additional: List[FilesystemIterable] = []
