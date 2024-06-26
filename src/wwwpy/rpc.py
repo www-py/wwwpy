@@ -7,7 +7,7 @@ from typing import NamedTuple, List, Tuple, Any, Optional, Dict, Callable, Await
 from wwwpy.common.iterlib import CallableToIterable
 from wwwpy.exceptions import RemoteException
 from wwwpy.http import HttpRoute, HttpResponse, HttpRequest
-from wwwpy.resources import Resource, StringResource
+from wwwpy.resources import Resource, StringResource, ResourceIterable
 
 try:
     from typing_extensions import Protocol
@@ -141,22 +141,23 @@ class Services:
         response = HttpResponse(resp, 'application/json')
         return response
 
+    def remote_stub_resources(self) -> ResourceIterable:
+        if len(self._modules) == 0:
+            return CallableToIterable(lambda: [])
+        if len(self._modules) > 1:
+            raise Exception('Only one module is supported for now')
 
-class Stubber:
-    def __init__(self, rpc_url: str, services: Services, rpc_module: Module = None):
-        self._services = services
-        self._rpc_url = rpc_url
-        self._module: Optional[Module] = rpc_module
+        module = next(iter(self._modules.values()))
 
-    def remote_stub_resources(self) -> Iterable[Resource]:
         def bundle() -> Iterator[Resource]:
-            if self._module is None:
+            if module is None:
                 return
             imports = 'from wwwpy.remote.fetch import async_fetch_str'
-            stub_source = generate_stub_source(self._module, self._rpc_url, imports)
-            yield StringResource(self._module.name.replace('.', '/') + '.py', stub_source)
+            stub_source = generate_stub_source(module, self.route.path, imports)
+            yield StringResource(module.name.replace('.', '/') + '.py', stub_source)
 
         return CallableToIterable(bundle)
+
 
 def generate_stub_source(module: Module, rpc_url: str, imports: str):
     module_name = module.name

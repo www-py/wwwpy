@@ -6,7 +6,7 @@ from typing import List
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.resources import library_resources, from_directory, from_file, \
     FilesystemIterable, ResourceIterable
-from wwwpy.rpc import Services, Module, Stubber
+from wwwpy.rpc import Services, Module
 from wwwpy.webserver import wait_forever
 from wwwpy.webservers.available_webservers import available_webservers
 
@@ -46,11 +46,9 @@ def _convention(webserver, directory) -> List[ResourceIterable]:
     try:
         import server.rpc
         services = Services()
-        rpc_module = Module(server.rpc)
-        services.add_module(rpc_module)
+        services.add_module(Module(server.rpc))
         webserver.set_http_route(services.route)
-
-        resources.append(Stubber(services.route.path, services, rpc_module).remote_stub_resources())
+        resources.append(services.remote_stub_resources())
     except Exception as e:
         print(f'could not load rpc module: {e}')
 
