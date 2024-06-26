@@ -8,14 +8,14 @@ from wwwpy.http import HttpRoute
 from wwwpy.resources import library_resources, from_directory, from_file, \
     FilesystemIterable, ResourceIterable
 from wwwpy.rpc import Services, Module
-from wwwpy.webserver import wait_forever
+from wwwpy.webserver import wait_forever, Webserver
 from wwwpy.webservers.available_webservers import available_webservers
 
 
 def start_default(port: int, directory: Path):
     webserver = available_webservers().new_instance()
 
-    _convention(webserver, directory)
+    _convention(directory, webserver)
 
     webserver.set_port(port).start_listen()
     wait_forever()
@@ -34,7 +34,7 @@ def _conventional_resources(directory: Path, relative_to: Path = None) -> List[R
     ]
 
 
-def convention(directory) -> List[HttpRoute]:
+def convention(directory: Path, webserver: Webserver) -> List[HttpRoute]:
     """
     Convention for a wwwpy server.
     It configures the webserver to serve the files from the working directory.
@@ -59,11 +59,14 @@ def convention(directory) -> List[HttpRoute]:
     bootstrap_python = f'from wwwpy.remote.main import entry_point; await entry_point()'
     routes.extend(bootstrap_routes(resources, python=bootstrap_python))
 
+    if webserver is not None:
+        webserver.set_http_route(*routes)
+
     return routes
 
 
-def _convention(webserver, directory) -> None:
-    webserver.set_http_route(*convention(directory))
+def _convention(directory, webserver) -> None:
+    convention(directory, webserver)
 
 
 def _setup_default_bootrap(resources, webserver):
