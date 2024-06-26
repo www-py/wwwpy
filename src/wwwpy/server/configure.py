@@ -20,17 +20,17 @@ def start_default(port: int, directory: Path):
     wait_forever()
 
 
-def _add_conventional_resources(resources: List[ResourceIterable], directory: Path, relative_to: Path = None):
+def _conventional_resources(directory: Path, relative_to: Path = None) -> List[ResourceIterable]:
     if relative_to is None:
         relative_to = directory
 
-    resources.extend([
+    return [
         from_directory(directory / 'remote', relative_to=relative_to),
         from_directory(directory / 'common', relative_to=relative_to),
         from_file(directory / 'common.py', relative_to=relative_to),
         from_file(directory / 'remote.py', relative_to=relative_to),
         *_conventional_resources_additional
-    ])
+    ]
 
 
 def _convention(webserver, directory) -> List[ResourceIterable]:
@@ -54,7 +54,7 @@ def _convention(webserver, directory) -> List[ResourceIterable]:
     except Exception as e:
         print(f'could not load rpc module: {e}')
 
-    _add_conventional_resources(resources, directory)
+    resources.extend(_conventional_resources(directory))
 
     resources.append(library_resources())
     bootstrap_python = f'from wwwpy.remote.main import entry_point; await entry_point()'
