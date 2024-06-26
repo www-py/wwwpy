@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Tuple
+from typing import List
 
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.http import HttpRoute
@@ -15,7 +15,7 @@ from wwwpy.webservers.available_webservers import available_webservers
 def start_default(port: int, directory: Path):
     webserver = available_webservers().new_instance()
 
-    _convention(directory, webserver)
+    convention(directory, webserver)
 
     webserver.set_port(port).start_listen()
     wait_forever()
@@ -63,10 +63,6 @@ def convention(directory: Path, webserver: Webserver) -> List[HttpRoute]:
         webserver.set_http_route(*routes)
 
     return routes
-
-
-def _convention(directory, webserver) -> None:
-    convention(directory, webserver)
 
 
 def _setup_default_bootrap(resources, webserver):
