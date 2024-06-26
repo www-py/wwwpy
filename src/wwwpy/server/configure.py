@@ -44,9 +44,9 @@ def _convention(webserver, directory) -> List[ResourceIterable]:
     sys.path.insert(0, str(directory))
     resources = []
     try:
-        import server.rpc as rpc_module
+        import server.rpc
         services = Services()
-        rpc_module = Module(rpc_module)
+        rpc_module = Module(server.rpc)
         services.add_module(rpc_module)
         webserver.set_http_route(services.route)
 
