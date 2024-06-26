@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 from wwwpy.bootstrap import bootstrap_routes
+from wwwpy.http import HttpRoute
 from wwwpy.resources import library_resources, from_directory, from_file, \
     FilesystemIterable, ResourceIterable
 from wwwpy.rpc import Services, Module
@@ -33,7 +34,7 @@ def _conventional_resources(directory: Path, relative_to: Path = None) -> List[R
     ]
 
 
-def _convention(webserver, directory) -> List[ResourceIterable]:
+def convention(directory) -> List[HttpRoute]:
     """
     Convention for a wwwpy server.
     It configures the webserver to serve the files from the working directory.
@@ -42,23 +43,27 @@ def _convention(webserver, directory) -> List[ResourceIterable]:
     print(f'applying convention to working_dir: {directory}')
     import sys
     sys.path.insert(0, str(directory))
+    routes = []
     resources = []
     try:
         import server.rpc
         services = Services()
         services.add_module(Module(server.rpc))
-        webserver.set_http_route(services.route)
+        routes.append(services.route)
         resources.append(services.remote_stub_resources())
     except Exception as e:
         print(f'could not load rpc module: {e}')
 
     resources.extend(_conventional_resources(directory))
-
     resources.append(library_resources())
     bootstrap_python = f'from wwwpy.remote.main import entry_point; await entry_point()'
-    webserver.set_http_route(*bootstrap_routes(resources, python=bootstrap_python))
+    routes.extend(bootstrap_routes(resources, python=bootstrap_python))
 
-    return resources
+    return routes
+
+
+def _convention(webserver, directory) -> None:
+    webserver.set_http_route(*convention(directory))
 
 
 def _setup_default_bootrap(resources, webserver):
