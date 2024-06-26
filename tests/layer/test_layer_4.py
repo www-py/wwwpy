@@ -35,15 +35,3 @@ def _test_convention(directory, page, webserver):
     webserver.start_listen()
     page.goto(webserver.localhost_url())
     expect(page.locator('id=tag1')).to_have_value(directory)
-
-
-@for_all_webservers()
-def test_configure_add_to_remote(page: Page, webserver: Webserver):
-    additional = file_parent / 'layer_4_support' / 'additional'
-    configure._conventional_resources_additional_append(
-        from_directory(additional / 'addon_module', relative_to=additional))
-
-    configure.convention(additional, webserver)
-    webserver.start_listen()
-    page.goto(webserver.localhost_url())
-    expect(page.locator('body')).to_have_text('additional')

@@ -5,8 +5,7 @@ from typing import List
 
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.http import HttpRoute
-from wwwpy.resources import library_resources, from_directory, from_file, \
-    FilesystemIterable, ResourceIterable
+from wwwpy.resources import library_resources, from_directory, from_file, ResourceIterable
 from wwwpy.rpc import Services, Module
 from wwwpy.webserver import wait_forever, Webserver
 from wwwpy.webservers.available_webservers import available_webservers
@@ -61,12 +60,4 @@ def _conventional_resources(directory: Path, relative_to: Path = None) -> List[R
         from_directory(directory / 'common', relative_to=relative_to),
         from_file(directory / 'common.py', relative_to=relative_to),
         from_file(directory / 'remote.py', relative_to=relative_to),
-        *_conventional_resources_additional
     ]
-
-
-_conventional_resources_additional: List[FilesystemIterable] = []
-
-
-def _conventional_resources_additional_append(filesystem_iterable: FilesystemIterable):
-    _conventional_resources_additional.append(filesystem_iterable)
