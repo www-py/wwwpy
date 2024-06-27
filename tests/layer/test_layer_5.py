@@ -6,12 +6,15 @@ from tests import for_all_webservers
 from wwwpy.server import configure
 from wwwpy.webserver import Webserver
 
+file_parent = Path(__file__).parent
+layer_5_rpc_server = file_parent / 'layer_5_support/rpc_server'
+
 
 class TestServerRpc:
+
     @for_all_webservers()
     def test_rpc(self, page: Page, webserver: Webserver):
-        file_parent = Path(__file__).parent
-        configure.convention(file_parent / 'layer_5_support', webserver)
+        configure.convention(layer_5_rpc_server, webserver)
         webserver.start_listen()
 
         page.goto(webserver.localhost_url())
@@ -20,7 +23,7 @@ class TestServerRpc:
     @for_all_webservers()
     def test_rpc_issue_double_load(self, page: Page, webserver: Webserver):
         # related to the stubber to being loaded twice
-        configure.convention(Path(__file__).parent / 'layer_5_support', webserver)
+        configure.convention(layer_5_rpc_server, webserver)
         webserver.start_listen()
 
         page.goto(webserver.localhost_url())
