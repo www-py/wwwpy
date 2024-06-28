@@ -52,3 +52,23 @@ def test_wrap_in_tryexcept():
     ))
     exec(code)
     assert ['executed', 'type=ZeroDivisionError'] == tmp
+
+
+@for_all_webservers()
+def test_sse_server_protocol(page: Page, webserver: Webserver):
+    html = '<div></div><script>' + get_javascript_for(  # language=python
+        """
+from js import document, EventSource
+    
+def log(msg):
+    document.body.innerHTML += f'|{msg}'
+
+es = EventSource.new('/sse')
+es.onopen = lambda e: log('open')
+es.onmessage = lambda e: log('message:' + e.data)
+        """) + "</script>"
+    webserver.set_http_route(HttpRoute('/', lambda request: HttpResponse.text_html(html)))
+    webserver.set_http_route(HttpRoute('/sse', lambda request: HttpResponse('data: 42\n\n', 'text/event-stream')))
+    webserver.start_listen()
+    page.goto(webserver.localhost_url())
+    expect(page.locator('body')).to_have_text('|open|message:42')
