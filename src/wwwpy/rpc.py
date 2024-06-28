@@ -142,19 +142,17 @@ class Services:
         return response
 
     def remote_stub_resources(self) -> ResourceIterable:
-        if len(self._modules) == 0:
-            return CallableToIterable(lambda: [])
         if len(self._modules) > 1:
             raise Exception('Only one module is supported for now')
 
-        module = next(iter(self._modules.values()))
-
         def bundle() -> Iterator[Resource]:
+            module = None if len(self._modules) == 0 else next(iter(self._modules.values()))
             if module is None:
+                yield []
                 return
             imports = 'from wwwpy.remote.fetch import async_fetch_str'
             stub_source = generate_stub_source(module, self.route.path, imports)
-            yield StringResource(module.name.replace('.', '/') + '.py', stub_source)
+            yield [StringResource(module.name.replace('.', '/') + '.py', stub_source)]
 
         return CallableToIterable(bundle)
 

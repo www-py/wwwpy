@@ -7,6 +7,7 @@ from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.http import HttpRoute
 from wwwpy.resources import library_resources, from_directory, from_file, ResourceIterable
 from wwwpy.rpc import Services, Module
+from wwwpy.server.rpc import configure_services
 from wwwpy.webserver import wait_forever, Webserver
 from wwwpy.webservers.available_webservers import available_webservers
 
@@ -31,14 +32,9 @@ def convention(directory: Path, webserver: Webserver) -> List[HttpRoute]:
     sys.path.insert(0, str(directory))
     routes = []
     resources = []
-    try:
-        import server.rpc
-        services = Services()
-        services.add_module(Module(server.rpc))
-        routes.append(services.route)
-        resources.append(services.remote_stub_resources())
-    except Exception as e:
-        print(f'could not load rpc module: {e}')
+    services = configure_services()
+    routes.append(services.route)
+    resources.extend(services.remote_stub_resources())
 
     resources.extend(_conventional_resources(directory))
     resources.append(library_resources())
