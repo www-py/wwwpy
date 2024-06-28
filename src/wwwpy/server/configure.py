@@ -33,7 +33,7 @@ def convention(directory: Path, webserver: Webserver) -> List[HttpRoute]:
     services = configure_services()
     bootstrap_python = f'from wwwpy.remote.main import entry_point; await entry_point()'
 
-    resources = [*services.remote_stub_resources(), *_conventional_resources(directory), library_resources()]
+    resources = [services.remote_stub_resources(), *_conventional_resources(directory), library_resources()]
     routes = [services.route, *bootstrap_routes(resources, python=bootstrap_python)]
 
     if webserver is not None:
