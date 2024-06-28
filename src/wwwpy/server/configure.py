@@ -30,16 +30,11 @@ def convention(directory: Path, webserver: Webserver) -> List[HttpRoute]:
     print(f'applying convention to working_dir: {directory}')
     import sys
     sys.path.insert(0, str(directory))
-    routes = []
-    resources = []
     services = configure_services()
-    routes.append(services.route)
-    resources.extend(services.remote_stub_resources())
-
-    resources.extend(_conventional_resources(directory))
-    resources.append(library_resources())
     bootstrap_python = f'from wwwpy.remote.main import entry_point; await entry_point()'
-    routes.extend(bootstrap_routes(resources, python=bootstrap_python))
+
+    resources = [*services.remote_stub_resources(), *_conventional_resources(directory), library_resources()]
+    routes = [services.route, *bootstrap_routes(resources, python=bootstrap_python)]
 
     if webserver is not None:
         webserver.set_http_route(*routes)

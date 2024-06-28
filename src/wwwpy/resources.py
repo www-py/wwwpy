@@ -25,6 +25,10 @@ class Resource(ABC):
 
 
 ResourceIterable = Iterable[Resource]
+"""Let's say that the Iterable is a factory function that returns an Iterator.
+https://docs.python.org/3/library/collections.abc.html<
+https://wiki.python.org/moin/Iterator
+"""
 
 
 @dataclass(frozen=True)
@@ -43,8 +47,6 @@ class PathResource(Resource):
         raise Exception('this has a special method to get the bytes')
 
 
-# https://docs.python.org/3/library/collections.abc.html
-# https://wiki.python.org/moin/Iterator
 TResource = TypeVar("TResource", bound=Resource)
 
 ResourceAccept = Callable[[TResource], bool]
