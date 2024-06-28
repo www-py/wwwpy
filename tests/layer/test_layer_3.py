@@ -65,7 +65,12 @@ sse.harness()
         """
 
     webserver.set_http_route(*bootstrap_routes(resources=[library_resources()], python=python_code))
-    webserver.set_http_route(SseServer('/sse').http_route)
+    sse_server = SseServer('/sse')
+    webserver.set_http_route(sse_server.http_route)
     webserver.start_listen()
     page.goto(webserver.localhost_url())
+
+    expect(page.locator('body')).to_have_text('|open')
+    assert len(sse_server.clients) == 1
+    sse_server.clients[0].send_event('42')
     expect(page.locator('body')).to_have_text('|open|message:42')
