@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from typing import List
 
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.http import HttpRoute
-from wwwpy.resources import library_resources, from_directory, from_file, ResourceIterable
-from wwwpy.rpc import Services, Module
+from wwwpy.resources import library_resources, from_directory, from_file
 from wwwpy.server.rpc import configure_services
 from wwwpy.webserver import wait_forever, Webserver
 from wwwpy.webservers.available_webservers import available_webservers
@@ -28,27 +28,21 @@ def convention(directory: Path, webserver: Webserver) -> List[HttpRoute]:
     It also configures the webserver to serve the files from the library.
     """
     print(f'applying convention to working_dir: {directory}')
-    import sys
     sys.path.insert(0, str(directory))
     services = configure_services()
-    bootstrap_python = f'from wwwpy.remote.main import entry_point; await entry_point()'
-
-    resources = [services.remote_stub_resources(), *_conventional_resources(directory), library_resources()]
-    routes = [services.route, *bootstrap_routes(resources, python=bootstrap_python)]
+    routes = [services.route, *bootstrap_routes(
+        resources=[
+            library_resources(),
+            services.remote_stub_resources(),
+            from_directory(directory / 'remote', relative_to=directory),
+            from_directory(directory / 'common', relative_to=directory),
+            from_file(directory / 'common.py', relative_to=directory),
+            from_file(directory / 'remote.py', relative_to=directory),
+        ],
+        python=f'from wwwpy.remote.main import entry_point; await entry_point()'
+    )]
 
     if webserver is not None:
         webserver.set_http_route(*routes)
 
     return routes
-
-
-def _conventional_resources(directory: Path, relative_to: Path = None) -> List[ResourceIterable]:
-    if relative_to is None:
-        relative_to = directory
-
-    return [
-        from_directory(directory / 'remote', relative_to=relative_to),
-        from_directory(directory / 'common', relative_to=relative_to),
-        from_file(directory / 'common.py', relative_to=relative_to),
-        from_file(directory / 'remote.py', relative_to=relative_to),
-    ]
