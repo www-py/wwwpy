@@ -3,7 +3,8 @@ from playwright.sync_api import Page, expect
 from tests import for_all_webservers
 from wwwpy.bootstrap import get_javascript_for, wrap_in_tryexcept, bootstrap_routes, bootstrap_javascript_placeholder
 from wwwpy.http import HttpRoute, HttpResponse
-from wwwpy.resources import StringResource
+from wwwpy.resources import StringResource, library_resources
+from wwwpy.server.sse import SseServer
 from wwwpy.webserver import Webserver
 
 
@@ -56,19 +57,15 @@ def test_wrap_in_tryexcept():
 
 @for_all_webservers()
 def test_sse_server_protocol(page: Page, webserver: Webserver):
-    html = '<div></div><script>' + get_javascript_for(  # language=python
-        """
-from js import document, EventSource
-    
-def log(msg):
-    document.body.innerHTML += f'|{msg}'
+    # language=python
+    python_code = """
+import wwwpy.remote.sse as sse
+sse.harness()
 
-es = EventSource.new('/sse')
-es.onopen = lambda e: log('open')
-es.onmessage = lambda e: log('message:' + e.data)
-        """) + "</script>"
-    webserver.set_http_route(HttpRoute('/', lambda request: HttpResponse.text_html(html)))
-    webserver.set_http_route(HttpRoute('/sse', lambda request: HttpResponse('data: 42\n\n', 'text/event-stream')))
+        """
+
+    webserver.set_http_route(*bootstrap_routes(resources=[library_resources()], python=python_code))
+    webserver.set_http_route(SseServer('/sse').http_route)
     webserver.start_listen()
     page.goto(webserver.localhost_url())
     expect(page.locator('body')).to_have_text('|open|message:42')
