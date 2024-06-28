@@ -59,8 +59,18 @@ def test_wrap_in_tryexcept():
 def test_sse_server_protocol(page: Page, webserver: Webserver):
     # language=python
     python_code = """
-import wwwpy.remote.sse as sse
-sse.harness()
+
+from js import document, EventSource
+from pyodide.ffi import create_proxy
+document.body.innerHTML = ''
+
+def log(msg):
+    document.body.innerHTML += f'|{msg}'
+
+es = EventSource.new('/sse')
+es.onopen = lambda e: log('open')
+es.onmessage = lambda e: log(f'message:{e.data}')
+es.addEventListener('type1', create_proxy(lambda e: log(f'type1:{e.data}')))
 
         """
 
@@ -74,3 +84,5 @@ sse.harness()
     assert len(sse_server.clients) == 1
     sse_server.clients[0].send_event('42')
     expect(page.locator('body')).to_have_text('|open|message:42')
+    sse_server.clients[0].send_event('11', 'type1')
+    expect(page.locator('body')).to_have_text('|open|message:42|type1:11')
