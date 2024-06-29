@@ -8,15 +8,7 @@ from wwwpy.common.iterlib import CallableToIterable
 from wwwpy.exceptions import RemoteException
 from wwwpy.http import HttpRoute, HttpResponse, HttpRequest
 from wwwpy.resources import Resource, StringResource, ResourceIterable
-
-try:
-    from typing_extensions import Protocol
-except:
-    try:
-        from typing import Protocol
-    except:
-        class Protocol:
-            ...
+from wwwpy.common.typing import Protocol
 
 from wwwpy.unasync import unasync
 

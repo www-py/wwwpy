@@ -82,7 +82,11 @@ es.addEventListener('type1', create_proxy(lambda e: log(f'type1:{e.data}')))
 
     expect(page.locator('body')).to_have_text('|open')
     assert len(sse_server.clients) == 1
-    sse_server.clients[0].send_event('42')
+    client = sse_server.clients[0]
+    client.send('42')
     expect(page.locator('body')).to_have_text('|open|message:42')
-    sse_server.clients[0].send_event('11', 'type1')
-    expect(page.locator('body')).to_have_text('|open|message:42|type1:11')
+    client.send('11')
+    expect(page.locator('body')).to_have_text('|open|message:42|message:11')
+
+    # page.close()
+    # assert len(sse_server.clients) == 0

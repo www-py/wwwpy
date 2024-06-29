@@ -3,39 +3,38 @@ from __future__ import annotations
 
 from typing import Callable, List
 
+from wwwpy.common.typing import Protocol
 from wwwpy.http_sansio import SansIOHttpProtocol, SansIOHttpResponse, SansIOHttpRoute, SansIOHttpRequest
 
 
-class SseClientEndpoint:
-
-    def __init__(self, protocol: _SseServerProtocol):
-        self._protocol = protocol
-
-    def send_event(self, data: str, event_type: str = None):
-        self._protocol.send(create_event(data, event_type).encode())
+class SendEndpoint(Protocol):
+    def send(self, message: str) -> None: ...
 
 
 class SseServer:
 
     def __init__(self, route: str):
-        self.clients: list[SseClientEndpoint] = []
+        self.clients: list[SendEndpoint] = []
         self.http_route = SansIOHttpRoute(route, self._on_request)
 
     def _on_request(self, request: SansIOHttpRequest) -> SansIOHttpProtocol:
         protocol = _SseServerProtocol()
-        self.clients.append(SseClientEndpoint(protocol))
+        self.clients.append(protocol)
         return protocol
 
 
-class _SseServerProtocol(SansIOHttpProtocol):
-    send = None
+class _SseServerProtocol(SansIOHttpProtocol, SendEndpoint):
+    _send: Callable[[bytes], None]
 
     def on_send(self, send: Callable[[SansIOHttpResponse | bytes | None], None]) -> None:
         send(SansIOHttpResponse('text/event-stream'))
-        self.send = send
+        self._send = send
 
     def receive(self, data: bytes | None) -> None:
         super().receive(data)
+
+    def send(self, message: str) -> None:
+        self._send(create_event(message).encode())
 
 
 def create_event(data, event_type=None):
