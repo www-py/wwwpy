@@ -73,10 +73,11 @@ class WsPythonEmbedded(Webserver):
                     body = request.get_body()
                     if body:
                         protocol.receive(body)
-                protocol.receive(None)
 
                 while not protocol_terminated.wait(0.5):
                     pass
+
+                protocol.receive(None)
 
         return True
 

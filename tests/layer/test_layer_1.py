@@ -92,6 +92,50 @@ class TestSansIOHttpRoute:
         assert len(requests) == 2
 
     @for_all_webservers()
+    def test_webservers_get_wait_some_response(self, webserver: Webserver):
+        requests = []
+
+        class SimpleProtocol(SansIOHttpProtocol):
+            send: Callable[[SansIOHttpResponse | bytes | None], None] = None
+
+            def on_send(self, send: Callable[[SansIOHttpResponse | bytes | None], None]) -> None:
+                send(SansIOHttpResponse('text/plain'))
+                self.send = send
+
+            def receive(self, data: bytes | None) -> None:
+                if data is None:
+                    requests.append('Closed')  # this should arrive only after we call send(None)
+                else:
+                    requests.append(data)  # should not happen
+
+        protocol = SimpleProtocol()
+        webserver.set_http_route(SansIOHttpRoute('/', lambda req: protocol))
+
+        webserver.set_port(find_port()).start_listen()
+
+        url = webserver.localhost_url()
+        response = []
+
+        def do_request():
+            response.append(sync_fetch_response(url))
+
+        thread = threading.Thread(target=do_request)
+        thread.start()
+        for _ in range(20):
+            if protocol.send is not None:
+                break
+            sleep(0.1)
+
+        protocol.send(b'm1')
+        sleep(0.2)
+        assert requests == []  # the None should be received only after we call send(None)
+        protocol.send(None)
+
+        thread.join()
+
+        assert requests == ['Closed']
+
+    @for_all_webservers()
     def test_webservers_post(self, webserver: Webserver):
         # GIVEN
         received = []
