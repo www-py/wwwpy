@@ -8,7 +8,7 @@ from wwwpy.common.typing import Protocol
 
 class WebsocketRoute(NamedTuple):
     path: str
-    on_connect: Callable[[WebsocketEndpoint], None]
+    on_connect: Callable[[WebsocketEndpointIO], None]
 
 
 class Change(Enum):
@@ -47,7 +47,7 @@ class WebsocketPool:
         self.clients: list[WebsocketEndpoint] = []
         self.http_route = WebsocketRoute(route, self._on_connect)
 
-    def _on_connect(self, endpoint: WebsocketEndpoint) -> None:
+    def _on_connect(self, endpoint: WebsocketEndpointIO) -> None:
 
         self._before_change(PoolEvent(Change.add, endpoint, self))
 
@@ -65,6 +65,13 @@ class ListenerProtocol(Protocol):
 
 
 class WebsocketEndpoint:
+    listeners: list[ListenerProtocol]
+
+    # part to be called by user code to send a outgoing message
+    def send(self, message: str | bytes | None) -> None: ...
+
+
+class WebsocketEndpointIO(WebsocketEndpoint):
     def __init__(self, send: ListenerProtocol):
         """The send argument is called by the IO implementation: it will deliver outgoing messages"""
         self._send = send

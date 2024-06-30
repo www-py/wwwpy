@@ -1,29 +1,20 @@
 from __future__ import annotations
 
 import asyncio
+import threading
 from threading import Thread
-from typing import Optional, Awaitable, Union
-
-import tornado.web
+from typing import Awaitable, Union
+from typing import Optional
 
 import tornado
-
-import threading
-from functools import partial
-from http import HTTPStatus
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-from threading import Thread
-from typing import Optional, Callable, Dict, AnyStr, Tuple, Any
-from urllib.parse import urlparse, parse_qs
-
-from tornado import gen, websocket
+import tornado.web
+from tornado import websocket
 from tornado.httputil import HTTPServerRequest
 
-from wwwpy.http import HttpRoute, HttpResponse, HttpRequest
+from wwwpy.http import HttpRoute, HttpRequest
 from wwwpy.http_sansio import SansIOHttpRoute, SansIOHttpRequest, SansIOHttpResponse
 from ..webserver import Webserver
-from ..webserver import wait_forever
-from ..websocket import WebsocketRoute, WebsocketEndpoint
+from ..websocket import WebsocketRoute, WebsocketEndpoint, WebsocketEndpointIO
 
 
 class WsTornado(Webserver):
@@ -134,7 +125,7 @@ class TornadoHandler(tornado.web.RequestHandler):
 
 class _WebsocketHandler(websocket.WebSocketHandler):
     route: WebsocketRoute = None
-    endpoint: WebsocketEndpoint = None
+    endpoint: WebsocketEndpointIO = None
 
     def initialize(self, route: WebsocketRoute) -> None:
         self.route = route
@@ -143,7 +134,7 @@ class _WebsocketHandler(websocket.WebSocketHandler):
         return True
 
     def open(self):
-        self.endpoint = WebsocketEndpoint(self._on_send)
+        self.endpoint = WebsocketEndpointIO(self._on_send)
         self.route.on_connect(self.endpoint)
 
     def on_message(self, message: Union[str, bytes]) -> Optional[Awaitable[None]]:
