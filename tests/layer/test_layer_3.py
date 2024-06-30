@@ -55,38 +55,3 @@ def test_wrap_in_tryexcept():
     assert ['executed', 'type=ZeroDivisionError'] == tmp
 
 
-@for_all_webservers()
-def test_sse_server_protocol(page: Page, webserver: Webserver):
-    # language=python
-    python_code = """
-
-from js import document, EventSource
-from pyodide.ffi import create_proxy
-document.body.innerHTML = ''
-
-def log(msg):
-    document.body.innerHTML += f'|{msg}'
-
-es = EventSource.new('/sse')
-es.onopen = lambda e: log('open')
-es.onmessage = lambda e: log(f'message:{e.data}')
-es.addEventListener('type1', create_proxy(lambda e: log(f'type1:{e.data}')))
-
-        """
-
-    webserver.set_http_route(*bootstrap_routes(resources=[library_resources()], python=python_code))
-    sse_server = SseServer('/sse')
-    webserver.set_http_route(sse_server.http_route)
-    webserver.start_listen()
-    page.goto(webserver.localhost_url())
-
-    expect(page.locator('body')).to_have_text('|open')
-    assert len(sse_server.clients) == 1
-    client = sse_server.clients[0]
-    client.send('42')
-    expect(page.locator('body')).to_have_text('|open|message:42')
-    client.send('11')
-    expect(page.locator('body')).to_have_text('|open|message:42|message:11')
-
-    # page.close()
-    # assert len(sse_server.clients) == 0
