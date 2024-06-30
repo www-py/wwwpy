@@ -11,16 +11,30 @@ class WebsocketRoute(NamedTuple):
     on_connect: Callable[[WebsocketEndpoint], None]
 
 
-class PoolChange(Enum):
+class Change(Enum):
     add = 'add'
     remove = 'remove'
 
 
+class PoolEvent(NamedTuple):
+    change: Change
+    endpoint: WebsocketEndpoint
+    pool: WebsocketPool
+
+    @property
+    def add(self) -> bool:
+        return self.change == Change.add
+
+    @property
+    def remove(self) -> bool:
+        return self.change == Change.remove
+
+
 class PoolChangeCallback(Protocol):
-    def __call__(self, change: PoolChange, endpoint: WebsocketEndpoint, pool: WebsocketPool) -> None: ...
+    def __call__(self, change: PoolEvent) -> None: ...
 
 
-def _noop(change: PoolChange, endpoint: WebsocketEndpoint, pool: WebsocketPool):
+def _noop(change: PoolEvent):
     pass
 
 
@@ -35,11 +49,11 @@ class WebsocketPool:
 
     def _on_connect(self, endpoint: WebsocketEndpoint) -> None:
 
-        self._before_change(PoolChange.add, endpoint, self)
+        self._before_change(PoolEvent(Change.add, endpoint, self))
 
         def handle_remove(msg: str | bytes | None):
             if msg is None:
-                self._before_change(PoolChange.remove, endpoint, self)
+                self._before_change(PoolEvent(Change.remove, endpoint, self))
                 self.clients.remove(endpoint)
 
         endpoint.listeners.append(handle_remove)
@@ -48,6 +62,7 @@ class WebsocketPool:
 
 class ListenerProtocol(Protocol):
     def __call__(self, message: str | bytes | None) -> None: ...
+
 
 class WebsocketEndpoint:
     def __init__(self, send: ListenerProtocol):
@@ -63,4 +78,3 @@ class WebsocketEndpoint:
     def on_message(self, message: str | bytes | None) -> None:
         for listener in self.listeners:
             listener(message)
-
