@@ -35,9 +35,6 @@ def _webservers_classes() -> List[type[Webserver]]:
     except:
         pass
 
-    # from .python_embedded import WsPythonEmbedded
-    # result.append(WsPythonEmbedded)
-
     return result
 
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import threading
 from threading import Thread
 from typing import Awaitable, Union
 from typing import Optional
@@ -9,12 +8,10 @@ from typing import Optional
 import tornado
 import tornado.web
 from tornado import websocket
-from tornado.httputil import HTTPServerRequest
 
 from wwwpy.http import HttpRoute, HttpRequest
-from wwwpy.http_sansio import SansIOHttpRoute, SansIOHttpRequest, SansIOHttpResponse
 from ..webserver import Webserver
-from ..websocket import WebsocketRoute, WebsocketEndpoint, WebsocketEndpointIO
+from ..websocket import WebsocketRoute, WebsocketEndpointIO
 
 
 class WsTornado(Webserver):
@@ -23,7 +20,7 @@ class WsTornado(Webserver):
         self.app = tornado.web.Application()
         self.thread: Optional[Thread] = None
 
-    def _setup_route(self, route: HttpRoute | SansIOHttpRoute | WebsocketRoute):
+    def _setup_route(self, route: HttpRoute | WebsocketRoute):
         if isinstance(route, WebsocketRoute):
             self.app.add_handlers(r".*", [(route.path, _WebsocketHandler, dict(route=route))])
         else:
@@ -44,15 +41,13 @@ class WsTornado(Webserver):
 class TornadoHandler(tornado.web.RequestHandler):
 
     def __init__(self, *args, **kwargs):
-        self.route: HttpRoute | SansIOHttpRoute | WebsocketRoute = None
+        self.route: HttpRoute | WebsocketRoute = None
         self._serve = None
         super().__init__(*args, **kwargs)
 
-    def initialize(self, route: HttpRoute | SansIOHttpRoute) -> None:
+    def initialize(self, route: HttpRoute) -> None:
         self.route = route
-        if isinstance(route, SansIOHttpRoute):
-            self._serve = self._serve_sansio
-        elif isinstance(route, HttpRoute):
+        if isinstance(route, HttpRoute):
             self._serve = self._serve_std
         else:
             raise Exception(f'Unknown route type: {type(route)}')
@@ -78,46 +73,6 @@ class TornadoHandler(tornado.web.RequestHandler):
         response = self.route.callback(HttpRequest(verb, body, self.request.headers.get('Content-Type', '')))
         self.set_header("Content-Type", response.content_type)
         self.write(response.content)
-
-    async def _serve_sansio(self, verb: str):
-
-        request: HTTPServerRequest = self.request
-        route = self.route
-        sansio_request = SansIOHttpRequest(verb, request.headers.get('Content-Type', ''))
-        protocol = route.protocol_factory(sansio_request)
-        protocol_terminated = threading.Event()
-
-        async def send_request(data: SansIOHttpResponse | bytes | None):
-            if isinstance(data, SansIOHttpResponse):
-                self.set_header('Content-Type', data.content_type)
-            elif isinstance(data, bytes):
-                self.write(data)
-                # self.write(data)
-            elif data is None:
-                await self.flush()
-                await self.finish()
-                protocol_terminated.set()
-
-                # request.wfile.close()
-
-        # tell the protocol who to call when it wants to send data
-        await protocol.on_send(send_request)
-        if request.headers.get('Transfer-Encoding', '') == 'chunked':
-            raise Exception('chunked not supported')
-        else:
-            body = self.request.body
-            if body:
-                protocol.receive(body)
-            stream = self.detach()
-            try:
-                by = await stream.read_bytes(1, True)
-                l = len(by)
-            except:
-                pass
-        # while not protocol_terminated.wait(0.5):
-        #     pass
-
-        protocol.receive(None)
 
     def data_received(self, chunk: bytes) -> Optional[Awaitable[None]]:
         raise_exception(self)

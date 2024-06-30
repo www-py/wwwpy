@@ -3,8 +3,7 @@ from playwright.sync_api import Page, expect
 from tests import for_all_webservers
 from wwwpy.bootstrap import get_javascript_for, wrap_in_tryexcept, bootstrap_routes, bootstrap_javascript_placeholder
 from wwwpy.http import HttpRoute, HttpResponse
-from wwwpy.resources import StringResource, library_resources
-from wwwpy.server.sse import SseServer
+from wwwpy.resources import StringResource
 from wwwpy.webserver import Webserver
 
 

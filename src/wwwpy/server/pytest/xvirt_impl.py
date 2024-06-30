@@ -12,7 +12,7 @@ from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.http import HttpRoute, HttpRequest, HttpResponse
 from wwwpy.resources import library_resources, from_directory, StringResource
 from wwwpy.server import find_port
-from wwwpy.webservers.python_embedded import WsPythonEmbedded
+from wwwpy.webservers.available_webservers import available_webservers
 
 _file_parent = Path(__file__).parent
 
@@ -55,7 +55,7 @@ class XVirtImpl(XVirt):
                                         (_file_parent / 'remote_test_main.py').read_text())],
 
                      ]
-        webserver = WsPythonEmbedded()
+        webserver = available_webservers().new_instance()
         invocation_dir, args = self.remote_invocation_params('/wwwpy_bundle')
         invocation_dir_json = json.dumps(invocation_dir)
         args_json = json.dumps(args)
