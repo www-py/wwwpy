@@ -2,6 +2,8 @@ import importlib.util
 from types import ModuleType
 
 import wwwpy
+from wwwpy.common.rpc import ast_parser
+
 from tests import for_all_webservers
 from tests.common.rpc import support3, support1, support2
 from wwwpy.exceptions import RemoteException
@@ -21,6 +23,12 @@ def test_module_module():
     assert target.name == 'tests.common.rpc.support1'
     assert len(target.functions) == 2
 
+def test_ast_function_len():
+    target = ast_parser.module_from_package_name('tests.common.rpc.support1')
+
+    # THEN
+    assert target.name == 'tests.common.rpc.support1'
+    assert len(target.functions) == 2
 
 def test_module_function0():
     # WHEN
