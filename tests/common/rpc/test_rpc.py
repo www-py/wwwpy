@@ -1,14 +1,14 @@
 import importlib.util
 from types import ModuleType
 
-import wwwpy
+import pytest
 
+import wwwpy
 from tests import for_all_webservers
 from tests.common.rpc import support3, support1, support2
 from wwwpy.exceptions import RemoteException
-from wwwpy.rpc import Module, RpcRequest, Services
+from wwwpy.rpc import Module, Services
 from wwwpy.server import find_port
-from wwwpy.unasync import unasync
 from wwwpy.webserver import Webserver
 
 support2_module_name = 'tests.common.rpc.support2'
@@ -59,7 +59,7 @@ def test_module_getitem_and_invoke():
     assert actual == 42
 
 
-@unasync
+@pytest.mark.asyncio
 async def test_module_invoke_async():
     target = Module(support2)
 
@@ -83,7 +83,8 @@ def test_services_not_found():
 
 
 @for_all_webservers()
-def test_rpc_integration(webserver: Webserver):
+@pytest.mark.asyncio
+async def test_rpc_integration(webserver: Webserver):
     """ server part """
     services = Services('/rpc2')
     module = Module(support3)
@@ -100,7 +101,6 @@ def test_rpc_integration(webserver: Webserver):
     """ client part """
     client_module = _module_from_source('dynamic_module', stub_source)
 
-    @unasync
     async def verify():
         target = await client_module.support3_mul(3, 4)
         assert target == 12
@@ -125,7 +125,7 @@ def test_rpc_integration(webserver: Webserver):
         target = await client_module.support3_throws_error('', 'ok1')
         assert target == 'ok1'
 
-    verify()
+    await verify()
     """ end """
 
 
