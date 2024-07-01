@@ -104,9 +104,9 @@ class Proxy:
 
 
 class Services:
-    def __init__(self):
+    def __init__(self, route_path: str):
         self._modules: Dict[str, Module] = {}
-        self.route = HttpRoute('/wwwpy/rpc', self._route_callback)
+        self.route = HttpRoute(route_path, self._route_callback)
 
     def add_module(self, module: Module):
         self._modules[module.name] = module

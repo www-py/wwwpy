@@ -29,7 +29,7 @@ def convention(directory: Path, webserver: Webserver) -> List[HttpRoute]:
     """
     print(f'applying convention to working_dir: {directory}')
     sys.path.insert(0, str(directory))
-    services = configure_services()
+    services = configure_services('/wwwpy/rpc')
     routes = [services.route, *bootstrap_routes(
         resources=[
             library_resources(),

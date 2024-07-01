@@ -1,8 +1,8 @@
 from wwwpy.rpc import Services, Module
 
 
-def configure_services() -> Services:
-    services = Services()
+def configure_services(route_path: str) -> Services:
+    services = Services(route_path)
     try:
         import server.rpc
         services.add_module(Module(server.rpc))

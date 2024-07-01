@@ -74,7 +74,7 @@ def test_rpc():
 
 
 def test_services_not_found():
-    target = Services()
+    target = Services('/rpc1')
     actual = target.find_module(support2_module_name)
     assert actual is None
 
@@ -88,7 +88,7 @@ def test_services_not_found():
 @for_all_webservers()
 def test_rpc_integration(webserver: Webserver):
     """ server part """
-    services = Services()
+    services = Services('/rpc2')
     module = Module(support3)
     services.add_module(module)
 
