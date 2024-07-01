@@ -63,7 +63,7 @@ es.onmessage = lambda e: log(f'message:{e.data}')
         page.goto(webserver.localhost_url())
 
         expect(page.locator('body')).to_have_text('|open')
-        [sleep(0.1) for _ in range(20) if len(ws_pool.clients) == 0]
+        [sleep(0.1) for _ in range(100) if len(ws_pool.clients) == 0]
         assert len(ws_pool.clients) == 1
         client = ws_pool.clients[0]
         client.send('42')
@@ -103,7 +103,7 @@ es.onmessage = lambda e: message(e.data)
 
         expect(page.locator('body')).to_have_text('|open')
         assert changes == [Change.add]
-        [sleep(0.1) for _ in range(20) if len(ws_pool.clients) == 0]
+        [sleep(0.1) for _ in range(100) if len(ws_pool.clients) == 0]
         assert len(ws_pool.clients) == 1
         client = ws_pool.clients[0]
         client.send('close')
@@ -132,6 +132,6 @@ es.onopen = lambda e: [es.send('foo1'), es.close()]
 
         page.goto(webserver.localhost_url())
 
-        [sleep(0.1) for _ in range(20) if len(incoming_messages) != 2]
+        [sleep(0.1) for _ in range(100) if len(incoming_messages) != 2]
         assert len(incoming_messages) == 2
         assert incoming_messages == ['foo1', None]

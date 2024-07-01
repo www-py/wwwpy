@@ -81,7 +81,8 @@ def test_services_not_found():
     actual: Module
     assert actual.name == support2_module_name
 
-
+# todo write the remote counterpart of the following test
+# todo rewrite this so to use ast_parser and not the old Module
 @for_all_webservers()
 def test_rpc_integration(webserver: Webserver):
     """ server part """

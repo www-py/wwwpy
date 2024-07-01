@@ -21,8 +21,6 @@ class Webserver(ABC):
         self.port = port
         return self
 
-    # todo rename as start(); add argument blocking=True; fix tests add blocking=False
-
     def start_listen(self) -> 'Webserver':
         self._start_listen()
         self.wait_ready()

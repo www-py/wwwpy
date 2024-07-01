@@ -7,8 +7,6 @@ from wwwpy.resources import Resource, build_archive, ResourceIterable
 bootstrap_javascript_placeholder = '// #bootstrap-placeholder#'
 
 
-# todo 1) parametrize where the zip is expanded (now in /wwwpy_bundle
-# todo 2) parametrize the bootstrap route (now /)
 def bootstrap_routes(
         resources: List[ResourceIterable],
         python: str,
