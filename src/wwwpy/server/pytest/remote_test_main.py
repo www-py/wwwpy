@@ -10,6 +10,7 @@ async def install(package):
 
 async def main(rootpath, invocation_dir, args):
     await install('pytest==7.2.2')  # didn't work with update to 8.1.1
+    await install('pytest-asyncio')
     await install('pytest-xvirt')
     import pytest
     print('-=-' * 20 + 'pytest imported')

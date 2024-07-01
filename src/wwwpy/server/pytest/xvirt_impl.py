@@ -2,16 +2,14 @@ import json
 import threading
 from pathlib import Path
 from queue import Queue
-from threading import Thread
 
-from playwright.sync_api import sync_playwright
 from xvirt import XVirt
 
-from wwwpy.server.pytest.playwright import playwright_setup_page_logger, start_playwright, start_playwright_in_thread
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.http import HttpRoute, HttpRequest, HttpResponse
 from wwwpy.resources import library_resources, from_directory, StringResource
 from wwwpy.server import find_port
+from wwwpy.server.pytest.playwright import start_playwright_in_thread
 from wwwpy.webservers.available_webservers import available_webservers
 
 _file_parent = Path(__file__).parent
