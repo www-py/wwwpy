@@ -6,14 +6,17 @@ from ..webserver import Webserver
 
 class AvailableWebservers:
     def __init__(self) -> None:
-        self.classes = _webservers_classes()
-        self.ids = list(map(lambda w: w.__name__, _webservers_classes()))
+        self._classes = _webservers_classes()
+
+    @property
+    def ids(self) -> Iterator[str]:
+        return map(lambda w: w.__name__, self._classes)
 
     def new_instance(self) -> Webserver:
-        return self.classes[0]()
+        return self._classes[0]()
 
     def instances(self) -> Iterator[Webserver]:
-        for webserver_class in self.classes:
+        for webserver_class in self._classes:
             yield webserver_class()
 
 
