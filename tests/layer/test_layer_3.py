@@ -24,7 +24,7 @@ def test_zipped_python_execution_default(page: Page, webserver: Webserver):
         'remote.py',
         """from js import document\ndocument.body.innerHTML = '<input id="tag1" value="foo1">' """
     )]]
-    webserver.set_http_route(*bootstrap_routes(resources))
+    webserver.set_http_route(*bootstrap_routes(resources, python='import remote'))
     webserver.start_listen()
     page.goto(webserver.localhost_url())
     expect(page.locator('id=tag1')).to_have_value('foo1')

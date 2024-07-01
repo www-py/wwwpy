@@ -11,9 +11,9 @@ bootstrap_javascript_placeholder = '// #bootstrap-placeholder#'
 # todo 2) parametrize the bootstrap route (now /)
 def bootstrap_routes(
         resources: List[ResourceIterable],
-        html: str = f'<h1>Loading...</h1><script>{bootstrap_javascript_placeholder}</script>',
-        python: str = 'import remote',
+        python: str,
         zip_route_path: str = '/wwwpy/bundle.zip',
+        html: str = f'<h1>Loading...</h1><script>{bootstrap_javascript_placeholder}</script>',
 ) -> Tuple[HttpRoute, HttpRoute]:
     """Returns a tuple of two routes: (bootstrap_route, zip_route)"""
 
