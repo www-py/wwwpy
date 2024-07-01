@@ -66,6 +66,15 @@ def test_module_function1():
     assert fun.signature == '(a: int, b: float) -> str'
     assert fun.is_coroutine_function
 
+def test_ast_module_function1():
+    # WHEN
+    target = ast_parser.module_from_package_name(support1_module_name)
+
+    # THEN
+    fun = target.functions[1]
+    assert fun.name == 'support1_function1'
+    assert fun.signature == '(a: int, b: float) -> str'
+    assert fun.is_coroutine_function
 
 def test_module_getitem_and_invoke():
     target = Module(support2)

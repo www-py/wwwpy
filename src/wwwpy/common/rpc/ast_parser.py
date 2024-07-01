@@ -26,7 +26,6 @@ def module_from_package_name(package_name: str) -> Module | None:
     if spec is None:
         return None
 
-
     source_code = spec.loader.get_source(package_name)
     functions = _get_function_definitions(source_code)
     return Module(package_name, functions)
@@ -46,7 +45,7 @@ def _get_function_definitions(source_code) -> List[Function]:
                 args.append(f"{arg_name}: {arg_annotation}" if arg_annotation else arg_name)
 
             returns = ast.get_source_segment(source_code, node.returns) if node.returns else None
-            signature = f"def {function_name}({', '.join(args)}) -> {returns}" if returns else f"def {function_name}({', '.join(args)})"
+            signature = '(' + ', '.join(args) + ')' + (f' -> {returns}' if returns else '')
             f = Function(function_name, signature, isinstance(node, ast.AsyncFunctionDef))
             functions.append(f)
 
