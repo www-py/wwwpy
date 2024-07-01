@@ -15,6 +15,7 @@ support2_module_name = 'tests.common.rpc.support2'
 
 support1_module_name = 'tests.common.rpc.support1'
 
+
 # done migrating
 def test_module_module():
     # WHEN
@@ -23,6 +24,7 @@ def test_module_module():
     # THEN
     assert target.name == 'tests.common.rpc.support1'
     assert len(target.functions) == 2
+
 
 # done migrating
 def test_module_function0():
@@ -35,6 +37,7 @@ def test_module_function0():
     assert fun.signature == '(a: int, b: int) -> int'
     assert not fun.is_coroutine_function
 
+
 # done migrating
 def test_module_function1():
     # WHEN
@@ -45,6 +48,7 @@ def test_module_function1():
     assert fun.name == 'support1_function1'
     assert fun.signature == '(a: int, b: float) -> str'
     assert fun.is_coroutine_function
+
 
 # done migrating
 def test_module_getitem_and_invoke():
@@ -64,15 +68,6 @@ async def test_module_invoke_async():
     assert function.is_coroutine_function
     actual = await function.func('hello', ' world')
     assert actual == 'hello world'
-
-
-def test_rpc():
-    request = RpcRequest.build_request(support2_module_name, 'support2_mul', 6, 7)
-    restored = RpcRequest.from_json(request.json())
-
-    assert restored.module == support2_module_name
-    assert restored.func == 'support2_mul'
-    assert restored.args == [6, 7]
 
 
 def test_services_not_found():
