@@ -14,6 +14,8 @@ from wwwpy.webserver import Webserver
 
 support2_module_name = 'tests.common.rpc.support2'
 
+support1_module_name = 'tests.common.rpc.support1'
+
 
 def test_module_module():
     # WHEN
@@ -23,12 +25,14 @@ def test_module_module():
     assert target.name == 'tests.common.rpc.support1'
     assert len(target.functions) == 2
 
+
 def test_ast_function_len():
-    target = ast_parser.module_from_package_name('tests.common.rpc.support1')
+    target = ast_parser.module_from_package_name(support1_module_name)
 
     # THEN
     assert target.name == 'tests.common.rpc.support1'
     assert len(target.functions) == 2
+
 
 def test_module_function0():
     # WHEN
@@ -40,9 +44,10 @@ def test_module_function0():
     assert fun.signature == '(a: int, b: int) -> int'
     assert not fun.is_coroutine_function
 
+
 def test_ast_module_function0():
     # WHEN
-    target = ast_parser.module_from_package_name('tests.common.rpc.support1')
+    target = ast_parser.module_from_package_name(support1_module_name)
 
     # THEN
     fun = target.functions[0]
