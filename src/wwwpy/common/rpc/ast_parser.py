@@ -6,6 +6,8 @@ from typing import NamedTuple, List
 
 class Function(NamedTuple):
     name: str
+    signature: str
+    is_coroutine_function: bool
 
 
 class Module:
@@ -24,7 +26,7 @@ def module_from_package_name(package_name: str) -> Module | None:
     if spec is None:
         return None
 
-    # return spec.origin if spec else None
+
     source_code = spec.loader.get_source(package_name)
     functions = _get_function_definitions(source_code)
     return Module(package_name, functions)
@@ -45,7 +47,7 @@ def _get_function_definitions(source_code) -> List[Function]:
 
             returns = ast.get_source_segment(source_code, node.returns) if node.returns else None
             signature = f"def {function_name}({', '.join(args)}) -> {returns}" if returns else f"def {function_name}({', '.join(args)})"
-            f = Function(function_name)
+            f = Function(function_name, signature, isinstance(node, ast.AsyncFunctionDef))
             functions.append(f)
 
     return functions

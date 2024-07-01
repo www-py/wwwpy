@@ -40,6 +40,16 @@ def test_module_function0():
     assert fun.signature == '(a: int, b: int) -> int'
     assert not fun.is_coroutine_function
 
+def test_ast_module_function0():
+    # WHEN
+    target = ast_parser.module_from_package_name('tests.common.rpc.support1')
+
+    # THEN
+    fun = target.functions[0]
+    assert fun.name == 'support1_function0'
+    assert fun.signature == '(a: int, b: int) -> int'
+    assert not fun.is_coroutine_function
+
 
 def test_module_function1():
     # WHEN
