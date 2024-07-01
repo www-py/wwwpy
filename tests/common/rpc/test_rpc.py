@@ -3,15 +3,14 @@ from types import ModuleType
 
 import wwwpy
 from tests import for_all_webservers
-from tests.test_rpc import support1, support3
-from tests.test_rpc import support2
+from tests.common.rpc import support3, support1, support2
 from wwwpy.exceptions import RemoteException
 from wwwpy.rpc import Module, RpcRequest, Services
 from wwwpy.server import find_port
 from wwwpy.unasync import unasync
 from wwwpy.webserver import Webserver
 
-support2_module_name = 'tests.test_rpc.support2'
+support2_module_name = 'tests.common.rpc.support2'
 
 
 def test_module_module():
@@ -19,7 +18,7 @@ def test_module_module():
     target = Module(support1)
 
     # THEN
-    assert target.name == 'tests.test_rpc.support1'
+    assert target.name == 'tests.common.rpc.support1'
     assert len(target.functions) == 2
 
 
