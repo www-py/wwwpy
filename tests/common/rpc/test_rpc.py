@@ -58,7 +58,7 @@ def test_module_getitem_and_invoke():
     actual = target['support2_mul'].func(6, 7)
     assert actual == 42
 
-
+# done migrating
 @unasync
 async def test_module_invoke_async():
     target = Module(support2)
