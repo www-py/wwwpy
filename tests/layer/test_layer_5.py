@@ -5,6 +5,7 @@ from playwright.sync_api import Page, expect
 
 from tests import for_all_webservers
 from wwwpy.bootstrap import bootstrap_routes
+from wwwpy.common.rpc.custom_loader import CustomFinder
 from wwwpy.resources import library_resources
 from wwwpy.server import configure
 from wwwpy.webserver import Webserver
@@ -135,3 +136,28 @@ es.onopen = lambda e: [es.send('foo1'), es.close()]
         [sleep(0.1) for _ in range(100) if len(incoming_messages) != 2]
         assert len(incoming_messages) == 2
         assert incoming_messages == ['foo1', None]
+
+
+class TestRpcRemote:
+    layer_5_rpc_remote = file_parent / 'layer_5_support/rpc_remote'
+
+    def test_remote_rpc_interceptor(self):
+        """Importing remote.rpc should not raise an exception even from the server side
+        It is because the import process is handled and recoded"""
+        import sys
+        sys.path.insert(0, str(self.layer_5_rpc_remote))
+        sys.meta_path.insert(0, CustomFinder())
+        from remote import rpc
+
+
+    # @for_all_webservers()
+    # def test_rpc_remote(self, page: Page, webserver: Webserver):
+    #     configure.convention(self.layer_5_rpc_remote, webserver)
+    #     webserver.start_listen()
+    #
+    #     page.goto(webserver.localhost_url())
+    #     expect(page.locator('body')).to_have_text('ready')
+    #
+    #     # because convention imported layer_5_rpc_remote in sys.path we can import the following
+    #     from server_side import call_remote
+    #     call_remote()
