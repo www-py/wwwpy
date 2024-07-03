@@ -10,7 +10,10 @@ class Function(NamedTuple):
     is_coroutine_function: bool
 
 
-class Module:
+class FuncMeta:
+    """It contains only the information about the functions of a module.
+    It does not have the actual functions.
+    """
     def __init__(self, name: str, functions: List[Function]):
         self.name = name
 
@@ -21,14 +24,17 @@ class Module:
         return self._funcs.get(name, None)
 
 
-def module_from_package_name(package_name: str) -> Module | None:
+def from_package_name(package_name: str) -> FuncMeta | None:
+    """it returns a FuncRegistry object from the given package name. If the package is not found, it returns None.
+    The package will not be loaded it will be parsed with ast module.
+    """
     spec = importlib.util.find_spec(package_name)
     if spec is None:
         return None
 
     source_code = spec.loader.get_source(package_name)
     functions = _get_function_definitions(source_code)
-    return Module(package_name, functions)
+    return FuncMeta(package_name, functions)
 
 
 def _get_function_definitions(source_code) -> List[Function]:

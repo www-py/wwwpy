@@ -1,9 +1,9 @@
 import importlib
-from wwwpy.common.rpc.ast_parser import Module
+from wwwpy.common.rpc.func_registry import FuncMeta
 
 
 class Invoker:
-    def __init__(self, module: Module):
+    def __init__(self, module: FuncMeta):
         self.module = module
         self.module_type = _load_package(module.name)
 

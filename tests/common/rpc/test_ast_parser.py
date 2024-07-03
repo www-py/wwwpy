@@ -1,9 +1,9 @@
 from tests.common.rpc.test_rpc import support1_module_name
-from wwwpy.common.rpc import ast_parser
+from wwwpy.common.rpc import func_registry
 
 
 def test_ast_function_len():
-    target = ast_parser.module_from_package_name(support1_module_name)
+    target = func_registry.from_package_name(support1_module_name)
 
     # THEN
     assert target.name == 'tests.common.rpc.support1'
@@ -12,7 +12,7 @@ def test_ast_function_len():
 
 def test_ast_module_function0():
     # WHEN
-    target = ast_parser.module_from_package_name(support1_module_name)
+    target = func_registry.from_package_name(support1_module_name)
 
     # THEN
     fun = target.functions[0]
@@ -23,7 +23,7 @@ def test_ast_module_function0():
 
 def test_ast_module_function1():
     # WHEN
-    target = ast_parser.module_from_package_name(support1_module_name)
+    target = func_registry.from_package_name(support1_module_name)
 
     # THEN
     fun = target.functions[1]
