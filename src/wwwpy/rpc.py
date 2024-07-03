@@ -69,11 +69,15 @@ class Proxy:
             raise RemoteException(ex)
         return response.result
 
-# todo rename to RpcRoute? or RpcService? or RpcDispatcher?
-class Services:
+class RpcRoute:
     def __init__(self, route_path: str):
         self._modules: Dict[str, Module] = {}
         self.route = HttpRoute(route_path, self._route_callback)
+
+    def _route_callback(self, request: HttpRequest) -> HttpResponse:
+        resp = self.dispatch(request.content)
+        response = HttpResponse(resp, 'application/json')
+        return response
 
     def add_module(self, module: Module):
         self._modules[module.name] = module
@@ -94,11 +98,6 @@ class Services:
 
         response = RpcResponse(result, exception)
         return response.to_json()
-
-    def _route_callback(self, request: HttpRequest) -> HttpResponse:
-        resp = self.dispatch(request.content)
-        response = HttpResponse(resp, 'application/json')
-        return response
 
     def remote_stub_resources(self) -> ResourceIterable:
         if len(self._modules) > 1:

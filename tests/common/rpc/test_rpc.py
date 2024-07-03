@@ -6,7 +6,7 @@ import wwwpy
 from tests import for_all_webservers
 from tests.common.rpc import support3, support1, support2
 from wwwpy.exceptions import RemoteException
-from wwwpy.rpc import Module, RpcRequest, Services
+from wwwpy.rpc import Module, RpcRequest, RpcRoute
 from wwwpy.server import find_port
 from wwwpy.unasync import unasync
 from wwwpy.webserver import Webserver
@@ -71,7 +71,7 @@ async def test_module_invoke_async():
 
 
 def test_services_not_found():
-    target = Services('/rpc1')
+    target = RpcRoute('/rpc1')
     actual = target.find_module(support2_module_name)
     assert actual is None
 
@@ -86,7 +86,7 @@ def test_services_not_found():
 @for_all_webservers()
 def test_rpc_integration(webserver: Webserver):
     """ server part """
-    services = Services('/rpc2')
+    services = RpcRoute('/rpc2')
     module = Module(support3)
     services.add_module(module)
 
