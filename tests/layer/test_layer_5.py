@@ -143,7 +143,8 @@ class TestRpcRemote:
 
     def test_remote_rpc_interceptor(self):
         """Importing remote.rpc should not raise an exception even from the server side
-        It is because the import process is handled and recoded"""
+        even though it imports 'js' that does not exist on the server side.
+        It is because the import process of such package is handled and modified"""
         import sys
         sys.path.insert(0, str(self.layer_5_rpc_remote))
         sys.meta_path.insert(0, CustomFinder())
