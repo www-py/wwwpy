@@ -1,15 +1,21 @@
+from __future__ import annotations
+
+import sys
 from pathlib import Path
 from time import sleep
 
+import pytest
 from playwright.sync_api import Page, expect
 
 from tests import for_all_webservers
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.common.rpc.custom_loader import CustomFinder
+from wwwpy.common.rpc.serializer import RpcResponse, RpcRequest
 from wwwpy.resources import library_resources
 from wwwpy.server import configure
+from wwwpy.server.proxy import Proxy
 from wwwpy.webserver import Webserver
-from wwwpy.websocket import WebsocketPool, PoolEvent, Change
+from wwwpy.websocket import WebsocketPool, PoolEvent, Change, SendEndpoint
 
 file_parent = Path(__file__).parent
 layer_5_rpc_server = file_parent / 'layer_5_support/rpc_server'
@@ -138,18 +144,43 @@ es.onopen = lambda e: [es.send('foo1'), es.close()]
         assert incoming_messages == ['foo1', None]
 
 
+@pytest.fixture
+def restore_sys_path():
+    original_sys_path = sys.path.copy()
+    yield
+    sys.path = original_sys_path
+
+
 class TestRpcRemote:
     layer_5_rpc_remote = file_parent / 'layer_5_support/rpc_remote'
 
-    def test_remote_rpc_interceptor(self):
+    def test_remote_rpc_interceptor(self, restore_sys_path):
         """Importing remote.rpc should not raise an exception even from the server side
         even though it imports 'js' that does not exist on the server side.
         It is because the import process of such package is handled and modified"""
-        import sys
+
         sys.path.insert(0, str(self.layer_5_rpc_remote))
         sys.meta_path.insert(0, CustomFinder())
         from remote import rpc
 
+    def test_remote_rpc_generated_code_should_forward_to_SendEndpoint(self, restore_sys_path):
+        sys.path.insert(0, str(self.layer_5_rpc_remote))
+        sys.meta_path.insert(0, CustomFinder())
+        messages = []
+
+        class SendMock(SendEndpoint):
+            def send(self, message: str | bytes | None) -> None:
+                messages.append(message)
+
+        from remote import rpc
+        target = rpc.Layer5Rpc1(Proxy('remote.rpc', SendMock()))
+        target.set_body_inner_html('hello')
+        assert len(messages) == 1
+        json_message = messages[0]
+        request = RpcRequest.from_json(json_message)
+        assert request.module == 'remote.rpc'
+        assert request.func == 'set_body_inner_html'
+        assert request.args == ['hello']
 
     # @for_all_webservers()
     # def test_rpc_remote(self, page: Page, webserver: Webserver):

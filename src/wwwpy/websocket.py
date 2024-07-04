@@ -64,7 +64,11 @@ class ListenerProtocol(Protocol):
     def __call__(self, message: str | bytes | None) -> None: ...
 
 
-class WebsocketEndpoint:
+class SendEndpoint:
+    def send(self, message: str | bytes | None) -> None: ...
+
+
+class WebsocketEndpoint(SendEndpoint):
     listeners: list[ListenerProtocol]
 
     # part to be called by user code to send a outgoing message
