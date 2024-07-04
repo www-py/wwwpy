@@ -82,7 +82,11 @@ def source_to_proxy(source):
 
             for f in b.body:
                 if isinstance(f, FunctionDef):
-                    content += f'    def {f.name}(self):\n' \
-                               f'       self.proxy.dispatch("{f.name}")\n'
+                    if len(f.args.args) > 1:  # beyond self
+                        args = ', ' + ', '.join([a.arg for a in f.args.args[1:]])
+                    else:
+                        args = ''
+                    content += f'    def {f.name}(self{args}):\n' \
+                               f'       self.proxy.dispatch("{f.name}"{args})\n'
 
     return content

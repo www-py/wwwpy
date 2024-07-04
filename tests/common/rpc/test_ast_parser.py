@@ -36,7 +36,7 @@ def test_ast_module_function1():
     assert fun.is_coroutine_function
 
 
-def test_ast_module_source_to_proxy():
+def test_ast_module_source_to_proxy_no_arguments():
     # language=Python
     target = func_registry.source_to_proxy("""
 import js
@@ -61,3 +61,30 @@ class Class1:
     c.alert()
 
     assert messages == [('alert', ())]
+
+
+def test_ast_module_source_to_proxy_with_arguments():
+    # language=Python
+    target = func_registry.source_to_proxy("""
+import js
+class Class1:
+    def alert(self, message:str) -> None:
+        js.alert(message)
+    """)
+    ast.parse(target)  # verify it's a valid python code
+
+    # exec the generated code
+    executed = dict()
+    exec(target, executed)
+    assert 'Class1' in executed
+
+    messages = []
+
+    class MockProxy:
+        def dispatch(self, func_name: str, *args) -> None:
+            messages.append((func_name, args))
+
+    c = executed['Class1'](MockProxy())
+    c.alert('foo')
+
+    assert messages == [('alert', ('foo',))]
