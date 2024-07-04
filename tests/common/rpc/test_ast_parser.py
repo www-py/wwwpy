@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+import ast
+
 from tests.common.rpc.test_rpc import support1_module_name
 from wwwpy.common.rpc import func_registry
 
@@ -30,3 +34,30 @@ def test_ast_module_function1():
     assert fun.name == 'support1_function1'
     assert fun.signature == '(a: int, b: float) -> str'
     assert fun.is_coroutine_function
+
+
+def test_ast_module_source_to_proxy():
+    # language=Python
+    target = func_registry.source_to_proxy("""
+import js
+class Class1:
+    def alert(self) -> None:
+        js.alert('hello')
+    """)
+    ast.parse(target)  # verify it's a valid python code
+
+    # exec the generated code
+    executed = dict()
+    exec(target, executed)
+    assert 'Class1' in executed
+
+    messages = []
+
+    class MockProxy:
+        def dispatch(self, func_name: str, *args) -> None:
+            messages.append((func_name, args))
+
+    c = executed['Class1'](MockProxy())
+    c.alert()
+
+    assert messages == [('alert', ())]

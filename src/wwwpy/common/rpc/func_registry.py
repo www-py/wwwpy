@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 import ast
 import importlib.util
+from ast import Module, FunctionDef, ClassDef
 from typing import NamedTuple, List
 
 
@@ -8,12 +10,19 @@ class Function(NamedTuple):
     name: str
     signature: str
     is_coroutine_function: bool
+    parameters: List[Parameters]
+
+
+class Parameters(NamedTuple):
+    name: str
+    annotation: str
 
 
 class FuncMeta:
     """It contains only the information about the functions of a module.
     It does not have the actual functions.
     """
+
     def __init__(self, name: str, functions: List[Function]):
         self.name = name
 
@@ -33,11 +42,11 @@ def from_package_name(package_name: str) -> FuncMeta | None:
         return None
 
     source_code = spec.loader.get_source(package_name)
-    functions = _get_function_definitions(source_code)
+    functions = function_definitions(source_code)
     return FuncMeta(package_name, functions)
 
 
-def _get_function_definitions(source_code) -> List[Function]:
+def function_definitions(source_code) -> List[Function]:
     tree = ast.parse(source_code)
     functions = []
 
@@ -45,14 +54,35 @@ def _get_function_definitions(source_code) -> List[Function]:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             function_name = node.name
             args = []
+            parameters = []
             for arg in node.args.args:
                 arg_name = arg.arg
                 arg_annotation = ast.get_source_segment(source_code, arg.annotation) if arg.annotation else None
                 args.append(f"{arg_name}: {arg_annotation}" if arg_annotation else arg_name)
+                parameters.append(Parameters(arg_name, arg_annotation))
 
             returns = ast.get_source_segment(source_code, node.returns) if node.returns else None
             signature = '(' + ', '.join(args) + ')' + (f' -> {returns}' if returns else '')
-            f = Function(function_name, signature, isinstance(node, ast.AsyncFunctionDef))
+            f = Function(function_name, signature, isinstance(node, ast.AsyncFunctionDef), parameters)
             functions.append(f)
 
     return functions
+
+
+def source_to_proxy(source):
+    tree: Module = ast.parse(source)
+    content = ''
+    # todo when detecting unsupported structure (e.g, nested class, AsyncFunctionDef, functions with results), log a warning message
+
+    for b in tree.body:
+        if isinstance(b, ClassDef):
+            content += f'class {b.name}:\n' \
+                       '    def __init__(self, proxy):\n' \
+                       '        self.proxy = proxy\n'
+
+            for f in b.body:
+                if isinstance(f, FunctionDef):
+                    content += f'    def {f.name}(self):\n' \
+                               f'       self.proxy.dispatch("{f.name}")\n'
+
+    return content
