@@ -35,6 +35,15 @@ def test_ast_module_function1():
     assert fun.signature == '(a: int, b: float) -> str'
     assert fun.is_coroutine_function
 
+class MockProxy:
+
+    def __init__(self, messages):
+        self.messages = messages
+
+    def dispatch(self, func_name: str, *args) -> None:
+        self.messages.append((func_name, args))
+
+
 
 def test_ast_module_source_to_proxy_no_arguments():
     # language=Python
@@ -52,12 +61,7 @@ class Class1:
     assert 'Class1' in executed
 
     messages = []
-
-    class MockProxy:
-        def dispatch(self, func_name: str, *args) -> None:
-            messages.append((func_name, args))
-
-    c = executed['Class1'](MockProxy())
+    c = executed['Class1'](MockProxy(messages))
     c.alert()
 
     assert messages == [('alert', ())]
@@ -80,11 +84,7 @@ class Class1:
 
     messages = []
 
-    class MockProxy:
-        def dispatch(self, func_name: str, *args) -> None:
-            messages.append((func_name, args))
-
-    c = executed['Class1'](MockProxy())
+    c = executed['Class1'](MockProxy(messages))
     c.alert('foo')
 
     assert messages == [('alert', ('foo',))]
