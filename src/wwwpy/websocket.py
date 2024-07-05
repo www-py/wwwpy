@@ -3,6 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import NamedTuple, Callable
 
+from wwwpy.common.rpc.serializer import RpcRequest
 from wwwpy.common.typing import Protocol
 
 
@@ -68,11 +69,20 @@ class SendEndpoint:
     def send(self, message: str | bytes | None) -> None: ...
 
 
+from typing import TypeVar, Callable
+
+T = TypeVar('T')
+
+
 class WebsocketEndpoint(SendEndpoint):
     listeners: list[ListenerProtocol]
 
     # part to be called by user code to send a outgoing message
     def send(self, message: str | bytes | None) -> None: ...
+
+    def rpc(self, factory: Callable[..., T]) -> T:
+        instance = factory(self)
+        return instance
 
 
 class WebsocketEndpointIO(WebsocketEndpoint):
@@ -89,3 +99,7 @@ class WebsocketEndpointIO(WebsocketEndpoint):
     def on_message(self, message: str | bytes | None) -> None:
         for listener in self.listeners:
             listener(message)
+
+    def dispatch(self, func_name: str, *args) -> None:
+        j = RpcRequest.build_request('#todo!', func_name, *args).json()
+        self.send(j)

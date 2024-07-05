@@ -146,9 +146,11 @@ es.onopen = lambda e: [es.send('foo1'), es.close()]
 
 @pytest.fixture
 def restore_sys_path():
-    original_sys_path = sys.path.copy()
+    sys_path = sys.path.copy()
+    sys_meta_path = sys.meta_path.copy()
     yield
-    sys.path = original_sys_path
+    sys.path = sys_path
+    sys.meta_path = sys_meta_path
 
 
 class TestRpcRemote:
@@ -179,17 +181,19 @@ class TestRpcRemote:
         json_message = messages[0]
         request = RpcRequest.from_json(json_message)
         assert request.module == 'remote.rpc'
-        assert request.func == 'set_body_inner_html'
+        assert request.func == 'Layer5Rpc1.set_body_inner_html'
         assert request.args == ['hello']
 
-    # @for_all_webservers()
-    # def test_rpc_remote(self, page: Page, webserver: Webserver):
-    #     configure.convention(self.layer_5_rpc_remote, webserver)
-    #     webserver.start_listen()
-    #
-    #     page.goto(webserver.localhost_url())
-    #     expect(page.locator('body')).to_have_text('ready')
-    #
-    #     # because convention imported layer_5_rpc_remote in sys.path we can import the following
-    #     from server_side import call_remote
-    #     call_remote()
+    @for_all_webservers()
+    def test_rpc_remote(self, page: Page, webserver: Webserver, restore_sys_path):
+        configure.convention(self.layer_5_rpc_remote, webserver)
+        webserver.start_listen()
+
+        page.goto(webserver.localhost_url())
+        expect(page.locator('body')).to_have_text('ready')
+
+        # because convention imported layer_5_rpc_remote in sys.path we can import the following
+        from server_side import call_remote
+        call_remote('server-side')
+        expect(page.locator('body')).to_have_text('server-side')
+

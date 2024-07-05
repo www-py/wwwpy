@@ -5,11 +5,13 @@ from pathlib import Path
 from typing import List
 
 from wwwpy.bootstrap import bootstrap_routes
+from wwwpy.common.rpc.custom_loader import CustomFinder
 from wwwpy.http import HttpRoute
 from wwwpy.resources import library_resources, from_directory, from_file
 from wwwpy.server.rpc import configure_services
 from wwwpy.webserver import wait_forever, Webserver
 from wwwpy.webservers.available_webservers import available_webservers
+from wwwpy.websocket import WebsocketPool
 
 
 def start_default(port: int, directory: Path):
@@ -21,6 +23,11 @@ def start_default(port: int, directory: Path):
     wait_forever()
 
 
+
+
+websocket_pool: WebsocketPool = None
+
+
 def convention(directory: Path, webserver: Webserver) -> List[HttpRoute]:
     """
     Convention for a wwwpy server.
@@ -29,8 +36,11 @@ def convention(directory: Path, webserver: Webserver) -> List[HttpRoute]:
     """
     print(f'applying convention to working_dir: {directory}')
     sys.path.insert(0, str(directory))
+    sys.meta_path.insert(0, CustomFinder())
+    global websocket_pool
+    websocket_pool = WebsocketPool('/wwwpy/ws')
     services = configure_services('/wwwpy/rpc')
-    routes = [services.route, *bootstrap_routes(
+    routes = [services.route, websocket_pool.http_route, *bootstrap_routes(
         resources=[
             library_resources(),
             services.remote_stub_resources(),

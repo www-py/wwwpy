@@ -64,7 +64,7 @@ class Class1:
     c = executed['Class1'](MockProxy(messages))
     c.alert()
 
-    assert messages == [('alert', ())]
+    assert messages == [('Class1.alert', ())]
 
 
 def test_ast_module_source_to_proxy_with_arguments():
@@ -87,4 +87,4 @@ class Class1:
     c = executed['Class1'](MockProxy(messages))
     c.alert('foo')
 
-    assert messages == [('alert', ('foo',))]
+    assert messages == [('Class1.alert', ('foo',))]
