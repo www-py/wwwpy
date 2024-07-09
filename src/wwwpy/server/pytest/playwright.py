@@ -35,7 +35,13 @@ def playwright_setup_page_logger(page: Page):
 
 def playwright_patch_timeout() -> None:
     def PLAYWRIGHT_PATCH_TIMEOUT_MILLIS() -> int:
-        return int(os.environ.get('PLAYWRIGHT_PATCH_TIMEOUT_MILLIS', '30000'))
+        timeout = 30000
+        try:
+            import wwwpy_user_conf
+            timeout = wwwpy_user_conf.PLAYWRIGHT_PATCH_TIMEOUT_MILLIS
+        except ImportError:
+            pass
+        return int(os.environ.get('PLAYWRIGHT_PATCH_TIMEOUT_MILLIS', f'{timeout}'))
 
     print(f'Using PLAYWRIGHT_PATCH_TIMEOUT, current value={PLAYWRIGHT_PATCH_TIMEOUT_MILLIS()}')
 
