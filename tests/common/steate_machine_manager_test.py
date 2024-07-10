@@ -136,9 +136,9 @@ class EventRecorder:
 class ThrottlerFixture:
 
     def __init__(self):
-        self.event_recorder = EventRecorder()
-        self.time_mock = TimeMock()
-        self.target = EventThrottler(50, self.event_recorder.append, self.time_mock.time)
+        self.events = EventRecorder()
+        self.time = TimeMock()
+        self.target = EventThrottler(50, self.events.append, self.time.time)
 
 
 @pytest.fixture
@@ -149,16 +149,16 @@ def throttler():
 def test_event_manager(throttler):
     e1 = Event('a', 'create')
     throttler.target.new_event(e1)
-    assert throttler.event_recorder.events == [e1]
+    assert throttler.events.events == [e1]
 
 
 def test_event_in_window_should_be_withold(throttler):
     e1 = Event('a', 'create')
     throttler.target.new_event(e1)
-    throttler.event_recorder.events.clear()
+    throttler.events.events.clear()
 
-    throttler.time_mock.add(timedelta(milliseconds=40))
+    throttler.time.add(timedelta(milliseconds=40))
 
     e2 = Event('a', 'modify')
     throttler.target.new_event(e2)
-    assert throttler.event_recorder.events == []
+    assert throttler.events.events == []
