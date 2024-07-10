@@ -4,18 +4,15 @@ import sys
 from pathlib import Path
 from time import sleep
 
-import pytest
 from playwright.sync_api import Page, expect
 
-from tests import for_all_webservers
+from tests import for_all_webservers, restore_sys_path
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.common.rpc.custom_loader import CustomFinder
-from wwwpy.common.rpc.serializer import RpcResponse, RpcRequest
 from wwwpy.resources import library_resources
 from wwwpy.server import configure
-from wwwpy.server.proxy import Proxy
 from wwwpy.webserver import Webserver
-from wwwpy.websocket import WebsocketPool, PoolEvent, Change, SendEndpoint, DispatchEndpoint
+from wwwpy.websocket import WebsocketPool, PoolEvent, Change
 
 file_parent = Path(__file__).parent
 layer_5_rpc_server = file_parent / 'layer_5_support/rpc_server'
@@ -144,15 +141,6 @@ es.onopen = lambda e: [es.send('foo1'), es.close()]
         assert incoming_messages == ['foo1', None]
 
 
-@pytest.fixture
-def restore_sys_path():
-    sys_path = sys.path.copy()
-    sys_meta_path = sys.meta_path.copy()
-    yield
-    sys.path = sys_path
-    sys.meta_path = sys_meta_path
-
-
 class TestRpcRemote:
     layer_5_rpc_remote = file_parent / 'layer_5_support/rpc_remote'
 
@@ -163,7 +151,6 @@ class TestRpcRemote:
 
         sys.path.insert(0, str(self.layer_5_rpc_remote))
         sys.meta_path.insert(0, CustomFinder({'remote', 'remote.rpc'}))
-        from remote import rpc
 
     # def test_remote_rpc_generated_code_should_forward_to_SendEndpoint(self, restore_sys_path):
     #     sys.path.insert(0, str(self.layer_5_rpc_remote))

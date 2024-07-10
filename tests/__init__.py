@@ -1,3 +1,4 @@
+import sys
 from functools import partial
 from types import ModuleType
 from typing import Iterable
@@ -18,3 +19,12 @@ def _webservers_instances() -> Iterable[Webserver]:
 def for_all_webservers():
     return partial(pytest.mark.parametrize, 'webserver', _webservers_instances(),
                    ids=available_webservers().ids)()
+
+
+@pytest.fixture
+def restore_sys_path():
+    sys_path = sys.path.copy()
+    sys_meta_path = sys.meta_path.copy()
+    yield
+    sys.path = sys_path
+    sys.meta_path = sys_meta_path
