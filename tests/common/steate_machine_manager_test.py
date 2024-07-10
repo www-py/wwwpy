@@ -109,9 +109,17 @@ class EventThrottler:
     def new_event(self, event: Event):
         prev_evt = self._states.get(event.key, None)
         if prev_evt is None:
-            self._states[event.key] = _EventState(self._time_provider(), event)
+            state = _EventState(self._time_provider(), event)
+            self._states[event.key] = state
+            self._next.put(state)
             self._emit(event)
             return
+
+    def process_queue(self):
+        if self._next.empty():
+            return
+        evt = self._next.get_nowait()
+        self._emit(evt.event)
 
 
 class TimeMock:
@@ -127,10 +135,13 @@ class TimeMock:
 
 class EventRecorder:
     def __init__(self):
-        self.events = []
+        self.list = []
 
     def append(self, event):
-        self.events.append(event)
+        self.list.append(event)
+
+    def clear(self):
+        self.list.clear()
 
 
 class ThrottlerFixture:
@@ -149,16 +160,30 @@ def throttler():
 def test_event_manager(throttler):
     e1 = Event('a', 'create')
     throttler.target.new_event(e1)
-    assert throttler.events.events == [e1]
+    assert throttler.events.list == [e1]
 
 
 def test_event_in_window_should_be_withold(throttler):
-    e1 = Event('a', 'create')
-    throttler.target.new_event(e1)
-    throttler.events.events.clear()
+    throttler.target.new_event(Event('a', 'create'))
+    throttler.events.clear()
 
     throttler.time.add(timedelta(milliseconds=40))
 
     e2 = Event('a', 'modify')
     throttler.target.new_event(e2)
-    assert throttler.events.events == []
+    assert throttler.events.list == []
+
+
+def test_emit_after_throttling(throttler):
+    throttler.target.new_event(Event('a', 'create'))
+
+    throttler.time.add(timedelta(milliseconds=40))
+
+    e2 = Event('a', 'modify')
+    throttler.target.new_event(e2)
+
+    throttler.time.add(timedelta(milliseconds=11))
+
+    throttler.events.list.clear()
+    throttler.target.process_queue()
+    assert throttler.events.list == [e2]
