@@ -10,8 +10,7 @@ def reload(module):
     # importlib.invalidate_caches()
     return importlib.reload(module)
 
-# todo rename to private?
-def find_package_location(package_name) -> Path | None:
+def _find_package_location(package_name) -> Path | None:
     import importlib.util
 
     spec = importlib.util.find_spec(package_name)

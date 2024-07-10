@@ -1,5 +1,3 @@
-from js import document
+import js
 
-
-async def main():
-    document.body.innerHTML = 'ready'
+js.document.body.innerHTML = 'ready'

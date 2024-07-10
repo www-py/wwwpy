@@ -8,6 +8,7 @@ from typing import Optional
 import tornado
 import tornado.web
 from tornado import websocket
+from tornado.ioloop import IOLoop
 
 from wwwpy.http import HttpRoute, HttpRequest
 from ..webserver import Webserver
@@ -15,6 +16,8 @@ from ..websocket import WebsocketRoute, WebsocketEndpointIO
 
 
 class WsTornado(Webserver):
+    ioloop: IOLoop = None
+
     def __init__(self):
         super().__init__()
         self.app = tornado.web.Application()
@@ -22,17 +25,16 @@ class WsTornado(Webserver):
 
     def _setup_route(self, route: HttpRoute | WebsocketRoute):
         if isinstance(route, WebsocketRoute):
-            self.app.add_handlers(r".*", [(route.path, _WebsocketHandler, dict(route=route))])
+            self.app.add_handlers(r".*", [(route.path, _WebsocketHandler, dict(route=route, server=self))])
         else:
             self.app.add_handlers(r".*", [(route.path, TornadoHandler, dict(route=route))])
 
     def _start_listen(self):
-        async def run_async():
-            self.app.listen(self.port, self.host)
-            await asyncio.Event().wait()
-
         def run():
-            asyncio.run(run_async())
+            self.app.listen(self.port, self.host)
+            self.ioloop = IOLoop.current()
+            # asyncio.set_event_loop(self.ioloop.asyncio_loop)
+            self.ioloop.start()
 
         self.thread = Thread(target=run, daemon=True)
         self.thread.start()
@@ -80,13 +82,15 @@ class TornadoHandler(tornado.web.RequestHandler):
 
 class _WebsocketHandler(websocket.WebSocketHandler):
     route: WebsocketRoute = None
+    server: WsTornado = None
     endpoint: WebsocketEndpointIO = None
 
-    def initialize(self, route: WebsocketRoute) -> None:
+    def initialize(self, route: WebsocketRoute, server: WsTornado) -> None:
         self.route = route
+        self.server = server
 
-    def check_origin(self, origin):
-        return True
+    # def check_origin(self, origin):
+    #     return True
 
     def open(self):
         self.endpoint = WebsocketEndpointIO(self._on_send)
@@ -99,7 +103,7 @@ class _WebsocketHandler(websocket.WebSocketHandler):
         if data is None:
             self.close()
         else:
-            self.write_message(data)
+            self.server.ioloop.asyncio_loop.call_soon_threadsafe(self.write_message, data)
 
     def on_close(self):
         self.endpoint.on_message(None)

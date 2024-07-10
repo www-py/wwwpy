@@ -69,7 +69,7 @@ def function_definitions(source_code) -> List[Function]:
     return functions
 
 
-def source_to_proxy(source):
+def source_to_proxy(module_name: str, source: str):
     tree: Module = ast.parse(source)
     content = ''
     # todo when detecting unsupported structure (e.g, nested class, AsyncFunctionDef, functions with results), log a warning message
@@ -77,8 +77,8 @@ def source_to_proxy(source):
     for b in tree.body:
         if isinstance(b, ClassDef):
             content += f'class {b.name}:\n' \
-                       '    def __init__(self, proxy):\n' \
-                       '        self.proxy = proxy\n'
+                       '    def __init__(self, send_endpoint):\n' \
+                       '        self.send_endpoint = send_endpoint\n'
 
             for f in b.body:
                 fqn = b.name + '.' + f.name
@@ -88,6 +88,6 @@ def source_to_proxy(source):
                     else:
                         args = ''
                     content += f'    def {f.name}(self{args}):\n' \
-                               f'       self.proxy.dispatch("{fqn}"{args})\n'
+                               f'       self.send_endpoint.dispatch("{module_name}", "{fqn}"{args})\n'
 
     return content

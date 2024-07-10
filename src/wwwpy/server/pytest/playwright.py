@@ -39,7 +39,7 @@ def playwright_patch_timeout() -> None:
         try:
             import wwwpy_user_conf
             timeout = wwwpy_user_conf.PLAYWRIGHT_PATCH_TIMEOUT_MILLIS
-        except ImportError:
+        except:
             pass
         return int(os.environ.get('PLAYWRIGHT_PATCH_TIMEOUT_MILLIS', f'{timeout}'))
 

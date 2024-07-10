@@ -16,10 +16,11 @@ def main():
                         default=8000, type=int,
                         nargs='?',
                         help='Specify alternate port [default: 8000]')
+    parser.add_argument('--dev', action='store_true',)
     args = parser.parse_args()
 
     working_dir = Path(args.directory).absolute()
-    configure.start_default(args.port, working_dir)
+    configure.start_default(args.port, working_dir, dev_mode=args.dev)
 
 
 if __name__ == '__main__':

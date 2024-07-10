@@ -68,6 +68,9 @@ class ListenerProtocol(Protocol):
 class SendEndpoint:
     def send(self, message: str | bytes | None) -> None: ...
 
+class DispatchEndpoint(Protocol):
+    def dispatch(self, module: str, func_name: str, *args) -> None: ...
+
 
 from typing import TypeVar, Callable
 
@@ -100,6 +103,6 @@ class WebsocketEndpointIO(WebsocketEndpoint):
         for listener in self.listeners:
             listener(message)
 
-    def dispatch(self, func_name: str, *args) -> None:
-        j = RpcRequest.build_request('#todo!', func_name, *args).json()
+    def dispatch(self, module: str, func_name: str, *args) -> None:
+        j = RpcRequest.build_request(module, func_name, *args).json()
         self.send(j)

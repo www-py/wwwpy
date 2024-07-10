@@ -4,6 +4,7 @@ import ast
 
 from tests.common.rpc.test_rpc import support1_module_name
 from wwwpy.common.rpc import func_registry
+from wwwpy.websocket import DispatchEndpoint
 
 
 def test_ast_function_len():
@@ -35,19 +36,20 @@ def test_ast_module_function1():
     assert fun.signature == '(a: int, b: float) -> str'
     assert fun.is_coroutine_function
 
-class MockProxy:
+
+class MockDispatchEndpoint(DispatchEndpoint):
 
     def __init__(self, messages):
         self.messages = messages
 
-    def dispatch(self, func_name: str, *args) -> None:
-        self.messages.append((func_name, args))
-
+    def dispatch(self, module: str, func_name: str, *args) -> None:
+        self.messages.append((module, func_name, *args))
 
 
 def test_ast_module_source_to_proxy_no_arguments():
+    mod_name = "mod1"
     # language=Python
-    target = func_registry.source_to_proxy("""
+    target = func_registry.source_to_proxy(mod_name, """
 import js
 class Class1:
     def alert(self) -> None:
@@ -61,15 +63,16 @@ class Class1:
     assert 'Class1' in executed
 
     messages = []
-    c = executed['Class1'](MockProxy(messages))
+    c = executed['Class1'](MockDispatchEndpoint(messages))
     c.alert()
 
-    assert messages == [('Class1.alert', ())]
+    assert messages == [(mod_name, 'Class1.alert')]
 
 
 def test_ast_module_source_to_proxy_with_arguments():
+    mod_name = 'mod2'
     # language=Python
-    target = func_registry.source_to_proxy("""
+    target = func_registry.source_to_proxy(mod_name, """
 import js
 class Class1:
     def alert(self, message:str) -> None:
@@ -84,7 +87,7 @@ class Class1:
 
     messages = []
 
-    c = executed['Class1'](MockProxy(messages))
+    c = executed['Class1'](MockDispatchEndpoint(messages))
     c.alert('foo')
 
-    assert messages == [('Class1.alert', ('foo',))]
+    assert messages == [(mod_name, 'Class1.alert', 'foo')]
