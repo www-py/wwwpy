@@ -9,10 +9,12 @@ import pytest
 from enum import Enum
 import pytest
 
+
 class State(Enum):
     OPEN = 1
     LOADED = 2
     THROTTLE = 3
+
 
 class StateMachine:
     def __init__(self):
@@ -36,9 +38,11 @@ class StateMachine:
             self.state = State.OPEN
             return True
 
+
 @pytest.fixture
 def state_machine():
     return StateMachine()
+
 
 def test_initial_state_transition(state_machine):
     assert state_machine.state == State.OPEN
@@ -46,11 +50,13 @@ def test_initial_state_transition(state_machine):
     assert state_machine.state == State.THROTTLE
     assert result is True
 
+
 def test_throttling_state_transition(state_machine):
     state_machine.state = State.THROTTLE
     result = state_machine.event()
     assert state_machine.state == State.LOADED
     assert result is False
+
 
 def test_timeout_in_throttling_state(state_machine):
     state_machine.state = State.THROTTLE
@@ -58,11 +64,13 @@ def test_timeout_in_throttling_state(state_machine):
     assert state_machine.state == State.OPEN
     assert result is False
 
+
 def test_timeout_in_loaded_state(state_machine):
     state_machine.state = State.LOADED
     result = state_machine.timeout()
     assert state_machine.state == State.OPEN
     assert result is True
+
 
 def test_event_in_loaded_state(state_machine):
     state_machine.state = State.LOADED
@@ -85,7 +93,11 @@ class _EventState:
 
 
 class EventThrottler:
-    def __init__(self, timeout_millis: int, emit: Callable[[Any], None], time_provider: Callable[[], datetime]):
+    def __init__(
+            self, timeout_millis: int,
+            emit: Callable[[Any], None],
+            time_provider: Callable[[], datetime]
+            , wakeup_changed: Callable[[], None] = None):
         if time_provider is None:
             time_provider = datetime.utcnow
         self._time_provider = time_provider
@@ -102,43 +114,51 @@ class EventThrottler:
             return
 
 
-def test_event_manager():
-    items = []
+class TimeMock:
+    def __init__(self):
+        self.now = datetime(2021, 1, 1, 0, 0, 0, 0)
 
-    def callback(item: Any):
-        items.append(item)
+    def time(self):
+        return self.now
 
-    now = datetime(2021, 1, 1, 0, 0, 0, 0)
+    def add(self, delta):
+        self.now = self.now + delta
 
-    def time_provider():
-        nonlocal now
-        return now
 
-    em = EventThrottler(50, callback, time_provider)
+class EventRecorder:
+    def __init__(self):
+        self.events = []
+
+    def append(self, event):
+        self.events.append(event)
+
+
+class ThrottlerFixture:
+
+    def __init__(self):
+        self.event_recorder = EventRecorder()
+        self.time_mock = TimeMock()
+        self.target = EventThrottler(50, self.event_recorder.append, self.time_mock.time)
+
+
+@pytest.fixture
+def throttler():
+    return ThrottlerFixture()
+
+
+def test_event_manager(throttler):
     e1 = Event('a', 'create')
-    em.new_event(e1)
-    assert items == [e1]
+    throttler.target.new_event(e1)
+    assert throttler.event_recorder.events == [e1]
 
 
-def test_event_in_window_should_be_withold():
-    items = []
-
-    def callback(item: Any):
-        items.append(item)
-
-    now = datetime(2021, 1, 1, 0, 0, 0, 0)
-
-    def time_provider():
-        nonlocal now
-        return now
-
-    em = EventThrottler(50, callback, time_provider)
-
+def test_event_in_window_should_be_withold(throttler):
     e1 = Event('a', 'create')
-    em.new_event(e1)
-    items.clear()
+    throttler.target.new_event(e1)
+    throttler.event_recorder.events.clear()
 
-    now = now + timedelta(milliseconds=40)
+    throttler.time_mock.add(timedelta(milliseconds=40))
+
     e2 = Event('a', 'modify')
-    em.new_event(e2)
-    assert items == []
+    throttler.target.new_event(e2)
+    assert throttler.event_recorder.events == []
