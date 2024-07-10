@@ -6,3 +6,5 @@
 #
 tornado==6.4.1
     # via wwwpy (pyproject.toml)
+watchdog==4.0.1
+    # via wwwpy (pyproject.toml)

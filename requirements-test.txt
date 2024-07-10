@@ -96,3 +96,5 @@ urllib3==2.2.2
     # via requests
 virtualenv==20.26.3
     # via tox
+watchdog==4.0.1
+    # via wwwpy (pyproject.toml)
