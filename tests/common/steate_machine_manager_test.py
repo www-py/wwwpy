@@ -112,9 +112,12 @@ class EventThrottler:
         self._time_provider: datetime = time_provider
         self._emit = emit
         self._timeout_millis = timeout_millis
-        self._lock = Lock()
+
+        # The following two data structure needs to be intended as a single atomic datastructure
+        # if an item appears/disappear from one it should appear/disappear from the other
         self._queue: PriorityQueue[_EventState] = PriorityQueue()
         self._states: Dict[Any, _EventState] = {}
+        self._lock = Lock()
 
     def new_event(self, event: Event):
         with self._lock:
@@ -309,7 +312,24 @@ def test_two_throttling_events_on_the_same_key(throttler):
     assert throttler.events.list == [event]
 
 
-def test_multiple_keys_that_are_long_overdue():
+def test_multiple_keys_that_are_long_overdue(throttler):
     # should be emitted all in one process call
     # and eviction should be applied
-    pass
+    throttler.target.new_event(Event('a', 'create'))
+    throttler.target.new_event(Event('b', 'create'))
+    throttler.target.process_queue()
+    throttler.events.clear()
+
+    throttler.time.add(timedelta(milliseconds=20))
+
+    # these two will be withheld
+    ea = Event('a', 'modify')
+    eb = Event('b', 'modify')
+    throttler.target.new_event(ea)
+    throttler.target.new_event(eb)
+
+    throttler.time.add(timedelta(milliseconds=40))
+    throttler.target.process_queue()
+
+    assert throttler.events.list == [ea, eb]
+    assert throttler.target.next_action_delta() is None
