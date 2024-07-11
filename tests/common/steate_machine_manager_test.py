@@ -146,11 +146,12 @@ class EventThrottler:
                     evt.state = State.THROTTLE
                     evt.action_time += timedelta(milliseconds=self._timeout_millis)
                     self._queue.put(evt)
-
-                elif evt.state == State.LOADED:
-                    del self._states[evt.event.key]
                 else:
-                    evt = None
+                    del self._states[evt.event.key]
+                    if evt.state == State.LOADED:
+                        pass  # we need to emit this
+                    elif evt.state == State.THROTTLE:
+                        evt = None  # we already emitted when it was in FIRST state
 
             if evt is not None:
                 self._emit(evt.event)
@@ -309,6 +310,24 @@ def test_two_throttling_events_on_the_same_key(throttler):
     event = Event('a', 'modify2')
     throttler.target.new_event(event)  # this should be emitted immediately
     throttler.target.process_queue()
+    assert throttler.events.list == [event]
+
+
+def test_eviction_when_event_dies_in_throttled_state(throttler):
+    throttler.target.new_event(Event('a', 'create'))
+    throttler.target.process_queue()  # the FIRST is emitted and the state is changed to THROTTLE
+
+    throttler.time.add(timedelta(milliseconds=60))
+    throttler.target.process_queue()  # the THROTTLE should be evicted
+
+    assert throttler.target.next_action_delta() is None
+
+    # to be sure it was evicted, we send another event that should be immediately emitted
+    throttler.events.clear()
+    event = Event('a', 'modify')
+    throttler.target.new_event(event)
+    throttler.target.process_queue()
+
     assert throttler.events.list == [event]
 
 
