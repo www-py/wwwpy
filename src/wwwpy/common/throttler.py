@@ -61,12 +61,12 @@ class EventThrottler:
             self.wakeup()
 
     def process_queue(self):
-        while not self._queue.empty():
-            with self._lock:
+        def done():
+            delta = self.next_action_delta()
+            return delta is None or delta.total_seconds() > 0
 
-                delta = self.next_action_delta()
-                if delta is None or delta.total_seconds() > 0:
-                    return
+        while not done():
+            with self._lock:
 
                 evt = self._queue.get()
                 if evt.state == State.FIRST:
