@@ -23,8 +23,12 @@ class ChangeHandler(FileSystemEventHandler):
         super().__init__()
 
     def on_any_event(self, event: FileSystemEvent) -> None:
-        if event.event_type == 'modified':
+        if Path(event.src_path) == self._path:
             return
+        if event.event_type == 'closed' or event.event_type == 'opened':
+            return
+        # if event.event_type != 'modified':
+        #     return
         self._throttler.new_event(Event(str(event.src_path), event))
 
     def watch_directory(self):
