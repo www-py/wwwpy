@@ -4,7 +4,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from queue import PriorityQueue
-from typing import Any, Callable, Dict
+from threading import Lock
+from typing import Any, Callable, Dict, List
 
 import pytest
 
@@ -16,6 +17,7 @@ class State(Enum):
     OPEN = 1
     LOADED = 2
     THROTTLE = 3
+    FIRST = 4
 
 
 class StateMachine:
@@ -91,7 +93,7 @@ class Event:
 class _EventState:
     action_time: datetime = field()
     event: Event = field(compare=False)
-    state: State = field(compare=False, default=State.THROTTLE)
+    state: State = field(compare=False, default=State.FIRST)
 
 
 class EventThrottler:
@@ -100,6 +102,8 @@ class EventThrottler:
             emit: Callable[[Any], None],
             time_provider: Callable[[], datetime],
             wakeup: Callable[[], None] = None):
+        """A wakeup call should wake up the thread. The thread should call process_queue to process the events.
+        and then go to sleep accordingly to next_action_delta."""
         if time_provider is None:
             time_provider = datetime.utcnow
         if wakeup is None:
@@ -108,33 +112,45 @@ class EventThrottler:
         self._time_provider: datetime = time_provider
         self._emit = emit
         self._timeout_millis = timeout_millis
+        self._lock = Lock()
         self._queue: PriorityQueue[_EventState] = PriorityQueue()
         self._states: Dict[Any, _EventState] = {}
 
     def new_event(self, event: Event):
-        prev_evt = self._states.get(event.key, None)
-        if prev_evt is None:
-            wakeup_time = self._time_provider() + timedelta(milliseconds=self._timeout_millis)
-            state = _EventState(wakeup_time, event)
-            self._states[event.key] = state
-            self._queue.put(state)
-            self._emit(event)
-        else:
-            assert prev_evt.event.key == event.key
-            prev_evt.event = event
-            prev_evt.state = State.LOADED
+        with self._lock:
+            prev_evt = self._states.get(event.key, None)
+            if prev_evt is None:
+                state = _EventState(self._time_provider(), event)  # add for immediate emit
+                self._states[event.key] = state
+                self._queue.put(state)
+            else:
+                assert prev_evt.event.key == event.key
+                prev_evt.event = event
+                prev_evt.state = State.LOADED
 
-        self._wakeup()
+            self._wakeup()
 
     def process_queue(self):
-        delta = self.next_action_delta()
-        if delta is None or delta.total_seconds() > 0:
-            return
+        while not self._queue.empty():
+            with self._lock:
 
-        evt = self._queue.get()
-        if evt.state == State.LOADED:
-            del self._states[evt.event.key]
-            self._emit(evt.event)
+                delta = self.next_action_delta()
+                if delta is None or delta.total_seconds() > 0:
+                    return
+
+                evt = self._queue.get()
+                if evt.state == State.FIRST:
+                    evt.state = State.THROTTLE
+                    evt.action_time += timedelta(milliseconds=self._timeout_millis)
+                    self._queue.put(evt)
+
+                elif evt.state == State.LOADED:
+                    del self._states[evt.event.key]
+                else:
+                    evt = None
+
+            if evt is not None:
+                self._emit(evt.event)
 
     def next_action_delta(self) -> timedelta | None:
         if self._queue.empty():
@@ -169,17 +185,16 @@ class EventRecorder:
 class ThrottlerFixture:
 
     def __init__(self):
-        self.access_requests = []
+        self.wakeup_requests = []
         self.events = EventRecorder()
         self.time = TimeMock()
-        self.target = EventThrottler(50, self.events.append, self.time.time, self._assess_request)
+        self.target = EventThrottler(50, self.events.append, self.time.time, self._wakeup)
 
-    def _assess_request(self):
-        # self.access_requests.append(self.target.wait_to_next())
-        self.access_requests.append(None)
+    def _wakeup(self):
+        self.wakeup_requests.append(None)
 
-    def assess_count(self):
-        return len(self.access_requests)
+    def wakeup_count(self):
+        return len(self.wakeup_requests)
 
 
 @pytest.fixture
@@ -190,6 +205,9 @@ def throttler():
 def test_event_manager(throttler):
     e1 = Event('a', 'create')
     throttler.target.new_event(e1)
+    assert throttler.wakeup_count() == 1
+    assert throttler.events.list == []  # emit are done in the thread
+    throttler.target.process_queue()
     assert throttler.events.list == [e1]
 
 
@@ -207,11 +225,14 @@ def test_event_in_window_should_be_withhold(throttler):
 def test_next_action_time(throttler):
     assert throttler.target.next_action_delta() is None
     throttler.target.new_event(Event('a', 'create'))
+    assert throttler.target.next_action_delta() == timedelta(milliseconds=0)
+    throttler.target.process_queue()  # emit the initial event
     assert throttler.target.next_action_delta() == timedelta(milliseconds=50)
 
 
 def test_emit_after_throttling(throttler):
     throttler.target.new_event(Event('a', 'create'))
+    throttler.target.process_queue()
 
     throttler.time.add(timedelta(milliseconds=40))
 
@@ -227,6 +248,7 @@ def test_emit_after_throttling(throttler):
 
 def test_emit_after_discarding_one_event(throttler):
     throttler.target.new_event(Event('a', 'create'))
+    throttler.target.process_queue()
 
     throttler.events.list.clear()
 
@@ -247,12 +269,24 @@ def test_emit_after_discarding_one_event(throttler):
 
 
 def test_wakeup(throttler):
-    assert throttler.assess_count() == 0
+    assert throttler.wakeup_count() == 0
     throttler.target.new_event(Event('a', 'create'))
-    assert throttler.assess_count() == 1
+    assert throttler.wakeup_count() == 1
 
 
-def test_eviction(throttler):
+def test_eviction_fast(throttler):
+    # if the thread is not fast enough we could lose the first event
+    throttler.target.new_event(Event('a', 'create'))
+    throttler.target.process_queue()
+
+    throttler.time.add(timedelta(milliseconds=60))
+    throttler.target.process_queue()
+
+    assert throttler.target.next_action_delta() is None
+
+
+def test_eviction_slow(throttler):
+    # if the thread is not fast enough we could lose the first event
     throttler.target.new_event(Event('a', 'create'))
     throttler.time.add(timedelta(milliseconds=60))
     throttler.target.process_queue()
