@@ -22,6 +22,9 @@ class Webserver(ABC):
         return self
 
     def start_listen(self) -> 'Webserver':
+        print(f'Starting web server on:\n'
+              f' - http://{self.host}:{self.port}\n'
+              f' - {self.localhost_url()}\n')
         self._start_listen()
         self.wait_ready()
         return self

@@ -12,18 +12,26 @@ def _setup_browser_dev_mode():
     import wwwpy.remote.rpc as rpc
     import wwwpy.common.reloader as reloader
 
-    def listener(filename, content: str):
-        console.log(f'filename={filename}, content={content[:100]}')
+    def listener(event_type: str, filename: str, content: str):
+        content_sub = None if content is None else content[:100]
+        console.log(f'filename={filename}, content={content_sub}')
         bro = reloader._find_package_location('remote').parent
         root = bro.parent
         f = root / filename
-        if f.read_text() != content:
+        if event_type == 'deleted':
+            console.log(f'deleting {f}')
+            f.unlink(missing_ok=True)
+        elif not f.exists() or f.read_text() != content:
+            console.log(f'writing {f}')
             f.write_text(content)
-            reloader.unload_path(filename)
-            async def reload():
-                console.log('reloading')
-                await _invoke_browser_main(True)
-            _set_timeout(reload)
+
+
+        async def reload():
+            reloader.unload_path(str(bro))
+            console.log('reloading')
+            await _invoke_browser_main(True)
+
+        _set_timeout(reload)
 
     rpc.add_listener(listener)
 

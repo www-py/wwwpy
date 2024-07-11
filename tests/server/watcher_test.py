@@ -56,3 +56,19 @@ def test_watcher_new_file(watcher_mock):
     fs_event = watcher_mock.events[0][1]
     assert fs_event.src_path == str(file)
     assert fs_event.event_type == 'modified'
+
+
+def test_watcher_delete(watcher_mock):
+    file = watcher_mock.tmp_path / 'file.txt'
+    file.write_text('world')
+
+    watcher_mock.target.watch_directory()
+
+    file.unlink()
+
+    watcher_mock.wait_for_events(1)
+
+    assert len(watcher_mock.events) == 1
+    fs_event = watcher_mock.events[0][1]
+    assert fs_event.src_path == str(file)
+    assert fs_event.event_type == 'deleted'

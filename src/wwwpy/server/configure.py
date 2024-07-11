@@ -48,25 +48,22 @@ def convention(directory: Path, webserver: Webserver, dev_mode=False) -> List[Ht
 
     if dev_mode:
         import wwwpy.remote.rpc as rpc
-        import asyncio
         from wwwpy.server import watcher
+        from watchdog.events import FileSystemEventHandler, FileSystemEvent
 
-        def on_file_changed(path: Path):
-            path = Path(path)
+        def on_file_changed(event: FileSystemEvent):
+            path = Path(event.src_path)
             if path.is_dir() or path == directory:
                 return
             rel_path = path.relative_to(directory)
             print(f'clients len: {len(websocket_pool.clients)} file changed: {rel_path}')
             for client in websocket_pool.clients:
                 remote_rpc = client.rpc(rpc.BrowserRpc)
-                remote_rpc.file_changed(str(rel_path), path.read_text())
+                content = None if path.is_dir() or not path.exists() else path.read_text()
+                remote_rpc.file_changed(event.event_type, str(rel_path), content)
 
-        def on_file_changed_loop(path: Path):
-            loop = asyncio.get_event_loop()
-            loop.call_soon_threadsafe(on_file_changed, path)
-
-        # watcher._watch_directory(browser_dir, on_file_changed_loop)
-        watcher._watch_directory(browser_dir, on_file_changed)
+        handler = watcher.ChangeHandler(browser_dir, on_file_changed)
+        handler.watch_directory()
 
     if webserver is not None:
         webserver.set_http_route(*routes)

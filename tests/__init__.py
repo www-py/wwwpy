@@ -1,6 +1,6 @@
+import os
 import sys
 from functools import partial
-from types import ModuleType
 from typing import Iterable
 
 import pytest
@@ -28,3 +28,11 @@ def restore_sys_path():
     yield
     sys.path = sys_path
     sys.meta_path = sys_meta_path
+
+
+def is_github():
+    return 'GITHUB_SHA' in os.environ
+
+
+def timeout_multiplier():
+    return 15 if is_github() else 1
