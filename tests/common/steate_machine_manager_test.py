@@ -5,82 +5,15 @@ from datetime import datetime, timedelta
 from enum import Enum
 from queue import PriorityQueue
 from threading import Lock
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict
 
-import pytest
-
-from enum import Enum
 import pytest
 
 
 class State(Enum):
-    OPEN = 1
-    LOADED = 2
-    THROTTLE = 3
-    FIRST = 4
-
-
-class StateMachine:
-    def __init__(self):
-        self.state = State.OPEN
-
-    def event(self) -> bool:
-        if self.state == State.OPEN:
-            self.state = State.THROTTLE
-            return True
-        elif self.state == State.THROTTLE:
-            self.state = State.LOADED
-            return False
-        elif self.state == State.LOADED:
-            return False
-
-    def timeout(self) -> bool:
-        if self.state == State.THROTTLE:
-            self.state = State.OPEN
-            return False
-        elif self.state == State.LOADED:
-            self.state = State.OPEN
-            return True
-
-
-@pytest.fixture
-def state_machine():
-    return StateMachine()
-
-
-def test_initial_state_transition(state_machine):
-    assert state_machine.state == State.OPEN
-    result = state_machine.event()
-    assert state_machine.state == State.THROTTLE
-    assert result is True
-
-
-def test_throttling_state_transition(state_machine):
-    state_machine.state = State.THROTTLE
-    result = state_machine.event()
-    assert state_machine.state == State.LOADED
-    assert result is False
-
-
-def test_timeout_in_throttling_state(state_machine):
-    state_machine.state = State.THROTTLE
-    result = state_machine.timeout()
-    assert state_machine.state == State.OPEN
-    assert result is False
-
-
-def test_timeout_in_loaded_state(state_machine):
-    state_machine.state = State.LOADED
-    result = state_machine.timeout()
-    assert state_machine.state == State.OPEN
-    assert result is True
-
-
-def test_event_in_loaded_state(state_machine):
-    state_machine.state = State.LOADED
-    result = state_machine.event()
-    assert state_machine.state == State.LOADED
-    assert result is False
+    FIRST = 1
+    THROTTLE = 2
+    DELAYED = 3
 
 
 @dataclass
@@ -129,7 +62,7 @@ class EventThrottler:
             else:
                 assert prev_evt.event.key == event.key
                 prev_evt.event = event
-                prev_evt.state = State.LOADED
+                prev_evt.state = State.DELAYED
 
             self._wakeup()
 
@@ -148,7 +81,7 @@ class EventThrottler:
                     self._queue.put(evt)
                 else:
                     del self._states[evt.event.key]
-                    if evt.state == State.LOADED:
+                    if evt.state == State.DELAYED:
                         pass  # we need to emit this
                     elif evt.state == State.THROTTLE:
                         evt = None  # we already emitted when it was in FIRST state
