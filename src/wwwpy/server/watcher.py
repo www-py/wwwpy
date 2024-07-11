@@ -1,39 +1,36 @@
-import os
-from typing import Dict
-
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler, FileSystemEvent
-from pathlib import Path
-import time
 from datetime import datetime
+from pathlib import Path
+from typing import Callable
+
+from watchdog.events import FileSystemEventHandler, FileSystemEvent
+from watchdog.observers import Observer
+
+from wwwpy.common.throttler import Event
+from wwwpy.server.throttler_thread import EventThrottlerThread
 
 
-class _ChangeHandler(FileSystemEventHandler):
+class ChangeHandler(FileSystemEventHandler):
 
-    def __init__(self, path: Path, callback):
-        self.path = path
-        self.callback = callback
-        self.observer = Observer()
+    def __init__(self, path: Path, callback: Callable[[FileSystemEvent], None]):
+        self._path = path
+        self._callback = callback
+        self._observer = Observer()
+
+        def _emit(event: Event):
+            self._callback(event.item)
+
+        self._throttler = EventThrottlerThread(50, _emit, datetime.utcnow)
         super().__init__()
 
     def on_any_event(self, event: FileSystemEvent) -> None:
-        if event.event_type != 'modified':
+        if event.event_type == 'modified':
             return
-
-        dt = datetime.now()
-        print(f'{dt} Event: {event.event_type} Path: {event.src_path}')
-
-        self.callback(event.src_path)
+        self._throttler.new_event(Event(str(event.src_path), event))
 
     def watch_directory(self):
-        self.observer.schedule(self, str(self.path), recursive=True)
-        self.observer.start()
+        self._observer.schedule(self, str(self._path), recursive=True)
+        self._observer.start()
 
     def stop_join(self):
-        self.observer.stop()
-        self.observer.join()
-
-
-def _watch_directory(path: Path, callback):
-    handler = _ChangeHandler(path, callback)
-    handler.watch_directory()
+        self._observer.stop()
+        self._observer.join()

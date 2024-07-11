@@ -30,7 +30,7 @@ class _EventState:
 class EventThrottler:
     def __init__(
             self, timeout_millis: int,
-            emit: Callable[[Any], None],
+            emit: Callable[[Event], None],
             time_provider: Callable[[], datetime]):
         """A wakeup call should wake up the thread. The thread should call process_queue to process the events.
         and then go to sleep accordingly to next_action_delta."""
