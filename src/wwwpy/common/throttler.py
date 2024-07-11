@@ -31,16 +31,12 @@ class EventThrottler:
     def __init__(
             self, timeout_millis: int,
             emit: Callable[[Any], None],
-            time_provider: Callable[[], datetime],
-            wakeup: Callable[[], None] = None):
+            time_provider: Callable[[], datetime]):
         """A wakeup call should wake up the thread. The thread should call process_queue to process the events.
         and then go to sleep accordingly to next_action_delta."""
         if time_provider is None:
             time_provider = datetime.utcnow
-        if wakeup is None:
-            wakeup = lambda: None
-        self._wakeup = wakeup
-        self._time_provider: datetime = time_provider
+        self._time_provider = time_provider
         self._emit = emit
         self._timeout_millis = timeout_millis
 
@@ -62,7 +58,7 @@ class EventThrottler:
                 prev_evt.event = event
                 prev_evt.state = State.DELAYED
 
-            self._wakeup()
+            self.wakeup()
 
     def process_queue(self):
         while not self._queue.empty():
@@ -94,3 +90,5 @@ class EventThrottler:
         diff = evt.action_time - self._time_provider()
         return diff
 
+    def wakeup(self):
+        raise NotImplementedError

@@ -35,7 +35,8 @@ class ThrottlerFixture:
         self.wakeup_requests = []
         self.events = EventRecorder()
         self.time = TimeMock()
-        self.target = EventThrottler(50, self.events.append, self.time.time, self._wakeup)
+        self.target = EventThrottler(50, self.events.append, self.time.time)
+        self.target.wakeup = self._wakeup
 
     def _wakeup(self):
         self.wakeup_requests.append(None)
