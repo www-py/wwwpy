@@ -25,7 +25,7 @@ class ChangeHandler(FileSystemEventHandler):
     def on_any_event(self, event: FileSystemEvent) -> None:
         if Path(event.src_path) == self._path:
             return
-        if event.event_type == 'closed' or event.event_type == 'opened':
+        if event.event_type == 'closed' or event.event_type == 'opened' or event.event_type == 'created':
             return
         # if event.event_type != 'modified':
         #     return
