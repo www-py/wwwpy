@@ -33,7 +33,7 @@ def restore_sys_path():
 
 
 def is_github():
-    return 'GITHUB_SHA' in os.environ
+    return os.getenv('GITHUB_ACTIONS') == 'true'
 
 
 def timeout_multiplier():
