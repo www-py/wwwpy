@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 from functools import partial
@@ -9,6 +10,7 @@ from wwwpy.server import find_port
 from wwwpy.webserver import Webserver
 from wwwpy.webservers.available_webservers import available_webservers
 
+logger = logging.getLogger(__name__)
 
 def _webservers_instances() -> Iterable[Webserver]:
     for i in available_webservers().instances():
@@ -35,4 +37,6 @@ def is_github():
 
 
 def timeout_multiplier():
-    return 15 if is_github() else 1
+    multiplier = 15 if is_github() else 1
+    print(f'timeout_multiplier={multiplier}')
+    return multiplier
