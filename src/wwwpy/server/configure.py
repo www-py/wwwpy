@@ -60,7 +60,7 @@ def convention(directory: Path, webserver: Webserver, dev_mode=False) -> List[Ht
             for client in websocket_pool.clients:
                 remote_rpc = client.rpc(rpc.BrowserRpc)
                 content = None if path.is_dir() or not path.exists() else path.read_text()
-                remote_rpc.file_changed(event.event_type, str(rel_path), content)
+                remote_rpc.file_changed(event.event_type, str(rel_path).replace('\\', '/'), content)
 
         handler = watcher.ChangeHandler(browser_dir, on_file_changed)
         handler.watch_directory()
