@@ -2,7 +2,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable
 
-from watchdog.events import FileSystemEventHandler, FileSystemEvent
+from watchdog.events import FileSystemEventHandler, FileSystemEvent, DirModifiedEvent
 from watchdog.observers import Observer
 
 from wwwpy.common.throttler import Event
@@ -24,6 +24,8 @@ class ChangeHandler(FileSystemEventHandler):
 
     def on_any_event(self, event: FileSystemEvent) -> None:
         if Path(event.src_path) == self._path:
+            return
+        if isinstance(event, DirModifiedEvent):
             return
         if event.event_type == 'closed' or event.event_type == 'opened' or event.event_type == 'created':
             return
