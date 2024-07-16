@@ -24,6 +24,10 @@ class WatcherMock:
     def wait_for_events(self, count):
         [sleep(0.1 * timeout_multiplier()) for _ in range(10) if len(self.events) < count]
 
+    def __str__(self):
+        # on GitHub Actions when a test fails we can see the print of the variables in the local scope
+        events_str = ', '.join([f"{event[1].event_type} at {event[1].src_path} after {event[0].total_seconds()} seconds" for event in self.events])
+        return f"WatcherMock(tmp_path={self.tmp_path}, prev={self.prev}, events=[{events_str}])"
 
 @pytest.fixture
 def watcher_mock(tmp_path):
