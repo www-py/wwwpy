@@ -34,7 +34,6 @@ def restore_sys_path():
 
 def is_github():
     getenv = os.getenv('GITHUB_ACTIONS')
-    print(f'GITHUB_ACTIONS=`{getenv}`')
     return getenv == 'true'
 
 
