@@ -33,7 +33,9 @@ def restore_sys_path():
 
 
 def is_github():
-    return os.getenv('GITHUB_ACTIONS') == 'true'
+    getenv = os.getenv('GITHUB_ACTIONS')
+    print(f'GITHUB_ACTIONS=`{getenv}`')
+    return getenv == 'true'
 
 
 def timeout_multiplier():
