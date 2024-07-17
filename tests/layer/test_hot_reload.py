@@ -7,6 +7,8 @@ from tests import for_all_webservers, restore_sys_path
 from wwwpy.server import configure
 from wwwpy.webserver import Webserver
 
+def test_foo():
+    pass
 
 @for_all_webservers()
 def test_hot_reload__modified(page: Page, webserver: Webserver, tmp_path, restore_sys_path):
