@@ -29,6 +29,9 @@ class WatcherMock:
         events_str = ', '.join([f"{event[1].event_type} at {event[1].src_path} after {event[0].total_seconds()} seconds" for event in self.events])
         return f"WatcherMock(tmp_path={self.tmp_path}, prev={self.prev}, events=[{events_str}])"
 
+    def __repr__(self):
+        return str(self)
+
 @pytest.fixture
 def watcher_mock(tmp_path):
     return WatcherMock(tmp_path)
