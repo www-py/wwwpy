@@ -84,3 +84,6 @@ from js import document
 file1_txt = Path(__file__).parent / 'file1.txt'
 document.body.innerHTML = 'exists=' + str(file1_txt.exists())
 """
+
+def test_zzzz():
+    pass
