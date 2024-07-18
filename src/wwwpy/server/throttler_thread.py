@@ -5,10 +5,10 @@ from wwwpy.common.throttler import EventThrottler
 
 
 class EventThrottlerThread(EventThrottler):
-    def __init__(self, max_delay, emit: Callable[[Event],None], time_provider):
+    def __init__(self, max_delay_millis, emit: Callable[[Event], None], time_provider):
         self._thread = Thread(daemon=True, target=self._thread_loop, name='EventThrottlerThread')
         self._event = Event()
-        super().__init__(max_delay, emit, time_provider)
+        super().__init__(max_delay_millis, emit, time_provider)
         self._thread.start()
 
     def wakeup(self):
