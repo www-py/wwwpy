@@ -19,7 +19,7 @@ class ChangeHandler(FileSystemEventHandler):
         def _emit(event: Event):
             self._callback(event.item)
 
-        self._throttler = EventThrottlerThread(50, _emit, datetime.utcnow)
+        self._throttler = EventThrottlerThread(100, _emit, datetime.utcnow)
         super().__init__()
 
     def on_any_event(self, event: FileSystemEvent) -> None:
