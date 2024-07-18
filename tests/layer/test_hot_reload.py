@@ -1,6 +1,3 @@
-"""PYTEST_DONT_REWRITE"""
-from pathlib import Path
-
 from playwright.sync_api import Page, expect
 
 from tests import for_all_webservers, restore_sys_path
@@ -36,7 +33,8 @@ def test_hot_reload__created(page: Page, webserver: Webserver, tmp_path, restore
     page.goto(webserver.localhost_url())
     expect(page.locator('body')).to_have_text('exists=False')
 
-    (remote / 'component1.py').write_text("from js import document, console; console.log('comp1!'); document.body.innerHTML = 'import ok'")
+    (remote / 'component1.py').write_text(
+        "from js import document, console; console.log('comp1!'); document.body.innerHTML = 'import ok'")
     expect(page.locator('body')).to_have_text('exists=True')
 
 
