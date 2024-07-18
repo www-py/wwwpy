@@ -32,9 +32,10 @@ class CustomFinder(importlib.abc.MetaPathFinder):
 
     def find_spec(self, fullname, path, target=None):
         if fullname in self.packages_name:
-            # Temporarily remove this finder from sys.meta_path to avoid recursion
+            # Temporarily remove this finder from sys.meta_path to avoid recursion. Remove also pytest rewriter hook
             orig = sys.meta_path.copy()
-            sys.meta_path = [finder for finder in sys.meta_path if not isinstance(finder, CustomFinder)]
+            sys.meta_path = [f for f in sys.meta_path if not isinstance(f, CustomFinder)]
+            sys.meta_path = [f for f in sys.meta_path if f.__class__.__name__ != 'AssertionRewritingHook']
             try:
                 spec = importlib.util.find_spec(fullname)
             finally:
