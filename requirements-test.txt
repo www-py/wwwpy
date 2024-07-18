@@ -4,44 +4,39 @@
 #
 #    pip-compile --extra=test --output-file=requirements-test.txt
 #
-attrs==23.2.0
-    # via pytest
-certifi==2024.6.2
+cachetools==5.4.0
+    # via tox
+certifi==2024.7.4
     # via requests
+chardet==5.2.0
+    # via tox
 charset-normalizer==3.3.2
     # via requests
+colorama==0.4.6
+    # via tox
 distlib==0.3.8
     # via virtualenv
-exceptiongroup==1.2.1
+exceptiongroup==1.2.2
     # via pytest
 filelock==3.15.4
     # via
     #   tox
     #   virtualenv
-flake8==7.1.0
-    # via flake8-polyfill
-flake8-polyfill==1.0.2
-    # via pep8-naming
 greenlet==3.0.3
     # via playwright
 idna==3.7
     # via requests
 iniconfig==2.0.0
     # via pytest
-mccabe==0.7.0
-    # via flake8
-mypy==1.0.1
-    # via wwwpy (pyproject.toml)
-mypy-extensions==1.0.0
-    # via mypy
 packaging==24.1
     # via
+    #   pyproject-api
     #   pytest
     #   tox
-pep8-naming==0.11.1
-    # via wwwpy (pyproject.toml)
 platformdirs==4.2.2
-    # via virtualenv
+    # via
+    #   tox
+    #   virtualenv
 playwright==1.45.0
     # via
     #   pytest-playwright
@@ -50,15 +45,11 @@ pluggy==1.5.0
     # via
     #   pytest
     #   tox
-py==1.11.0
-    # via tox
-pycodestyle==2.12.0
-    # via flake8
 pyee==11.1.0
     # via playwright
-pyflakes==3.2.0
-    # via flake8
-pytest==7.2.2
+pyproject-api==1.7.1
+    # via tox
+pytest==8.2.2
     # via
     #   pytest-base-url
     #   pytest-playwright
@@ -74,24 +65,19 @@ python-slugify==8.0.4
     # via pytest-playwright
 requests==2.32.3
     # via pytest-base-url
-six==1.16.0
-    # via tox
 text-unidecode==1.3
     # via python-slugify
-toml==0.10.2
-    # via tox
 tomli==2.0.1
     # via
-    #   mypy
+    #   pyproject-api
     #   pytest
+    #   tox
 tornado==6.4.1
     # via wwwpy (pyproject.toml)
-tox==3.23.0
+tox==4.16.0
     # via wwwpy (pyproject.toml)
 typing-extensions==4.12.2
-    # via
-    #   mypy
-    #   pyee
+    # via pyee
 urllib3==2.2.2
     # via requests
 virtualenv==20.26.3

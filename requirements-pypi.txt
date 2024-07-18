@@ -6,7 +6,9 @@
 #
 backports-tarfile==1.2.0
     # via jaraco-context
-certifi==2024.6.2
+build==1.2.1
+    # via wwwpy (pyproject.toml)
+certifi==2024.7.4
     # via requests
 cffi==1.16.0
     # via cryptography
@@ -20,6 +22,7 @@ idna==3.7
     # via requests
 importlib-metadata==8.0.0
     # via
+    #   build
     #   keyring
     #   twine
 importlib-resources==6.4.0
@@ -44,8 +47,10 @@ more-itertools==10.3.0
     # via
     #   jaraco-classes
     #   jaraco-functools
-nh3==0.2.17
+nh3==0.2.18
     # via readme-renderer
+packaging==24.1
+    # via build
 pkginfo==1.10.0
     # via twine
 pycparser==2.22
@@ -54,6 +59,8 @@ pygments==2.18.0
     # via
     #   readme-renderer
     #   rich
+pyproject-hooks==1.1.0
+    # via build
 readme-renderer==43.0
     # via twine
 requests==2.32.3
@@ -68,6 +75,8 @@ rich==13.7.1
     # via twine
 secretstorage==3.3.3
     # via keyring
+tomli==2.0.1
+    # via build
 tornado==6.4.1
     # via wwwpy (pyproject.toml)
 twine==5.1.1
@@ -78,6 +87,8 @@ urllib3==2.2.2
     # via
     #   requests
     #   twine
+watchdog==4.0.1
+    # via wwwpy (pyproject.toml)
 zipp==3.19.2
     # via
     #   importlib-metadata

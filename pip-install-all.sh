@@ -4,8 +4,7 @@ pip install -r requirements-dev.txt
 pip install -r requirements-test.txt
 pip install -r requirements-pypi.txt
 pip install -e .
-
-playwright install
+playwright install-deps chromium
 
 # maybe these are better; BUT the above fixes the version of the unbounded dependencies
 # pip install  .[dev]

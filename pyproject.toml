@@ -1,7 +1,46 @@
+# https://packaging.python.org/en/latest/tutorials/packaging-projects/
+[project]
+name = "wwwpy"
+version = "0.1.8"
+authors = [{ name = "Simone Giacomelli", email = "simone.giacomelli@gmail.com" }]
+dependencies = ["tornado==6.4.1", "watchdog==4.0.1"]
+requires-python = ">=3.8"
+keywords = ["wwwpy", "wasm", "pyodide", "web", "development", "dom", "html", "javascript"]
+readme = "README.md"
+license = { file = "LICENSE" }
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+
+[project.urls]
+Homepage = "https://github.com/www-py/wwwpy"
+Issues = "https://github.com/www-py/wwwpy/issues"
+
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.black]
-line-length = 79
-target_version = ['py39']
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.optional-dependencies]
+test = ["tox", "pytest", "playwright", "pytest-playwright", "pytest-xvirt"]
+dev = ["webtypy", "playwright"]
+pypi = ["twine", "build"]
+# pip install -e ".[all]" or pip install -e ".[test,dev]"
+all = ["foo_package[test,dev,pypy]"]
+
+
+[project.entry-points.pytest11]
+pytest_wwwpy = "wwwpy.server.pytest.pytest_plugin"
+
+
+# the following should be already the default see: https://setuptools.pypa.io/en/latest/userguide/datafiles.html
+# include_package_data = True
