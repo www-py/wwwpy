@@ -13,15 +13,4 @@ class MyElement(wpc.Component):
     )
 
     expect = SourceInfo(classes=[ClassInfo('MyElement', [AttrInfo('btn1', 'HTMLButtonElement', 'wpc.element()')])])
-
     assert target == expect
-#
-# def test_add_attribute():
-#     source_code = """
-# import wwwpy.remote.component as wpc
-#
-# class MyElement(wpc.Component):
-#     pass
-#     """
-#
-#

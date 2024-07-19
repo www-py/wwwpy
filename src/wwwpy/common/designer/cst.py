@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List
 
 import libcst as cst
-
+import libcst
 
 class AddFieldToClassTransformer(cst.CSTTransformer):
     def __init__(self, class_name, new_field):
@@ -71,6 +71,7 @@ import libcst as cst
 
 class ClassInfoExtractor(cst.CSTVisitor):
     def __init__(self):
+        super().__init__()
         self.classes = []
 
     def visit_ClassDef(self, node: cst.ClassDef) -> None:
@@ -84,7 +85,7 @@ class ClassInfoExtractor(cst.CSTVisitor):
                         attr_name = item.target.value
                         attr_type = item.annotation.annotation.value
                         # Default value handling is simplified; real scenarios may need more complex logic
-                        default = getattr(item.value, 'value', None)
+                        default = libcst.Module([]).code_for_node(item.value)
                         attributes.append(AttrInfo(name=attr_name, type=attr_type, default=default))
 
         self.classes.append(ClassInfo(name=class_name, attributes=attributes))
