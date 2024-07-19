@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import NamedTuple, Callable
+from typing import NamedTuple, Protocol
 
 from wwwpy.common.rpc.serializer import RpcRequest
-from wwwpy.common.typing import Protocol
 
 
 class WebsocketRoute(NamedTuple):

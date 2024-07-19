@@ -1,16 +1,13 @@
-import json
 import traceback
 from inspect import getmembers, isfunction, signature, iscoroutinefunction, Signature
 from types import ModuleType, FunctionType
-from typing import NamedTuple, List, Tuple, Any, Optional, Dict, Callable, Awaitable, Iterable, Iterator
+from typing import NamedTuple, List, Tuple, Any, Optional, Dict, Callable, Awaitable, Protocol, Iterator
 
 from wwwpy.common.iterlib import CallableToIterable
 from wwwpy.common.rpc.serializer import RpcRequest, RpcResponse
 from wwwpy.exceptions import RemoteException
 from wwwpy.http import HttpRoute, HttpResponse, HttpRequest
 from wwwpy.resources import Resource, StringResource, ResourceIterable
-from wwwpy.common.typing import Protocol
-
 from wwwpy.unasync import unasync
 
 
@@ -47,6 +44,7 @@ class Module:
 def function_list(module: ModuleType) -> List[Function]:
     return list(map(_std_function_to_function, getmembers(module, isfunction)))
 
+
 Fetch = Callable[[str, str, str], Awaitable[str]]
 
 
@@ -68,6 +66,7 @@ class Proxy:
         if ex is not None and ex != '':
             raise RemoteException(ex)
         return response.result
+
 
 class RpcRoute:
     def __init__(self, route_path: str):
