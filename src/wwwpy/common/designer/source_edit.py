@@ -102,3 +102,15 @@ class HTMLStringUpdater(cst.CSTTransformer):
             modified_html = self.html_manipulator(original_html)
             return updated_node.with_changes(value=f'"""{modified_html}"""')
         return updated_node
+
+
+def add_component(source_code: str, attribute_name: str, attribute_type: str, html_piece: str) -> str:
+    named_html = html_piece.replace('#name#', attribute_name)
+
+    def manipulate_html(html):
+        return html + named_html
+
+    source1 = add_attribute(source_code, Attribute(attribute_name, attribute_type, 'wpc.element()'))
+    source2 = html_edit(source1, manipulate_html)
+
+    return source2
