@@ -40,3 +40,35 @@ def source_info(source):
     extractor = ClassInfoExtractor()
     extractor.visit(tree)
     return SourceInfo(extractor.classes)
+
+
+import ast
+
+def source_add_attribute(source, attr_info):
+    class AddAttributeTransformer(ast.NodeTransformer):
+        def visit_ClassDef(self, node):
+            # Check if this is the target class by name
+            if node.name == "MyElement":
+                # Create a new AnnAssign node for the new attribute
+                new_attr = ast.AnnAssign(
+                    target=ast.Name(id=attr_info.name, ctx=ast.Store()),
+                    annotation=ast.Name(id=attr_info.type, ctx=ast.Load()),
+                    value=ast.Call(
+                        func=ast.Name(id=attr_info.default.split('(')[0], ctx=ast.Load()),
+                        args=[],
+                        keywords=[]
+                    ),
+                    simple=1
+                )
+                # Add the new attribute to the beginning of the class body
+                node.body.insert(0, new_attr)
+            return node
+
+    # Parse the source code into an AST
+    tree = ast.parse(source)
+    # Transform the AST
+    transformer = AddAttributeTransformer()
+    transformed_tree = transformer.visit(tree)
+    # Unparse the AST back into source code
+    new_source = ast.unparse(transformed_tree)
+    return new_source
