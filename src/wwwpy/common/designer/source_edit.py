@@ -32,12 +32,26 @@ class ClassInfoExtractor(ast.NodeVisitor):
         for item in node.body:
             if isinstance(item, ast.AnnAssign):
                 attr_name = item.target.id
-                attr_type = item.annotation.id
+                attr_type = self.get_annotation_type(item.annotation)
                 default = ast.unparse(item.value) if item.value else None
                 attributes.append(Attribute(attr_name, attr_type, default))
         self.classes.append(ClassInfo(class_name, attributes))
         self.generic_visit(node)
 
+    def get_annotation_type(self, annotation):
+        if isinstance(annotation, ast.Name):
+            return annotation.id
+        elif isinstance(annotation, ast.Attribute):
+            names = []
+            while isinstance(annotation, ast.Attribute):
+                names.append(annotation.attr)
+                annotation = annotation.value
+            if isinstance(annotation, ast.Name):
+                names.append(annotation.id)
+            names.reverse()
+            return '.'.join(names)
+        else:
+            return 'Unknown'
 
 def info(source):
     tree = ast.parse(source)
