@@ -4,7 +4,7 @@ name = "wwwpy"
 version = "0.1.9"
 authors = [{ name = "Simone Giacomelli", email = "simone.giacomelli@gmail.com" }]
 dependencies = ["tornado==6.4.1", "watchdog==4.0.1"]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 keywords = ["wwwpy", "wasm", "pyodide", "web", "development", "dom", "html", "javascript"]
 readme = "README.md"
 license = { file = "LICENSE" }
