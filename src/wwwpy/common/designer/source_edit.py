@@ -10,14 +10,17 @@ class Attribute:
     type: str
     default: str
 
+
 @dataclass
 class ClassInfo:
     name: str
     attributes: List[Attribute]
 
+
 @dataclass
 class Info:
     classes: List[ClassInfo]
+
 
 class ClassInfoExtractor(ast.NodeVisitor):
     def __init__(self):
@@ -35,6 +38,7 @@ class ClassInfoExtractor(ast.NodeVisitor):
         self.classes.append(ClassInfo(class_name, attributes))
         self.generic_visit(node)
 
+
 def info(source):
     tree = ast.parse(source)
     extractor = ClassInfoExtractor()
@@ -44,31 +48,35 @@ def info(source):
 
 import ast
 
-def add_attribute(source, attr_info):
-    class AddAttributeTransformer(ast.NodeTransformer):
-        def visit_ClassDef(self, node):
-            # Check if this is the target class by name
-            if node.name == "MyElement":
-                # Create a new AnnAssign node for the new attribute
-                new_attr = ast.AnnAssign(
-                    target=ast.Name(id=attr_info.name, ctx=ast.Store()),
-                    annotation=ast.Name(id=attr_info.type, ctx=ast.Load()),
-                    value=ast.Call(
-                        func=ast.Name(id=attr_info.default.split('(')[0], ctx=ast.Load()),
-                        args=[],
-                        keywords=[]
-                    ),
-                    simple=1
-                )
-                # Append the new attribute to the end of the class body
-                node.body.append(new_attr)
-            return node
+import libcst as cst
+import libcst
 
-    # Parse the source code into an AST
-    tree = ast.parse(source)
-    # Transform the AST
-    transformer = AddAttributeTransformer()
-    transformed_tree = transformer.visit(tree)
-    # Unparse the AST back into source code
-    new_source = ast.unparse(transformed_tree)
-    return new_source
+
+class AddFieldToClassTransformer(cst.CSTTransformer):
+    def __init__(self, class_name, new_field: Attribute):
+        super().__init__()
+        self.class_name = class_name
+        self.new_field = new_field
+
+    def leave_ClassDef(self, original_node, updated_node):
+        if original_node.name.value == self.class_name:
+            new_field_node = cst.SimpleStatementLine([
+                cst.AnnAssign(
+                    target=cst.Name(self.new_field.name),
+                    annotation=cst.Annotation(cst.Name(self.new_field.type)),
+                    value=None if self.new_field.default is None else cst.parse_expression(self.new_field.default)
+                )
+            ])
+            return updated_node.with_changes(
+                body=updated_node.body.with_changes(body=list(updated_node.body.body) + [new_field_node]))
+        return updated_node
+
+
+def add_attribute(source_code: str, attr_info: Attribute):
+    module = cst.parse_module(source_code)
+    i = info(source_code)
+
+    transformer = AddFieldToClassTransformer(i.classes[0].name, attr_info)
+    modified_tree = module.visit(transformer)
+
+    return modified_tree.code
