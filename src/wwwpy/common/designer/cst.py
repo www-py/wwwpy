@@ -60,8 +60,8 @@ def source_add_attribute(source, attr_info):
                     ),
                     simple=1
                 )
-                # Add the new attribute to the beginning of the class body
-                node.body.insert(0, new_attr)
+                # Append the new attribute to the end of the class body
+                node.body.append(new_attr)
             return node
 
     # Parse the source code into an AST

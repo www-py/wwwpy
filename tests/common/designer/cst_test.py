@@ -28,8 +28,8 @@ class MyElement(wpc.Component):
 import wwwpy.remote.component as wpc
 
 class MyElement(wpc.Component):
-    btn2: HTMLButtonElement = wpc.element()
     btn1: HTMLButtonElement = wpc.element()
+    btn2: HTMLButtonElement = wpc.element()
     """
 
     # Add a new attribute
