@@ -5,7 +5,7 @@ from typing import List
 
 
 @dataclass
-class AttrInfo:
+class Attribute:
     name: str
     type: str
     default: str
@@ -13,10 +13,10 @@ class AttrInfo:
 @dataclass
 class ClassInfo:
     name: str
-    attributes: List[AttrInfo]
+    attributes: List[Attribute]
 
 @dataclass
-class SourceInfo:
+class Info:
     classes: List[ClassInfo]
 
 class ClassInfoExtractor(ast.NodeVisitor):
@@ -31,20 +31,20 @@ class ClassInfoExtractor(ast.NodeVisitor):
                 attr_name = item.target.id
                 attr_type = item.annotation.id
                 default = ast.unparse(item.value) if item.value else None
-                attributes.append(AttrInfo(attr_name, attr_type, default))
+                attributes.append(Attribute(attr_name, attr_type, default))
         self.classes.append(ClassInfo(class_name, attributes))
         self.generic_visit(node)
 
-def source_info(source):
+def info(source):
     tree = ast.parse(source)
     extractor = ClassInfoExtractor()
     extractor.visit(tree)
-    return SourceInfo(extractor.classes)
+    return Info(extractor.classes)
 
 
 import ast
 
-def source_add_attribute(source, attr_info):
+def add_attribute(source, attr_info):
     class AddAttributeTransformer(ast.NodeTransformer):
         def visit_ClassDef(self, node):
             # Check if this is the target class by name
