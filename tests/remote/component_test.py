@@ -136,10 +136,6 @@ def test_redefined_element_should_be_ok():
     assert 'Comp9b' == comp.innerHTML
 
 
-
-
-
-
 class TestElementAttribute:
 
     def test_HTMLElement_attribute(self):
@@ -206,6 +202,24 @@ class TestElementAttribute:
 
         comp = Comp8()
         assert comp.div1.innerHTML == 'root'
+
+
+class TestElementEventBinding:
+
+    def test_simple_bind(self):
+        actual = []
+
+        class Comp1(Component):
+            def init_component(self):
+                self.element.innerHTML = "<button data-name='foo'>foo</button>"
+
+            def foo__click(self, *args):
+                actual.append(1)
+
+        target = Comp1()
+        foo = target.element.querySelector(f'[data-name="foo"]')
+        foo.click()
+        assert [1] == actual
 
 
 def to_js(o):

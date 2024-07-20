@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import inspect
+
 import js
-from js import window, HTMLElement
+from js import HTMLElement, console
 from pyodide.ffi import create_proxy
 
 namespace = "window.python_custom_elements"
@@ -88,6 +90,7 @@ class Component:
             self.element = element_from_js
 
         self.init_component()
+        self._bind_events()
 
     def init_component(self):
         pass
@@ -136,6 +139,28 @@ class Component:
         # raise Exception(f'isinst: {isinst}')
         if isinst:
             raise WrongTypeDefinition(f'Expected type: {expected_type} for field: {name} but found: {type(selector)}')
+
+    def _bind_events(self):
+
+        members = inspect.getmembers(self)
+
+        for name, method in members:
+            parts = name.split('__')
+            if len(parts) != 2:
+                continue
+
+            element_name = parts[0]
+            event_name = parts[1]
+            if element_name == '' or event_name == '':
+                continue
+
+            element = self.find_element_field(element_name)
+            if element is None:
+                console.warn(f'Event bind failed, element `{element_name}` was not found for method `{name}`')
+                continue
+
+            m = getattr(self, name)
+            element.addEventListener(event_name, create_proxy(m))
 
 
 class ElementNotFound(AttributeError): pass
