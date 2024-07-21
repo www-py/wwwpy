@@ -143,6 +143,18 @@ es.onopen = lambda e: [es.send('foo1'), es.close()]
         assert incoming_messages == ['foo1', None]
 
 
+class _RemoteConnections:
+    def __init__(self):
+        from wwwpy.server.configure import websocket_pool
+        self.ws_pool = websocket_pool
+        self.changes = []
+        websocket_pool.on_before_change.append(lambda event: self.changes.append(event.change))
+
+    def wait_for_connection(self):
+        retry_assert_eq(lambda: self.changes, lambda: [Change.add])
+        self.changes.clear()
+
+
 class TestRpcRemote:
     layer_5_rpc_remote = file_parent / 'layer_5_support/rpc_remote'
 
@@ -163,19 +175,16 @@ class TestRpcRemote:
         configure.convention(self.layer_5_rpc_remote, webserver)
         webserver.start_listen()
 
-        changes = []
-        from wwwpy.server.configure import websocket_pool
-        websocket_pool.on_before_change.append(lambda event: changes.append(event.change))
+        remote_connections = _RemoteConnections()
 
         page.goto(webserver.localhost_url())
         expect(page.locator('body')).to_have_text('ready')
 
-        retry_assert_eq(lambda: changes, lambda: [Change.add])
-        changes.clear()
+        remote_connections.wait_for_connection()
 
         # because convention imported layer_5_rpc_remote in sys.path we can import the following
         from remote.rpc import Layer5Rpc1
-        client = websocket_pool.clients[0]
+        client = remote_connections.ws_pool.clients[0]
         client.rpc(Layer5Rpc1).set_body_inner_html('server-side')
 
         expect(page.locator('body')).to_have_text('server-side')
@@ -185,28 +194,23 @@ class TestRpcRemote:
         configure.convention(self.layer_5_rpc_remote, webserver)
         webserver.start_listen()
 
-        changes = []
-        from wwwpy.server.configure import websocket_pool
-        websocket_pool.on_before_change.append(lambda event: changes.append(event.change))
+        remote_connections = _RemoteConnections()
 
         page.goto(webserver.localhost_url())
         expect(page.locator('body')).to_have_text('ready')
 
-        retry_assert_eq(lambda: changes, lambda: [Change.add])
-        changes.clear()
+        remote_connections.wait_for_connection()
 
-        client = websocket_pool.clients[0]
+        client = remote_connections.ws_pool.clients[0]
         client.send(None)  # this will disconnect the client
 
-        retry_assert_eq(lambda: changes, lambda: [Change.remove, Change.add])
+        retry_assert_eq(lambda: remote_connections.changes, lambda: [Change.remove, Change.add])
 
-        def call_remote(msg):
-            # because convention imported layer_5_rpc_remote in sys.path we can import the following
-            from remote.rpc import Layer5Rpc1
-            client = websocket_pool.clients[0]
-            client.rpc(Layer5Rpc1).set_body_inner_html(msg)
+        # because convention imported layer_5_rpc_remote in sys.path we can import the following
+        from remote.rpc import Layer5Rpc1
+        client = remote_connections.ws_pool.clients[0]
+        client.rpc(Layer5Rpc1).set_body_inner_html('server-side')
 
-        call_remote('server-side')
         expect(page.locator('body')).to_have_text('server-side')
 
 
