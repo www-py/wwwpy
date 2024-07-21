@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from inspect import iscoroutinefunction
-from typing import Callable, Awaitable
+from typing import Callable, Awaitable, Union
 
 from wwwpy.common.rpc.serializer import RpcRequest
 import js
@@ -24,7 +24,6 @@ def _setup_browser_dev_mode():
         elif not f.exists() or f.read_text() != content:
             console.log(f'writing {f}')
             f.write_text(content)
-
 
         async def reload():
             reloader.unload_path(str(bro))
@@ -86,11 +85,28 @@ async def setup_websocket():
 
     l = window.location
     proto = 'ws' if l.protocol == 'http:' else 'wss'
-    es = WebSocket.new(f'{proto}://{l.host}/wwwpy/ws')
-    es.onopen = lambda e: log('open')
-    es.onmessage = lambda e: message(e.data)
+    url = f'{proto}://{l.host}/wwwpy/ws'
+    _WebSocketReconnect(url, message)
 
 
-def _set_timeout(callback: Callable[[], Awaitable[None]], timeout: int | None = 0):
+class _WebSocketReconnect:
+    def __init__(self, url: str, on_message: Callable):
+        self._url = url
+        self._on_message = on_message
+        self._counter = 0
+        self._connect()
+
+    def _connect(self):
+        from js import document, WebSocket, window, console
+        self._counter += 1
+        console.log(f'connecting to {self._url} counter={self._counter}')
+        es = WebSocket.new(self._url)
+        es.onopen = lambda e: console.log('open')
+        es.onmessage = lambda e: self._on_message(e.data)
+        es.onerror = lambda e: es.close()
+        es.onclose = lambda e: _set_timeout(self._connect, 1000)  # for now, we just retry forever and ever
+
+
+def _set_timeout(callback: Callable[[], Union[None, Awaitable[None]]], timeout_millis: int | None = 0):
     from pyodide.ffi import create_once_callable
-    window.setTimeout(create_once_callable(callback), timeout)
+    window.setTimeout(create_once_callable(callback), timeout_millis)
