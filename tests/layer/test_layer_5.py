@@ -151,6 +151,10 @@ class TestRpcRemote:
 
         sys.path.insert(0, str(self.layer_5_rpc_remote))
         sys.meta_path.insert(0, CustomFinder({'remote', 'remote.rpc'}))
+        import remote
+        assert remote
+        import remote.rpc
+        assert remote.rpc
 
     # def test_remote_rpc_generated_code_should_forward_to_SendEndpoint(self, restore_sys_path):
     #     sys.path.insert(0, str(self.layer_5_rpc_remote))
