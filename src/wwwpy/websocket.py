@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import NamedTuple, Protocol
+from typing import NamedTuple, Protocol, List
 
 from wwwpy.common.rpc.serializer import RpcRequest
 
@@ -34,26 +34,24 @@ class PoolChangeCallback(Protocol):
     def __call__(self, change: PoolEvent) -> None: ...
 
 
-def _noop(change: PoolEvent):
-    pass
-
-
 class WebsocketPool:
 
-    def __init__(self, route: str, before_change: PoolChangeCallback = None):
-        if before_change is None:
-            before_change = _noop
-        self._before_change: PoolChangeCallback = before_change
+    def __init__(self, route: str):
         self.clients: list[WebsocketEndpoint] = []
         self.http_route = WebsocketRoute(route, self._on_connect)
+        self.on_before_change: List[PoolChangeCallback] = []
+
+    def _notify_change(self, change: PoolEvent) -> None:
+        for callback in self.on_before_change:
+            callback(change)
 
     def _on_connect(self, endpoint: WebsocketEndpointIO) -> None:
 
-        self._before_change(PoolEvent(Change.add, endpoint, self))
+        self._notify_change(PoolEvent(Change.add, endpoint, self))
 
         def handle_remove(msg: str | bytes | None):
             if msg is None:
-                self._before_change(PoolEvent(Change.remove, endpoint, self))
+                self._notify_change(PoolEvent(Change.remove, endpoint, self))
                 self.clients.remove(endpoint)
 
         endpoint.listeners.append(handle_remove)
@@ -66,6 +64,7 @@ class ListenerProtocol(Protocol):
 
 class SendEndpoint:
     def send(self, message: str | bytes | None) -> None: ...
+
 
 class DispatchEndpoint(Protocol):
     def dispatch(self, module: str, func_name: str, *args) -> None: ...

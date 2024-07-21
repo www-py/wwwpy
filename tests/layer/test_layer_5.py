@@ -100,7 +100,8 @@ es.onmessage = lambda e: message(e.data)
 
         changes = []
 
-        ws_pool = WebsocketPool('/ws', lambda event: changes.append(event.change))
+        ws_pool = WebsocketPool('/ws')
+        ws_pool.on_before_change.append(lambda event: changes.append(event.change))
         webserver.set_http_route(ws_pool.http_route).start_listen()
 
         page.goto(webserver.localhost_url())
@@ -131,7 +132,8 @@ es.onopen = lambda e: [es.send('foo1'), es.close()]
             if change.add:
                 change.endpoint.listeners.append(lambda msg: incoming_messages.append(msg))
 
-        ws_pool = WebsocketPool('/ws', before_change)
+        ws_pool = WebsocketPool('/ws')
+        ws_pool.on_before_change.append(before_change)
         webserver.set_http_route(ws_pool.http_route).start_listen()
 
         page.goto(webserver.localhost_url())
