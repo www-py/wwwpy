@@ -156,29 +156,6 @@ class TestRpcRemote:
         import remote.rpc
         assert remote.rpc
 
-    # def test_remote_rpc_generated_code_should_forward_to_SendEndpoint(self, restore_sys_path):
-    #     sys.path.insert(0, str(self.layer_5_rpc_remote))
-    #     sys.meta_path.insert(0, CustomFinder({'remote', 'remote.rpc'}))
-    #     messages = []
-    #
-    #     class SendMock(DispatchEndpoint):
-    #
-    #         def dispatch(self, *args) -> None:
-    #             messages.append(args)
-    #
-    #         def send(self, message: str | bytes | None) -> None:
-    #             messages.append(message)
-    #
-    #     from remote import rpc
-    #     target = rpc.Layer5Rpc1(SendMock())
-    #     target.set_body_inner_html('hello')
-    #     assert len(messages) == 1
-    #     json_message = messages[0]
-    #     request = RpcRequest.from_json(json_message)
-    #     assert request.module == 'remote.rpc'
-    #     assert request.func == 'Layer5Rpc1.set_body_inner_html'
-    #     assert request.args == ['hello']
-
     @for_all_webservers()
     def test_rpc_remote(self, page: Page, webserver: Webserver, restore_sys_path):
         configure.convention(self.layer_5_rpc_remote, webserver)
