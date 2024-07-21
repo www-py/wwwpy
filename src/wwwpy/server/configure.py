@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import List
 
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.common.rpc.custom_loader import CustomFinder
-from wwwpy.http import HttpRoute
 from wwwpy.resources import library_resources, from_directory, from_file
 from wwwpy.server.rpc import configure_services
 from wwwpy.webserver import wait_forever, Webserver
@@ -26,7 +24,7 @@ def start_default(port: int, directory: Path, dev_mode=False):
 websocket_pool: WebsocketPool = None
 
 
-def convention(directory: Path, webserver: Webserver, dev_mode=False) -> List[HttpRoute]:
+def convention(directory: Path, webserver: Webserver, dev_mode=False):
     print(f'applying convention to working_dir: {directory}')
     sys.path.insert(0, str(directory))
     sys.meta_path.insert(0, CustomFinder({'remote', 'remote.rpc', 'wwwpy.remote', 'wwwpy.remote.rpc'}))
@@ -49,7 +47,7 @@ def convention(directory: Path, webserver: Webserver, dev_mode=False) -> List[Ht
     if dev_mode:
         import wwwpy.remote.rpc as rpc
         from wwwpy.server import watcher
-        from watchdog.events import FileSystemEventHandler, FileSystemEvent
+        from watchdog.events import FileSystemEvent
 
         def on_file_changed(event: FileSystemEvent):
             path = Path(event.src_path)
@@ -67,5 +65,3 @@ def convention(directory: Path, webserver: Webserver, dev_mode=False) -> List[Ht
 
     if webserver is not None:
         webserver.set_http_route(*routes)
-
-    return routes
