@@ -164,7 +164,29 @@ class TestRpcRemote:
         page.goto(webserver.localhost_url())
         expect(page.locator('body')).to_have_text('ready')
 
-        # because convention imported layer_5_rpc_remote in sys.path we can import the following
-        from server_side import call_remote
+        def call_remote(msg):
+            from time import sleep
+
+            # because convention imported layer_5_rpc_remote in sys.path we can import the following
+            from remote.rpc import Layer5Rpc1
+            from wwwpy.server.configure import websocket_pool
+            [sleep(0.1) for _ in range(100) if websocket_pool.clients == 0]
+            assert len(websocket_pool.clients) == 1
+            client = websocket_pool.clients[0]
+            client.rpc(Layer5Rpc1).set_body_inner_html(msg)
+
         call_remote('server-side')
         expect(page.locator('body')).to_have_text('server-side')
+
+    # @for_all_webservers()
+    # def test_websocket_recover(self, page: Page, webserver: Webserver, restore_sys_path):
+    #     configure.convention(self.layer_5_rpc_remote, webserver)
+    #     webserver.start_listen()
+    #
+    #     page.goto(webserver.localhost_url())
+    #     expect(page.locator('body')).to_have_text('ready')
+    #
+    #
+    #     from server_side import close_websocket
+    #     close_websocket('reconnect-ok')
+    #     expect(page.locator('body')).to_have_text('reconnect-ok')
