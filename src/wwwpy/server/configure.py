@@ -50,6 +50,7 @@ def convention(directory: Path, webserver: Webserver, dev_mode=False):
         from watchdog.events import FileSystemEvent
 
         def on_file_changed(event: FileSystemEvent):
+            # todo if this throws an exception, the hot reload stops
             path = Path(event.src_path)
             if path.is_dir() or path == directory:
                 return
