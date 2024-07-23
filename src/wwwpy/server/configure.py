@@ -51,15 +51,19 @@ def convention(directory: Path, webserver: Webserver, dev_mode=False):
 
         def on_file_changed(event: FileSystemEvent):
             # todo if this throws an exception, the hot reload stops
-            path = Path(event.src_path)
-            if path.is_dir() or path == directory:
-                return
-            rel_path = path.relative_to(directory)
-            print(f'clients len: {len(websocket_pool.clients)} file changed: {rel_path}')
-            for client in websocket_pool.clients:
-                remote_rpc = client.rpc(rpc.BrowserRpc)
+            try:
+                path = Path(event.src_path)
+                if path.is_dir() or path == directory:
+                    return
+                rel_path = path.relative_to(directory)
                 content = None if path.is_dir() or not path.exists() else path.read_text()
-                remote_rpc.file_changed(event.event_type, str(rel_path).replace('\\', '/'), content)
+                print(f'clients len: {len(websocket_pool.clients)} file changed: {rel_path}')
+                for client in websocket_pool.clients:
+                    remote_rpc = client.rpc(rpc.BrowserRpc)
+                    remote_rpc.file_changed(event.event_type, str(rel_path).replace('\\', '/'), content)
+            except:
+                import traceback
+                print(f'on_file_changed {traceback.format_exc()}')
 
         handler = watcher.ChangeHandler(browser_dir, on_file_changed)
         handler.watch_directory()
