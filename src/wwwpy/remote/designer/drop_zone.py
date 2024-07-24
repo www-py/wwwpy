@@ -55,8 +55,15 @@ class SelectorProtocol(Protocol):
 
 
 def start_selector(callback: SelectorProtocol):
+    last_event = None
+
     def mousemove(event: MouseEvent):
-        callback(DropZoneEvent(event.target, Position.beforebegin))
+        zone_event = DropZoneEvent(event.target, Position.beforebegin)
+        nonlocal last_event
+        if last_event != zone_event:
+            last_event = zone_event
+            callback(zone_event)
+
     mmp = create_proxy(mousemove)
     document.addEventListener('mousemove', mmp)
     # add_event_listener(document, 'mousemove', create_proxy(mousemove))

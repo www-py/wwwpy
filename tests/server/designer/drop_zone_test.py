@@ -25,8 +25,10 @@ def assertTuple(t):
 @for_all_webservers()
 def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path):
     def runPythonAsync(python: str):
-        safe_python = wrap_in_tryexcept(python, 'import traceback; from js import console; console.log(f"exception! {traceback.format_exc()}")')
+        safe_python = wrap_in_tryexcept(python,
+                                        'import traceback; from js import console; console.log(f"exception! {traceback.format_exc()}")')
         return page.evaluate(f'pyodide.runPythonAsync(`{safe_python}`)')
+
     def runPythonAsync2(python: str):
         return page.evaluate(f'pyodide.runPythonAsync(`{python}`)')
 
@@ -41,8 +43,12 @@ def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path)
     runPythonAsync("await remote.start()")
 
     # the button is 200x100
-    page.mouse.move(50, 25)  # todo, check if the dropzone is highlighted!?
-    # page.mouse.click(50, 25)
+    page.mouse.move(50, 25)
+
+    assertTuple(runPythonAsync2("remote.assert1()"))
+
+    page.mouse.move(50, 26)  # the element is the same so no change
+
     assertTuple(runPythonAsync2("remote.assert1()"))
 
     # expect(page.locator("button#btn1")).to_have_text("begin")
