@@ -8,8 +8,6 @@ from wwwpy.bootstrap import wrap_in_tryexcept
 from wwwpy.server import configure
 from wwwpy.webserver import Webserver
 
-drop_zone_support = Path(__file__).parent / "drop_zone_support"
-
 
 def _setup_remote(tmp_path, remote_init_content):
     remote_init = tmp_path / 'remote' / '__init__.py'
@@ -74,10 +72,41 @@ def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path)
     assertTuple(runPythonAsync2("remote.assert_no_class()"))
 
 
+@for_all_webservers()
+def test_drop_zone_stop(page: Page, webserver: Webserver, tmp_path, restore_sys_path):
+    def runPythonAsync(python: str):
+        safe_python = wrap_in_tryexcept(python,
+                                        'import traceback; from js import console; console.log(f"exception! {traceback.format_exc()}")')
+        return page.evaluate(f'pyodide.runPythonAsync(`{safe_python}`)')
+
+    def runPythonAsync2(python: str):
+        return page.evaluate(f'pyodide.runPythonAsync(`{python}`)')
+
+    # GIVEN
+    _setup_remote(tmp_path, _test_drop_zone_init)
+    configure.convention(tmp_path, webserver, dev_mode=True)
+    webserver.start_listen()
+
+    # WHEN
+    page.goto(webserver.localhost_url())
+
+    # THEN
+    expect(page.locator("button#btn1")).to_have_text("ready")
+
+    # WHEN
+    runPythonAsync("import remote")
+    runPythonAsync("await remote.start()")
+
+    page.mouse.move(50, 25)  # btn1 is 200x100
+    runPythonAsync("await remote.stop()")
+
+    # THEN
+    assertTuple(runPythonAsync2("remote.assert_stop()"))
+
 # language=python
 _test_drop_zone_init = """from js import document, console
 
-from wwwpy.remote.designer.drop_zone import drop_zone_selector, DropZoneEvent, Position
+from wwwpy.remote.designer.drop_zone import drop_zone_selector, DropZone, Position
 
 document.body.innerHTML = '<button id="btn1" style="width: 200px; height: 100px;">ready</button>'
 btn1 = document.getElementById('btn1')
@@ -86,14 +115,14 @@ drop_zone_events = []
 
 
 async def start():
-    def callback(event: DropZoneEvent):
+    def callback(event: DropZone):
         drop_zone_events.append(event)
 
     drop_zone_selector.start_selector(callback)
 
 
 def assert1():
-    expected = [DropZoneEvent(btn1, Position.beforebegin)]
+    expected = [DropZone(btn1, Position.beforebegin)]
     success = drop_zone_events == expected
     result = success, f'expected=`{expected}`, actual=`{drop_zone_events}`'
     console.log(f'assert1: {result}')
@@ -120,7 +149,7 @@ def clear_events():
     drop_zone_events.clear()
 
 def assert2():
-    expected = [DropZoneEvent(btn1, Position.afterend)]
+    expected = [DropZone(btn1, Position.afterend)]
     success = drop_zone_events == expected
     result = success, f'expected=`{expected}`, actual=`{drop_zone_events}`'
     console.log(f'assert2: {result}')
@@ -132,5 +161,7 @@ def assert_no_class():
     console.log(f'assert_no_class: {result}')
     return result
     
+def stop():
+    drop_zone_selector.stop()
 
 """

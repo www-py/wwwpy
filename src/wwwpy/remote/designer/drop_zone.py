@@ -16,35 +16,33 @@ class Position(Enum):
 
 
 @dataclass
-class DropZoneEvent:
+class DropZone:
     target: HTMLElement
     position: Position
 
 
 class _DropZoneSelector:
     def __init__(self):
-        self._future = None
+        self.last_event: DropZone | None = None
 
     def start_selector(self, callback: SelectorProtocol):
         """It starts the process for the user to select a drop zone.
         While moving the mouse, it highlights the drop zones.
         """
-        last_event: DropZoneEvent | None = None
         _ensure_drop_zone_style()
 
         def mousemove(event: MouseEvent):
             position = _calc_position(event)
             element: HTMLElement = event.target
-            zone_event = DropZoneEvent(element, position)
-            nonlocal last_event
-            if last_event != zone_event:
-                if last_event is not None:
-                    _remove_class(last_event.target, _beforebegin_css_class)
-                    _remove_class(last_event.target, _afterend_css_class)
+            zone_event = DropZone(element, position)
+            if self.last_event != zone_event:
+                if self.last_event is not None:
+                    _remove_class(self.last_event.target, _beforebegin_css_class)
+                    _remove_class(self.last_event.target, _afterend_css_class)
                 # console.log(f'candidate sending zone_event', zone_event.position, zone_event.target)
                 element.classList.add(
                     _beforebegin_css_class if position == Position.beforebegin else _afterend_css_class)
-                last_event = zone_event
+                self.last_event = zone_event
                 callback(zone_event)
             else:
                 pass
@@ -54,9 +52,10 @@ class _DropZoneSelector:
         document.addEventListener('mousemove', mmp)
         # add_event_listener(document, 'mousemove', create_proxy(mousemove))
 
-    def stop(self):
+    def stop(self) -> DropZone | None:
         """It stops the process of selecting a drop zone.
         It will remove the highlights and the event listener.
+        It will return the selected DropZone
         """
 
     async def result(self):
@@ -74,7 +73,7 @@ _afterend_css_class = 'drop-zone-afterend'
 
 
 class SelectorProtocol(Protocol):
-    def __call__(self, event: DropZoneEvent) -> None: ...
+    def __call__(self, event: DropZone) -> None: ...
 
 
 def _remove_class(target: HTMLElement, class_name: str):
