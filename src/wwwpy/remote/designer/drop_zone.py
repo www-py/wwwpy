@@ -130,5 +130,5 @@ def _calc_position(event: MouseEvent) -> Position:
     m = h / w
     y2 = m * x
     res = Position.afterend if y <= y2 else Position.beforebegin
-    console.log(f'x={x}, y={y}, w={w}, h={h} m={m}, y2={y2} res={res}')
+    # console.log(f'x={x}, y={y}, w={w}, h={h} m={m}, y2={y2} res={res}')
     return res
