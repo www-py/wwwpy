@@ -68,6 +68,7 @@ def _remove_class(target: HTMLElement, class_name: str):
 
 def start_selector(callback: SelectorProtocol):
     last_event: DropZoneEvent | None = None
+    _ensure_drop_zone_style()
 
     def mousemove(event: MouseEvent):
         element: HTMLElement = event.target
@@ -89,12 +90,13 @@ def start_selector(callback: SelectorProtocol):
             if last_event is not None:
                 _remove_class(last_event.target, _beforebegin_css_class)
                 _remove_class(last_event.target, _afterend_css_class)
-            console.log(f'candidate sending zone_event: {zone_event}')
+            console.log(f'candidate sending zone_event', zone_event.position, zone_event.target)
             element.classList.add(_beforebegin_css_class if position == Position.beforebegin else _afterend_css_class)
             last_event = zone_event
             callback(zone_event)
         else:
-            console.log(f'candidate discarded zone_event: {zone_event}')
+            pass
+            # console.log(f'candidate discarded zone_event: {zone_event}')
 
     mmp = create_proxy(mousemove)
     document.addEventListener('mousemove', mmp)
@@ -105,10 +107,14 @@ def _ensure_drop_zone_style():
     drop_zone_highlight_style = 'drop-zone-highlight-style'
     _ensure_style_element(drop_zone_highlight_style, f"""
     .{_beforebegin_css_class} {{
-        box-shadow: -2px -2px 0 green;
+        box-shadow: -4px -4px 0 green;
+        position: relative;
+        z-index: 10;
     }}
     .{_afterend_css_class} {{
         box-shadow: 2px 2px 2px 2px green;
+        position: relative;
+        z-index: 10;
     }}
 """)
 
