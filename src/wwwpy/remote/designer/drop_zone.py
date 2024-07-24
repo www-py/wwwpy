@@ -90,7 +90,7 @@ def start_selector(callback: SelectorProtocol):
             if last_event is not None:
                 _remove_class(last_event.target, _beforebegin_css_class)
                 _remove_class(last_event.target, _afterend_css_class)
-            console.log(f'candidate sending zone_event', zone_event.position, zone_event.target)
+            # console.log(f'candidate sending zone_event', zone_event.position, zone_event.target)
             element.classList.add(_beforebegin_css_class if position == Position.beforebegin else _afterend_css_class)
             last_event = zone_event
             callback(zone_event)
