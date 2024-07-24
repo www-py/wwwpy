@@ -4,6 +4,7 @@ import pytest
 from playwright.sync_api import Page, expect
 
 from tests import for_all_webservers, restore_sys_path
+from wwwpy.bootstrap import wrap_in_tryexcept
 from wwwpy.server import configure
 from wwwpy.webserver import Webserver
 
@@ -16,9 +17,17 @@ def _setup_remote(tmp_path, remote_init_content):
     remote_init.write_text(remote_init_content)
 
 
+def assertTuple(t):
+    __tracebackhide__ = True
+    assert t[0], t[1]
+
+
 @for_all_webservers()
 def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path):
     def runPythonAsync(python: str):
+        safe_python = wrap_in_tryexcept(python, 'import traceback; from js import console; console.log(f"exception! {traceback.format_exc()}")')
+        return page.evaluate(f'pyodide.runPythonAsync(`{safe_python}`)')
+    def runPythonAsync2(python: str):
         return page.evaluate(f'pyodide.runPythonAsync(`{python}`)')
 
     _setup_remote(tmp_path, _test_drop_zone_init)
@@ -29,24 +38,38 @@ def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path)
     expect(page.locator("button#btn1")).to_have_text("ready")
 
     runPythonAsync("import remote")
-    res = runPythonAsync("await remote.start()")
-    assert res == ['start-result', 123]
+    runPythonAsync("await remote.start()")
 
     # the button is 200x100
-    # page.mouse.move(50, 25)  # todo, check if the dropzone is highlighted!?
+    page.mouse.move(50, 25)  # todo, check if the dropzone is highlighted!?
     # page.mouse.click(50, 25)
+    assertTuple(runPythonAsync2("remote.assert1()"))
 
-    expect(page.locator("button#btn1")).to_have_text("begin")
+    # expect(page.locator("button#btn1")).to_have_text("begin")
 
 
 # language=python
-_test_drop_zone_init = """from js import document
+_test_drop_zone_init = """from js import document, console
+
+from wwwpy.remote.designer.drop_zone import start_selector, DropZoneEvent, Position
 
 document.body.innerHTML = '<button id="btn1" style="width: 200px; height: 100px;">ready</button>'
 btn1 = document.getElementById('btn1')
 
+drop_zone_events = []
+
 
 async def start():
-    btn1.innerHTML = 'begin'
-    return ['start-result', 123]
+    def callback(event: DropZoneEvent):
+        drop_zone_events.append(event)
+
+    start_selector(callback)
+
+
+def assert1():
+    expected = [DropZoneEvent(btn1, Position.beforebegin)]
+    success = drop_zone_events == expected
+    result = success, f'expected=`{expected}`, actual=`{drop_zone_events}`'
+    console.log(f'assert1: {result}')
+    return result
 """

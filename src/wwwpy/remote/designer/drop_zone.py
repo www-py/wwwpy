@@ -1,4 +1,12 @@
 import asyncio
+from dataclasses import dataclass
+from typing import Protocol
+
+from js import document, MouseEvent
+from pyodide.ffi.wrappers import add_event_listener, remove_event_listener
+from pyodide.ffi import create_proxy
+
+from wwwpy.remote.widgets.filesystem_tree_widget import HTMLElement
 
 
 class _DropZoneSelector:
@@ -27,3 +35,28 @@ class _DropZoneSelector:
 
 
 drop_zone_selector = _DropZoneSelector()
+
+from enum import Enum
+
+
+class Position(Enum):
+    beforebegin = 1
+    afterend = 2
+
+
+@dataclass
+class DropZoneEvent:
+    target: HTMLElement
+    position: Position
+
+
+class SelectorProtocol(Protocol):
+    def __call__(self, event: DropZoneEvent) -> None: ...
+
+
+def start_selector(callback: SelectorProtocol):
+    def mousemove(event: MouseEvent):
+        callback(DropZoneEvent(event.target, Position.beforebegin))
+    mmp = create_proxy(mousemove)
+    document.addEventListener('mousemove', mmp)
+    # add_event_listener(document, 'mousemove', create_proxy(mousemove))
