@@ -26,6 +26,9 @@ class _DropZoneSelector:
         self._future = None
 
     def start_selector(self, callback: SelectorProtocol):
+        """It starts the process for the user to select a drop zone.
+        While moving the mouse, it highlights the drop zones.
+        """
         last_event: DropZoneEvent | None = None
         _ensure_drop_zone_style()
 

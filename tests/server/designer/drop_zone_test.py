@@ -32,34 +32,45 @@ def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path)
     def runPythonAsync2(python: str):
         return page.evaluate(f'pyodide.runPythonAsync(`{python}`)')
 
+    # GIVEN
     _setup_remote(tmp_path, _test_drop_zone_init)
     configure.convention(tmp_path, webserver, dev_mode=True)
     webserver.start_listen()
 
+    # WHEN
     page.goto(webserver.localhost_url())
+
+    # THEN
     expect(page.locator("button#btn1")).to_have_text("ready")
 
+    # WHEN
     runPythonAsync("import remote")
     runPythonAsync("await remote.start()")
 
-    # the button is 200x100
-    page.mouse.move(50, 25)
+    page.mouse.move(50, 25)  # btn1 is 200x100
 
+    # THEN
     assertTuple(runPythonAsync2("remote.assert1()"))
     assertTuple(runPythonAsync2("remote.assert1_class_before()"))
 
+    # WHEN
     page.mouse.move(50, 26)  # the element is the same so no change
 
+    # THEN
     assertTuple(runPythonAsync2("remote.assert1()"))
     runPythonAsync("remote.clear_events()")
 
+    # WHEN
     page.mouse.move(199, 99)
 
+    # THEN
     assertTuple(runPythonAsync2("remote.assert2()"))
     assertTuple(runPythonAsync2("remote.assert1_class_after()"))
 
-    # remove style
-    page.mouse.move(400, 400)
+    # WHEN
+    page.mouse.move(400, 400)  # it should remove the class
+
+    # THEN
     assertTuple(runPythonAsync2("remote.assert_no_class()"))
 
 
