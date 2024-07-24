@@ -72,11 +72,14 @@ def start_selector(callback: SelectorProtocol):
             position = Position.afterend
 
         zone_event = DropZoneEvent(element, position)
-        console.log(f'candidate zone_event: {zone_event}')
         nonlocal last_event
         if last_event != zone_event:
+            console.log(f'candidate sending   zone_event: {zone_event}')
             last_event = zone_event
             callback(zone_event)
+        else:
+            console.log(f'candidate discarded zone_event: {zone_event}')
+
     mmp = create_proxy(mousemove)
     document.addEventListener('mousemove', mmp)
     # add_event_listener(document, 'mousemove', create_proxy(mousemove))

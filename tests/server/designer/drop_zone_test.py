@@ -50,10 +50,10 @@ def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path)
     page.mouse.move(50, 26)  # the element is the same so no change
 
     assertTuple(runPythonAsync2("remote.assert1()"))
+    runPythonAsync("remote.clear_events()")
 
     page.mouse.move(199, 99)
 
-    runPythonAsync("remote.clear_events()")
     assertTuple(runPythonAsync2("remote.assert2()"))
 
     # expect(page.locator("button#btn1")).to_have_text("begin")
@@ -85,6 +85,7 @@ def assert1():
     return result
 
 def clear_events():
+    console.log('clear_events')
     drop_zone_events.clear()
 
 def assert2():
