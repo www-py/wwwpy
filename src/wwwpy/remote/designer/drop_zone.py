@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 from dataclasses import dataclass
 from typing import Protocol
@@ -58,8 +60,14 @@ class SelectorProtocol(Protocol):
     def __call__(self, event: DropZoneEvent) -> None: ...
 
 
+def _remove_class(target: HTMLElement, class_name: str):
+    target.classList.remove(class_name)
+    if target.classList.length == 0:
+        target.removeAttribute('class')
+
+
 def start_selector(callback: SelectorProtocol):
-    last_event = None
+    last_event: DropZoneEvent | None = None
 
     def mousemove(event: MouseEvent):
         element: HTMLElement = event.target
@@ -78,7 +86,10 @@ def start_selector(callback: SelectorProtocol):
         zone_event = DropZoneEvent(element, position)
         nonlocal last_event
         if last_event != zone_event:
-            console.log(f'candidate sending   zone_event: {zone_event}')
+            if last_event is not None:
+                _remove_class(last_event.target, _beforebegin_css_class)
+                _remove_class(last_event.target, _afterend_css_class)
+            console.log(f'candidate sending zone_event: {zone_event}')
             element.classList.add(_beforebegin_css_class if position == Position.beforebegin else _afterend_css_class)
             last_event = zone_event
             callback(zone_event)

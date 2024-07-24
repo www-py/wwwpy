@@ -58,7 +58,9 @@ def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path)
     assertTuple(runPythonAsync2("remote.assert2()"))
     assertTuple(runPythonAsync2("remote.assert1_class_after()"))
 
-    # expect(page.locator("button#btn1")).to_have_text("begin")
+    # remove style
+    page.mouse.move(400, 400)
+    assertTuple(runPythonAsync2("remote.assert_no_class()"))
 
 
 # language=python
@@ -97,7 +99,7 @@ def assert1_class_before():
 def assert1_class_after():
     from wwwpy.remote.designer.drop_zone import _afterend_css_class
     expected = _afterend_css_class
-    success = expected in  btn1.classList
+    success = expected in btn1.classList
     result = success, f'expected=`{expected}`, actual=`{btn1.classList}`'
     console.log(f'assert1_class_after: {result}')
     return result
@@ -113,5 +115,11 @@ def assert2():
     console.log(f'assert2: {result}')
     return result
 
+def assert_no_class():
+    success = btn1.classList.length == 0
+    result = success, f'expected=`no classes`, actual=`{btn1.classList}`'
+    console.log(f'assert_no_class: {result}')
+    return result
+    
 
 """
