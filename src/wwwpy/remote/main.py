@@ -4,19 +4,19 @@ from inspect import iscoroutinefunction
 from typing import Callable, Awaitable, Union
 
 from wwwpy.common.rpc.serializer import RpcRequest
+import wwwpy.remote.rpc as rpc
+import wwwpy.common.reloader as reloader
 import js
 from js import console, window
 
+bro = reloader._find_package_location('remote').parent
+root = bro.parent
+
 
 def _setup_browser_dev_mode():
-    import wwwpy.remote.rpc as rpc
-    import wwwpy.common.reloader as reloader
-
-    def listener(event_type: str, filename: str, content: str):
+    def file_changed(event_type: str, filename: str, content: str):
         content_sub = None if content is None else content[:100]
         console.log(f'filename={filename}, content={content_sub}')
-        bro = reloader._find_package_location('remote').parent
-        root = bro.parent
         f = root / filename
         if event_type == 'deleted':
             console.log(f'deleting {f}')
@@ -25,14 +25,18 @@ def _setup_browser_dev_mode():
             console.log(f'writing {f}')
             f.write_text(content)
 
-        async def reload():
-            reloader.unload_path(str(bro))
-            console.log('reloading')
-            await _invoke_browser_main(True)
+        _reload()
 
-        _set_timeout(reload)
+    rpc.file_changed_listeners_add(file_changed)
 
-    rpc.add_listener(listener)
+
+def _reload():
+    async def reload():
+        console.log('reloading')
+        reloader.unload_path(str(bro))
+        await _invoke_browser_main(True)
+
+    _set_timeout(reload)
 
 
 async def entry_point(dev_mode: bool = False):
