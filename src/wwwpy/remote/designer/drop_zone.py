@@ -23,47 +23,48 @@ class DropZone:
 
 class _DropZoneSelector:
     def __init__(self):
-        self.last_event: DropZone | None = None
+        self._last_zone: DropZone | None = None
+        self._callback: SelectorProtocol | None = None
+        self._mousemove_proxy = create_proxy(self._mousemove)
 
-    def start_selector(self, callback: SelectorProtocol):
+    def start_selector(self, callback: SelectorProtocol = None):
         """It starts the process for the user to select a drop zone.
         While moving the mouse, it highlights the drop zones.
         """
+        self._callback = callback
         _ensure_drop_zone_style()
-
-        def mousemove(event: MouseEvent):
-            position = _calc_position(event)
-            element: HTMLElement = event.target
-            zone_event = DropZone(element, position)
-            if self.last_event != zone_event:
-                if self.last_event is not None:
-                    _remove_class(self.last_event.target, _beforebegin_css_class)
-                    _remove_class(self.last_event.target, _afterend_css_class)
-                # console.log(f'candidate sending zone_event', zone_event.position, zone_event.target)
-                element.classList.add(
-                    _beforebegin_css_class if position == Position.beforebegin else _afterend_css_class)
-                self.last_event = zone_event
-                callback(zone_event)
-            else:
-                pass
-                # console.log(f'candidate discarded zone_event: {zone_event}')
-
-        mmp = create_proxy(mousemove)
-        document.addEventListener('mousemove', mmp)
-        # add_event_listener(document, 'mousemove', create_proxy(mousemove))
+        document.addEventListener('mousemove', self._mousemove_proxy)
 
     def stop(self) -> DropZone | None:
         """It stops the process of selecting a drop zone.
         It will remove the highlights and the event listener.
         It will return the selected DropZone
         """
+        document.removeEventListener('mousemove', self._mousemove_proxy)
+        self._remove_marker()
+        result = self._last_zone
+        return result
 
-    async def result(self):
-        """It returns the result. It could be:
-        - the drop zone if selected
-        - None if the process was stopped before selection
-        """
-        pass
+    def _mousemove(self, event: MouseEvent):
+        position = _calc_position(event)
+        element: HTMLElement = event.target
+        zone_event = DropZone(element, position)
+        if self._last_zone != zone_event:
+            self._remove_marker()
+            # console.log(f'candidate sending zone_event', zone_event.position, zone_event.target)
+            css_class = _beforebegin_css_class if position == Position.beforebegin else _afterend_css_class
+            element.classList.add(css_class)
+            self._last_zone = zone_event
+            if self._callback:
+                self._callback(zone_event)
+        else:
+            pass
+            # console.log(f'candidate discarded zone_event: {zone_event}')
+
+    def _remove_marker(self):
+        if self._last_zone is not None:
+            _remove_class(self._last_zone.target, _beforebegin_css_class)
+            _remove_class(self._last_zone.target, _afterend_css_class)
 
 
 drop_zone_selector = _DropZoneSelector()

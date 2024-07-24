@@ -98,7 +98,7 @@ def test_drop_zone_stop(page: Page, webserver: Webserver, tmp_path, restore_sys_
     runPythonAsync("await remote.start()")
 
     page.mouse.move(50, 25)  # btn1 is 200x100
-    runPythonAsync("await remote.stop()")
+    runPythonAsync("remote.stop()")
 
     # THEN
     assertTuple(runPythonAsync2("remote.assert_stop()"))
@@ -160,8 +160,17 @@ def assert_no_class():
     result = success, f'expected=`no classes`, actual=`{btn1.classList}`'
     console.log(f'assert_no_class: {result}')
     return result
-    
+
+stop_array = []    
+
 def stop():
-    drop_zone_selector.stop()
+    stop_array.append(drop_zone_selector.stop())
+
+def assert_stop():
+    expected = [DropZone(btn1, Position.beforebegin)]
+    success = stop_array == expected
+    result = success, f'expected=`{expected}`, actual=`{stop_array}`'
+    console.log(f'assert_stop: {result}')
+    return result
 
 """
