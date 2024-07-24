@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from js import document, MouseEvent, console
-from pyodide.ffi.wrappers import add_event_listener, remove_event_listener
 from pyodide.ffi import create_proxy
 
 from wwwpy.remote.widgets.filesystem_tree_widget import HTMLElement
@@ -71,19 +70,8 @@ def start_selector(callback: SelectorProtocol):
     _ensure_drop_zone_style()
 
     def mousemove(event: MouseEvent):
+        position = _calc_position(event)
         element: HTMLElement = event.target
-        rect = element.getBoundingClientRect()
-
-        # Calculate the position of the mouse relative to the element
-        mouse_x = event.clientX - rect.left
-        mouse_y = event.clientY - rect.top
-
-        # Determine the position relative to the diagonal
-        if mouse_x + mouse_y < rect.width:  # Below the diagonal
-            position = Position.beforebegin
-        else:  # Above the diagonal
-            position = Position.afterend
-
         zone_event = DropZoneEvent(element, position)
         nonlocal last_event
         if last_event != zone_event:
@@ -128,3 +116,19 @@ def _ensure_style_element(element_id: str, style_content: str):
 
     if st.innerHTML != style_content:
         st.innerHTML = style_content
+
+
+def _calc_position(event: MouseEvent) -> Position:
+    element: HTMLElement = event.target
+    rect = element.getBoundingClientRect()
+
+    # Calculate the position of the mouse relative to the element
+    x = event.clientX - rect.left
+    y = rect.height -(event.clientY - rect.top)
+    h = rect.height
+    w = rect.width
+    m = h / w
+    y2 = m * x
+    res = Position.afterend if y <= y2 else Position.beforebegin
+    console.log(f'x={x}, y={y}, w={w}, h={h} m={m}, y2={y2} res={res}')
+    return res
