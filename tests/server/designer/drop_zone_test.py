@@ -19,7 +19,7 @@ def _setup_remote(tmp_path, remote_init_content):
 @for_all_webservers()
 def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path):
     def runPythonAsync(python: str):
-        page.evaluate(f'pyodide.runPythonAsync(`{python}`)')
+        return page.evaluate(f'pyodide.runPythonAsync(`{python}`)')
 
     _setup_remote(tmp_path, _test_drop_zone_init)
     configure.convention(tmp_path, webserver, dev_mode=True)
@@ -29,7 +29,8 @@ def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path)
     expect(page.locator("button#btn1")).to_have_text("ready")
 
     runPythonAsync("import remote")
-    runPythonAsync("await remote.fun1()")
+    res = runPythonAsync("await remote.start()")
+    assert res == ['start-result', 123]
 
     # the button is 200x100
     # page.mouse.move(50, 25)  # todo, check if the dropzone is highlighted!?
@@ -39,29 +40,13 @@ def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path)
 
 
 # language=python
-_test_drop_zone_init = """
-from js import document
+_test_drop_zone_init = """from js import document
 
 document.body.innerHTML = '<button id="btn1" style="width: 200px; height: 100px;">ready</button>'
 btn1 = document.getElementById('btn1')
 
 
-    
-async def main():
-    # language=html
-    return
-
-
-    from wwwpy.remote.designer.drop_zone import _DropZoneSelector
-    dzs = _DropZoneSelector()
-    dzs.start()
-    btn1.innerHTML = 'ready'
-
-    result = await dzs.result()
-    btn1.innerHTML = str(result)
-
-
-async def fun1():
-    btn1 = document.getElementById('btn1')
+async def start():
     btn1.innerHTML = 'begin'
+    return ['start-result', 123]
 """
