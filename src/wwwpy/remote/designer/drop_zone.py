@@ -2,7 +2,7 @@ import asyncio
 from dataclasses import dataclass
 from typing import Protocol
 
-from js import document, MouseEvent
+from js import document, MouseEvent, console
 from pyodide.ffi.wrappers import add_event_listener, remove_event_listener
 from pyodide.ffi import create_proxy
 
@@ -58,12 +58,25 @@ def start_selector(callback: SelectorProtocol):
     last_event = None
 
     def mousemove(event: MouseEvent):
-        zone_event = DropZoneEvent(event.target, Position.beforebegin)
+        element = event.target
+        rect = element.getBoundingClientRect()
+
+        # Calculate the position of the mouse relative to the element
+        mouse_x = event.clientX - rect.left
+        mouse_y = event.clientY - rect.top
+
+        # Determine the position relative to the diagonal
+        if mouse_x + mouse_y < rect.width:  # Below the diagonal
+            position = Position.beforebegin
+        else:  # Above the diagonal
+            position = Position.afterend
+
+        zone_event = DropZoneEvent(element, position)
+        console.log(f'candidate zone_event: {zone_event}')
         nonlocal last_event
         if last_event != zone_event:
             last_event = zone_event
             callback(zone_event)
-
     mmp = create_proxy(mousemove)
     document.addEventListener('mousemove', mmp)
     # add_event_listener(document, 'mousemove', create_proxy(mousemove))

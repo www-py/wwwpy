@@ -51,6 +51,11 @@ def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path)
 
     assertTuple(runPythonAsync2("remote.assert1()"))
 
+    page.mouse.move(199, 99)
+
+    runPythonAsync("remote.clear_events()")
+    assertTuple(runPythonAsync2("remote.assert2()"))
+
     # expect(page.locator("button#btn1")).to_have_text("begin")
 
 
@@ -78,4 +83,16 @@ def assert1():
     result = success, f'expected=`{expected}`, actual=`{drop_zone_events}`'
     console.log(f'assert1: {result}')
     return result
+
+def clear_events():
+    drop_zone_events.clear()
+
+def assert2():
+    expected = [DropZoneEvent(btn1, Position.afterend)]
+    success = drop_zone_events == expected
+    result = success, f'expected=`{expected}`, actual=`{drop_zone_events}`'
+    console.log(f'assert2: {result}')
+    return result
+
+
 """
