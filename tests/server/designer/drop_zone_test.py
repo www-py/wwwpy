@@ -10,19 +10,58 @@ from wwwpy.webserver import Webserver
 drop_zone_support = Path(__file__).parent / "drop_zone_support"
 
 
-@for_all_webservers()
-def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path):
+def _setup_remote(tmp_path, remote_init_content):
     remote_init = tmp_path / 'remote' / '__init__.py'
     remote_init.parent.mkdir(parents=True)
-    remote_init.write_text(  # language=python
-        """
-from js import document
-document.body.innerHTML = '<button id="btn1" style="width: 200px; height: 100px;">unchanged</button>'
+    remote_init.write_text(remote_init_content)
 
-"""
-    )
+
+@for_all_webservers()
+def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path):
+    def runPythonAsync(python: str):
+        page.evaluate(f'pyodide.runPythonAsync(`{python}`)')
+
+    _setup_remote(tmp_path, _test_drop_zone_init)
     configure.convention(tmp_path, webserver, dev_mode=True)
     webserver.start_listen()
 
     page.goto(webserver.localhost_url())
-    expect(page.locator("button#btn1")).to_have_text("unchanged")
+    expect(page.locator("button#btn1")).to_have_text("ready")
+
+    runPythonAsync("import remote")
+    runPythonAsync("await remote.fun1()")
+
+    # the button is 200x100
+    # page.mouse.move(50, 25)  # todo, check if the dropzone is highlighted!?
+    # page.mouse.click(50, 25)
+
+    expect(page.locator("button#btn1")).to_have_text("begin")
+
+
+# language=python
+_test_drop_zone_init = """
+from js import document
+
+document.body.innerHTML = '<button id="btn1" style="width: 200px; height: 100px;">ready</button>'
+btn1 = document.getElementById('btn1')
+
+
+    
+async def main():
+    # language=html
+    return
+
+
+    from wwwpy.remote.designer.drop_zone import _DropZoneSelector
+    dzs = _DropZoneSelector()
+    dzs.start()
+    btn1.innerHTML = 'ready'
+
+    result = await dzs.result()
+    btn1.innerHTML = str(result)
+
+
+async def fun1():
+    btn1 = document.getElementById('btn1')
+    btn1.innerHTML = 'begin'
+"""
