@@ -46,6 +46,7 @@ def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path)
     page.mouse.move(50, 25)
 
     assertTuple(runPythonAsync2("remote.assert1()"))
+    assertTuple(runPythonAsync2("remote.assert1_class_before()"))
 
     page.mouse.move(50, 26)  # the element is the same so no change
 
@@ -55,6 +56,7 @@ def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path)
     page.mouse.move(199, 99)
 
     assertTuple(runPythonAsync2("remote.assert2()"))
+    assertTuple(runPythonAsync2("remote.assert1_class_after()"))
 
     # expect(page.locator("button#btn1")).to_have_text("begin")
 
@@ -82,6 +84,22 @@ def assert1():
     success = drop_zone_events == expected
     result = success, f'expected=`{expected}`, actual=`{drop_zone_events}`'
     console.log(f'assert1: {result}')
+    return result
+
+def assert1_class_before():
+    from wwwpy.remote.designer.drop_zone import _beforebegin_css_class
+    expected = _beforebegin_css_class
+    success = expected in  btn1.classList
+    result = success, f'expected=`{expected}`, actual=`{btn1.classList}`'
+    console.log(f'assert1_class_before: {result}')
+    return result
+    
+def assert1_class_after():
+    from wwwpy.remote.designer.drop_zone import _afterend_css_class
+    expected = _afterend_css_class
+    success = expected in  btn1.classList
+    result = success, f'expected=`{expected}`, actual=`{btn1.classList}`'
+    console.log(f'assert1_class_after: {result}')
     return result
 
 def clear_events():

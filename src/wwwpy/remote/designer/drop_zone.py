@@ -44,6 +44,10 @@ class Position(Enum):
     afterend = 2
 
 
+_beforebegin_css_class = 'drop-zone-beforebegin'
+_afterend_css_class = 'drop-zone-afterend'
+
+
 @dataclass
 class DropZoneEvent:
     target: HTMLElement
@@ -58,7 +62,7 @@ def start_selector(callback: SelectorProtocol):
     last_event = None
 
     def mousemove(event: MouseEvent):
-        element = event.target
+        element: HTMLElement = event.target
         rect = element.getBoundingClientRect()
 
         # Calculate the position of the mouse relative to the element
@@ -75,6 +79,7 @@ def start_selector(callback: SelectorProtocol):
         nonlocal last_event
         if last_event != zone_event:
             console.log(f'candidate sending   zone_event: {zone_event}')
+            element.classList.add(_beforebegin_css_class if position == Position.beforebegin else _afterend_css_class)
             last_event = zone_event
             callback(zone_event)
         else:
@@ -83,3 +88,26 @@ def start_selector(callback: SelectorProtocol):
     mmp = create_proxy(mousemove)
     document.addEventListener('mousemove', mmp)
     # add_event_listener(document, 'mousemove', create_proxy(mousemove))
+
+
+def _ensure_drop_zone_style():
+    drop_zone_highlight_style = 'drop-zone-highlight-style'
+    _ensure_style_element(drop_zone_highlight_style, f"""
+    .{_beforebegin_css_class} {{
+        box-shadow: -2px -2px 0 green;
+    }}
+    .{_afterend_css_class} {{
+        box-shadow: 2px 2px 2px 2px green;
+    }}
+""")
+
+
+def _ensure_style_element(element_id: str, style_content: str):
+    st = document.head.querySelector(f'#{element_id}')
+    if st is None:
+        st = document.createElement('style')
+        st.id = element_id
+        document.head.appendChild(st)
+
+    if st.innerHTML != style_content:
+        st.innerHTML = style_content
