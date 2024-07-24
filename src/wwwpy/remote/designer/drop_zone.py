@@ -1,26 +1,55 @@
 from __future__ import annotations
 
-import asyncio
 from dataclasses import dataclass
+from enum import Enum
 from typing import Protocol
 
-from js import document, MouseEvent, console
+from js import document, MouseEvent
 from pyodide.ffi import create_proxy
 
 from wwwpy.remote.widgets.filesystem_tree_widget import HTMLElement
+
+
+class Position(Enum):
+    beforebegin = 1
+    afterend = 2
+
+
+@dataclass
+class DropZoneEvent:
+    target: HTMLElement
+    position: Position
 
 
 class _DropZoneSelector:
     def __init__(self):
         self._future = None
 
-    def start(self):
-        """It starts the process for the user to select a drop zone.
-        While moving the mouse, it highlights the drop zones.
-        It will intercept (and prevent) the mouse click event.
-        On such a mouse click event, it will stop the process and set the result.
-        """
-        self._future = asyncio.Future()
+    def start_selector(self, callback: SelectorProtocol):
+        last_event: DropZoneEvent | None = None
+        _ensure_drop_zone_style()
+
+        def mousemove(event: MouseEvent):
+            position = _calc_position(event)
+            element: HTMLElement = event.target
+            zone_event = DropZoneEvent(element, position)
+            nonlocal last_event
+            if last_event != zone_event:
+                if last_event is not None:
+                    _remove_class(last_event.target, _beforebegin_css_class)
+                    _remove_class(last_event.target, _afterend_css_class)
+                # console.log(f'candidate sending zone_event', zone_event.position, zone_event.target)
+                element.classList.add(
+                    _beforebegin_css_class if position == Position.beforebegin else _afterend_css_class)
+                last_event = zone_event
+                callback(zone_event)
+            else:
+                pass
+                # console.log(f'candidate discarded zone_event: {zone_event}')
+
+        mmp = create_proxy(mousemove)
+        document.addEventListener('mousemove', mmp)
+        # add_event_listener(document, 'mousemove', create_proxy(mousemove))
 
     def stop(self):
         """It stops the process of selecting a drop zone.
@@ -37,22 +66,8 @@ class _DropZoneSelector:
 
 drop_zone_selector = _DropZoneSelector()
 
-from enum import Enum
-
-
-class Position(Enum):
-    beforebegin = 1
-    afterend = 2
-
-
 _beforebegin_css_class = 'drop-zone-beforebegin'
 _afterend_css_class = 'drop-zone-afterend'
-
-
-@dataclass
-class DropZoneEvent:
-    target: HTMLElement
-    position: Position
 
 
 class SelectorProtocol(Protocol):
@@ -63,32 +78,6 @@ def _remove_class(target: HTMLElement, class_name: str):
     target.classList.remove(class_name)
     if target.classList.length == 0:
         target.removeAttribute('class')
-
-
-def start_selector(callback: SelectorProtocol):
-    last_event: DropZoneEvent | None = None
-    _ensure_drop_zone_style()
-
-    def mousemove(event: MouseEvent):
-        position = _calc_position(event)
-        element: HTMLElement = event.target
-        zone_event = DropZoneEvent(element, position)
-        nonlocal last_event
-        if last_event != zone_event:
-            if last_event is not None:
-                _remove_class(last_event.target, _beforebegin_css_class)
-                _remove_class(last_event.target, _afterend_css_class)
-            # console.log(f'candidate sending zone_event', zone_event.position, zone_event.target)
-            element.classList.add(_beforebegin_css_class if position == Position.beforebegin else _afterend_css_class)
-            last_event = zone_event
-            callback(zone_event)
-        else:
-            pass
-            # console.log(f'candidate discarded zone_event: {zone_event}')
-
-    mmp = create_proxy(mousemove)
-    document.addEventListener('mousemove', mmp)
-    # add_event_listener(document, 'mousemove', create_proxy(mousemove))
 
 
 def _ensure_drop_zone_style():
@@ -124,7 +113,7 @@ def _calc_position(event: MouseEvent) -> Position:
 
     # Calculate the position of the mouse relative to the element
     x = event.clientX - rect.left
-    y = rect.height -(event.clientY - rect.top)
+    y = rect.height - (event.clientY - rect.top)
     h = rect.height
     w = rect.width
     m = h / w

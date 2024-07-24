@@ -66,7 +66,7 @@ def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path)
 # language=python
 _test_drop_zone_init = """from js import document, console
 
-from wwwpy.remote.designer.drop_zone import start_selector, DropZoneEvent, Position
+from wwwpy.remote.designer.drop_zone import drop_zone_selector, DropZoneEvent, Position
 
 document.body.innerHTML = '<button id="btn1" style="width: 200px; height: 100px;">ready</button>'
 btn1 = document.getElementById('btn1')
@@ -78,7 +78,7 @@ async def start():
     def callback(event: DropZoneEvent):
         drop_zone_events.append(event)
 
-    start_selector(callback)
+    drop_zone_selector.start_selector(callback)
 
 
 def assert1():
