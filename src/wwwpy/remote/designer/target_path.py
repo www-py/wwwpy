@@ -1,22 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import List, Dict
+from typing import List
 
 from js import HTMLElement, Array
 
-
-@dataclass()
-class Node:
-    tag_name: str
-    child_index: int
-    """This is the index in the list of children of the parent node.
-    It is -1 if the node has no parent.
-    """
-    attributes: Dict[str, str]
+from wwwpy.common.designer.html_locator import Node, NodePath
 
 
-def target_path(target: HTMLElement) -> List[Node]:
+def target_path(target: HTMLElement) -> NodePath:
     """
     Get the path from the root to the target.
     """
