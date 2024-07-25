@@ -53,7 +53,7 @@ async def entry_point(dev_mode: bool = False):
 async def _invoke_browser_main(reload=False):
     console.log('invoke_browser_main')
     try:
-        js.document.body.innerHTML = 'Going to import remote'
+        js.document.body.innerHTML = f'Going to import remote (reload={reload})'
         import remote
         if reload:
             import importlib
