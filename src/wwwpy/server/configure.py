@@ -24,7 +24,7 @@ def start_default(port: int, directory: Path, dev_mode=False):
 
 websocket_pool: WebsocketPool = None
 
-
+# todo convention(dev_mode=True) without a ./remote folder fails
 def convention(directory: Path, webserver: Webserver, dev_mode=False):
     print(f'applying convention to working_dir: {directory}')
     sys.path.insert(0, str(directory))
