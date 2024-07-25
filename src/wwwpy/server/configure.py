@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from datetime import datetime
 from pathlib import Path
 
 from wwwpy.bootstrap import bootstrap_routes
@@ -57,7 +58,7 @@ def convention(directory: Path, webserver: Webserver, dev_mode=False):
                     return
                 rel_path = path.relative_to(directory)
                 content = None if path.is_dir() or not path.exists() else path.read_text()
-                print(f'clients len: {len(websocket_pool.clients)} file changed: {rel_path}')
+                print(f'{datetime.now()} clients len: {len(websocket_pool.clients)} file changed: {rel_path}')
                 for client in websocket_pool.clients:
                     remote_rpc = client.rpc(rpc.BrowserRpc)
                     remote_rpc.file_changed(event.event_type, str(rel_path).replace('\\', '/'), content)
