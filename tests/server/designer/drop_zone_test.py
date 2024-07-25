@@ -106,7 +106,8 @@ def test_drop_zone_stop(page: Page, webserver: Webserver, tmp_path, restore_sys_
 # language=python
 _test_drop_zone_init = """from js import document, console
 
-from wwwpy.remote.designer.drop_zone import drop_zone_selector, DropZone, Position
+from wwwpy.remote.designer.drop_zone import drop_zone_selector, DropZone
+from wwwpy.common.designer.html_edit import Position
 
 document.body.innerHTML = '<button id="btn1" style="width: 200px; height: 100px;">ready</button>'
 btn1 = document.getElementById('btn1')

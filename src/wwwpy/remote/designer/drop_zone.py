@@ -1,18 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
 from typing import Protocol
 
 from js import document, MouseEvent
 from pyodide.ffi import create_proxy
 
+from wwwpy.common.designer.html_edit import Position
 from wwwpy.remote.widgets.filesystem_tree_widget import HTMLElement
-
-
-class Position(Enum):
-    beforebegin = 1
-    afterend = 2
 
 
 @dataclass
