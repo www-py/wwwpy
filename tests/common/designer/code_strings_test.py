@@ -1,4 +1,4 @@
-from wwwpy.common.designer.source_strings import html_string_edit
+from wwwpy.common.designer.code_strings import html_string_edit
 
 
 def test_html_edit():

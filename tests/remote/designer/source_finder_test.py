@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from wwwpy.common.designer.source_finder import find_source_file
+from wwwpy.common.designer.code_finder import find_source_file
 
 
 def test_find_component__should_be_this_very_same_file():

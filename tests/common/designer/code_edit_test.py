@@ -1,4 +1,4 @@
-from wwwpy.common.designer.source_edit import Attribute, info, add_attribute
+from wwwpy.common.designer.code_edit import Attribute, info, add_attribute
 
 
 def test_add_attribute():

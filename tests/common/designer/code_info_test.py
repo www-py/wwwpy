@@ -1,5 +1,5 @@
-from wwwpy.common.designer.source_edit import Attribute, info
-from wwwpy.common.designer.source_info import Info, ClassInfo
+from wwwpy.common.designer.code_edit import Attribute, info
+from wwwpy.common.designer.code_info import Info, ClassInfo
 
 
 def test_info():

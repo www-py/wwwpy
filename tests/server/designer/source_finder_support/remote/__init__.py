@@ -7,7 +7,7 @@ async def main():
     console.log('testing source_finder')
     document.body.innerHTML = 'checking...'
 
-    from wwwpy.common.designer.source_finder import find_source_file
+    from wwwpy.common.designer.code_finder import find_source_file
     from remote.FindmeComponent import FindmeComponent
 
     path = find_source_file(FindmeComponent)

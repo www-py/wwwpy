@@ -4,8 +4,8 @@ from typing import List
 
 import libcst as cst
 
-from wwwpy.common.designer.source_info import Attribute, info
-from wwwpy.common.designer.source_strings import html_string_edit
+from wwwpy.common.designer.code_info import Attribute, info
+from wwwpy.common.designer.code_strings import html_string_edit
 
 
 class AddFieldToClassTransformer(cst.CSTTransformer):
