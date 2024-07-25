@@ -1,7 +1,6 @@
 from __future__ import annotations
 import json
 from dataclasses import dataclass
-from html.parser import HTMLParser
 from typing import Dict, List, Tuple
 
 
@@ -22,12 +21,34 @@ NodePath = List[Node]
 def node_path_serialize(path: NodePath) -> str:
     return json.dumps([node.__dict__ for node in path])
 
+
 def node_path_deserialize(serialized: str) -> NodePath:
     node_dicts = json.loads(serialized)
     return [Node(**node_dict) for node_dict in node_dicts]
 
-def locate(html: str, path: NodePath) -> Tuple[int, int] | None:
-    """This function locates the position of a node in the HTML string.
-    It returns the start and end positions of the node in the HTML string or None if the node is not found."""
-    pass
 
+from wwwpy.common.designer.html_parser import html_to_tree, CstNode
+
+
+def locate(html: str, path: NodePath) -> Tuple[int, int] | None:
+    # Parse the HTML to get the tree of CstNode objects
+    cst_tree = html_to_tree(html)
+
+    def find_node(nodes: List[CstNode], path: NodePath, depth: int) -> CstNode | None:
+        if depth >= len(path):
+            return None
+
+        target_node = path[depth]
+        if target_node.child_index < 0 or target_node.child_index >= len(nodes):
+            return None
+        node = nodes[target_node.child_index]
+        if depth == len(path) - 1:
+            return node
+        return find_node(node.children, path, depth + 1)
+
+
+    target_node = find_node(cst_tree, path, 0)
+
+    if target_node:
+        return target_node.position
+    return None
