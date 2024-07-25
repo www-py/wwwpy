@@ -1,7 +1,8 @@
 import ast
-
 from dataclasses import dataclass
 from typing import List, Callable
+
+import libcst as cst
 
 
 @dataclass
@@ -53,17 +54,12 @@ class ClassInfoExtractor(ast.NodeVisitor):
         else:
             return 'Unknown'
 
+
 def info(source):
     tree = ast.parse(source)
     extractor = ClassInfoExtractor()
     extractor.visit(tree)
     return Info(extractor.classes)
-
-
-import ast
-
-import libcst as cst
-import libcst
 
 
 class AddFieldToClassTransformer(cst.CSTTransformer):
@@ -97,6 +93,7 @@ class AddFieldToClassTransformer(cst.CSTTransformer):
                 body=updated_node.body.with_changes(body=list(updated_node.body.body) + [new_field_node]))
         return updated_node
 
+
 def add_attribute(source_code: str, attr_info: Attribute):
     module = cst.parse_module(source_code)
     i = info(source_code)
@@ -107,14 +104,12 @@ def add_attribute(source_code: str, attr_info: Attribute):
     return modified_tree.code
 
 
-from typing import Callable
-import libcst as cst
-
 def html_edit(source_code: str, html_manipulator: Callable[[str], str]) -> str:
     tree = cst.parse_module(source_code)
     transformer = HTMLStringUpdater(html_manipulator)
     modified_tree = tree.visit(transformer)
     return modified_tree.code
+
 
 class HTMLStringUpdater(cst.CSTTransformer):
     def __init__(self, html_manipulator: Callable[[str], str]):
