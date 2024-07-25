@@ -31,6 +31,9 @@ from wwwpy.common.designer.html_parser import html_to_tree, CstNode
 
 
 def locate(html: str, path: NodePath) -> Tuple[int, int] | None:
+    """This function locates the position of the node specified by the path in the HTML string.
+    The position is represented by the start and end indices of the node in the HTML string.
+    """
     # Parse the HTML to get the tree of CstNode objects
     cst_tree = html_to_tree(html)
 
