@@ -75,7 +75,7 @@ class MyElement(wpc.Component): # comment2
     assert modified_source == expected_source
 
 
-def nice_to_have___test_add_attribute__should_add_it_on_top_after_other_attributes():
+def test_add_attribute__should_add_it_on_top_after_other_attributes():
     original_source = """
 import wwwpy.remote.component as wpc
 # comment1

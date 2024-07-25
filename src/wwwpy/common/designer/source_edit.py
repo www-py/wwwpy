@@ -89,10 +89,24 @@ class AddFieldToClassTransformer(cst.CSTTransformer):
                     value=None if self.new_field.default is None else cst.parse_expression(self.new_field.default)
                 )
             ])
-            return updated_node.with_changes(
-                body=updated_node.body.with_changes(body=list(updated_node.body.body) + [new_field_node]))
-        return updated_node
 
+            # Find the position to insert the new attribute
+            new_body = []
+            inserted = False
+            for item in updated_node.body.body:
+                if not inserted and isinstance(item, cst.SimpleStatementLine) and isinstance(item.body[0], cst.AnnAssign):
+                    new_body.append(item)
+                else:
+                    if not inserted:
+                        new_body.append(new_field_node)
+                        inserted = True
+                    new_body.append(item)
+
+            if not inserted:
+                new_body.append(new_field_node)
+
+            return updated_node.with_changes(body=updated_node.body.with_changes(body=new_body))
+        return updated_node
 
 def add_attribute(source_code: str, attr_info: Attribute):
     module = cst.parse_module(source_code)
