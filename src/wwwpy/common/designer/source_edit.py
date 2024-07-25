@@ -4,64 +4,8 @@ from typing import List
 
 import libcst as cst
 
+from wwwpy.common.designer.source_info import Attribute, info
 from wwwpy.common.designer.source_strings import html_string_edit
-
-
-@dataclass
-class Attribute:
-    name: str
-    type: str
-    default: str
-
-
-@dataclass
-class ClassInfo:
-    name: str
-    attributes: List[Attribute]
-
-
-@dataclass
-class Info:
-    classes: List[ClassInfo]
-
-
-class ClassInfoExtractor(ast.NodeVisitor):
-    def __init__(self):
-        self.classes = []
-
-    def visit_ClassDef(self, node):
-        class_name = node.name
-        attributes = []
-        for item in node.body:
-            if isinstance(item, ast.AnnAssign):
-                attr_name = item.target.id
-                attr_type = self.get_annotation_type(item.annotation)
-                default = ast.unparse(item.value) if item.value else None
-                attributes.append(Attribute(attr_name, attr_type, default))
-        self.classes.append(ClassInfo(class_name, attributes))
-        self.generic_visit(node)
-
-    def get_annotation_type(self, annotation):
-        if isinstance(annotation, ast.Name):
-            return annotation.id
-        elif isinstance(annotation, ast.Attribute):
-            names = []
-            while isinstance(annotation, ast.Attribute):
-                names.append(annotation.attr)
-                annotation = annotation.value
-            if isinstance(annotation, ast.Name):
-                names.append(annotation.id)
-            names.reverse()
-            return '.'.join(names)
-        else:
-            return 'Unknown'
-
-
-def info(source):
-    tree = ast.parse(source)
-    extractor = ClassInfoExtractor()
-    extractor.visit(tree)
-    return Info(extractor.classes)
 
 
 class AddFieldToClassTransformer(cst.CSTTransformer):
@@ -96,7 +40,8 @@ class AddFieldToClassTransformer(cst.CSTTransformer):
             new_body = []
             inserted = False
             for item in updated_node.body.body:
-                if not inserted and isinstance(item, cst.SimpleStatementLine) and isinstance(item.body[0], cst.AnnAssign):
+                if not inserted and isinstance(item, cst.SimpleStatementLine) and isinstance(item.body[0],
+                                                                                             cst.AnnAssign):
                     new_body.append(item)
                 else:
                     if not inserted:
@@ -110,6 +55,7 @@ class AddFieldToClassTransformer(cst.CSTTransformer):
             return updated_node.with_changes(body=updated_node.body.with_changes(body=new_body))
         return updated_node
 
+
 def add_attribute(source_code: str, attr_info: Attribute):
     module = cst.parse_module(source_code)
     i = info(source_code)
@@ -118,7 +64,6 @@ def add_attribute(source_code: str, attr_info: Attribute):
     modified_tree = module.visit(transformer)
 
     return modified_tree.code
-
 
 
 def add_component(source_code: str, attribute_name: str, attribute_type: str, html_piece: str) -> str:
