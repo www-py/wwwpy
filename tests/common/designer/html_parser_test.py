@@ -9,3 +9,9 @@ def test_html_to_tree():
     actual = html_to_tree('<div></div>')
     expect = [CstNode(tag_name='div', position=(0, 11))]
     assert actual == expect
+
+
+def test_nested():
+    actual = html_to_tree('<div><p></p></div>')
+    expect = [CstNode(tag_name='div', position=(0, 18), children=[CstNode(tag_name='p', position=(5, 12))])]
+    assert actual == expect
