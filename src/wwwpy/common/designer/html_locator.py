@@ -1,6 +1,7 @@
 from __future__ import annotations
 import json
 from dataclasses import dataclass
+from html.parser import HTMLParser
 from typing import Dict, List, Tuple
 
 
@@ -29,3 +30,4 @@ def locate(html: str, path: NodePath) -> Tuple[int, int] | None:
     """This function locates the position of a node in the HTML string.
     It returns the start and end positions of the node in the HTML string or None if the node is not found."""
     pass
+
