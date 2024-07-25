@@ -3,7 +3,13 @@ from wwwpy.common.designer.html_locator import Node
 
 
 def test_locate():
-    html_locator.locate('<div></div>', [])
+    # language=html
+    html = "<div id='foo'><div></div><div id='target'></div></div>"
+    path = [Node("DIV", -1, {}), Node("DIV", 0, {'id': 'foo'}), Node("DIV", 1, {'id': 'target'})]
+    actual = html_locator.locate(html, path)
+    expect = (25, 48)
+    assert actual == expect
+
 
 
 def test_serde():
