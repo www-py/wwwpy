@@ -1,8 +1,10 @@
 import ast
 from dataclasses import dataclass
-from typing import List, Callable
+from typing import List
 
 import libcst as cst
+
+from wwwpy.common.designer.source_strings import html_string_edit
 
 
 @dataclass
@@ -118,25 +120,6 @@ def add_attribute(source_code: str, attr_info: Attribute):
     return modified_tree.code
 
 
-def html_edit(source_code: str, html_manipulator: Callable[[str], str]) -> str:
-    tree = cst.parse_module(source_code)
-    transformer = HTMLStringUpdater(html_manipulator)
-    modified_tree = tree.visit(transformer)
-    return modified_tree.code
-
-
-class HTMLStringUpdater(cst.CSTTransformer):
-    def __init__(self, html_manipulator: Callable[[str], str]):
-        super().__init__()
-        self.html_manipulator = html_manipulator
-
-    def leave_SimpleString(self, original_node: cst.SimpleString, updated_node: cst.SimpleString) -> cst.CSTNode:
-        if original_node.value.startswith('"""') and original_node.value.endswith('"""'):
-            original_html = original_node.value[3:-3]
-            modified_html = self.html_manipulator(original_html)
-            return updated_node.with_changes(value=f'"""{modified_html}"""')
-        return updated_node
-
 
 def add_component(source_code: str, attribute_name: str, attribute_type: str, html_piece: str) -> str:
     named_html = html_piece.replace('#name#', attribute_name)
@@ -145,6 +128,6 @@ def add_component(source_code: str, attribute_name: str, attribute_type: str, ht
         return html + named_html
 
     source1 = add_attribute(source_code, Attribute(attribute_name, attribute_type, 'wpc.element()'))
-    source2 = html_edit(source1, manipulate_html)
+    source2 = html_string_edit(source1, manipulate_html)
 
     return source2
