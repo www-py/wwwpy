@@ -12,6 +12,8 @@ class CstNode:
 
 
 class _PositionalHTMLParser(HTMLParser):
+    VOID_TAGS = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
+
     def __init__(self, data):
         super().__init__()
         self.data = data
@@ -24,7 +26,10 @@ class _PositionalHTMLParser(HTMLParser):
         node = CstNode(tag_name=tag, position=position, attributes=attributes)
         if self.stack:
             self.stack[-1].children.append(node)
-        self.stack.append(node)
+        if tag not in self.VOID_TAGS:
+            self.stack.append(node)
+        else:
+            self._tree.append(node)
 
     def handle_endtag(self, tag):
         if self.stack:
