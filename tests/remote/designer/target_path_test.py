@@ -58,6 +58,29 @@ class Component1(wpc.Component):
     assert str(actual) == str(expect), f'\nexpect={expect} \nactual={actual}'
 
 
+def test_target_path__without_component():
+    # GIVEN
+
+    document.body.innerHTML = """
+        <div></div>
+        <div class='class1'>foo
+            <button data-name='btn1' id='btn1id'>bar</button>
+        </div>
+    """
+
+    # WHEN
+    target = document.querySelector("#btn1id")
+    assert target
+    actual = target_location(target)
+
+    # THEN
+    path = [Node("DIV", 1, {'class': 'class1'}),
+            Node("BUTTON", 0, {'data-name': 'btn1', 'id': 'btn1id'})]
+
+    expect = TargetLocation(component=None, path=path)
+    assert str(actual) == str(expect), f'\nexpect={expect} \nactual={actual}'
+
+
 def disabled_test_html_locator__data_generator():
     """This is not a real test. Its purpose is to generate data
     that will be used for testing [html_locator]"""
