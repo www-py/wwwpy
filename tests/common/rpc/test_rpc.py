@@ -62,10 +62,3 @@ def test_services_not_found():
     assert actual is not None
     actual: Module
     assert actual.name == support2_module_name
-
-
-def _module_from_source(name: str, source: str) -> ModuleType:
-    spec = importlib.util.spec_from_loader(name, loader=None)
-    module = importlib.util.module_from_spec(spec)
-    exec(source, module.__dict__)
-    return module
