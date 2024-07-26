@@ -38,12 +38,8 @@ class Component1(wpc.Component):
     ''')
     sys.path.insert(0, str(tmp_path))
     from component1 import Component1
-    # from tests.remote.designer.target_path_support.component1 import Component1
     component1 = Component1()
 
-    # t = component1.component_metadata.tag_name
-    # document.body.innerHTML = f'<{t}></{t}>'
-    # document.body.innerHTML = f'<div>ciaooo</div>'
     document.body.appendChild(component1.element)
 
     # WHEN
