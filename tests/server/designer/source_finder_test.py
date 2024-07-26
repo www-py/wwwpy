@@ -2,7 +2,8 @@ from pathlib import Path
 
 from playwright.sync_api import Page, expect
 
-from tests import for_all_webservers, restore_sys_path
+from tests import for_all_webservers
+from tests.common import restore_sys_path
 from wwwpy.server import configure
 from wwwpy.webserver import Webserver
 
