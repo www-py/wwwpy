@@ -21,15 +21,17 @@ def tree(dir_path: Path, prefix: str = ''):
     pointers = [tee] * (len(contents) - 1) + [last]
     for pointer, path in zip(pointers, contents):
         yield prefix + pointer + path.name
-        if path.is_dir():  # extend the prefix and recurse:
-            extension = branch if pointer == tee else space
-            # i.e. space because last, └── , above so no more |
-            yield from tree(path, prefix=prefix + extension)
+        try:
+            if path.is_dir():  # extend the prefix and recurse:
+                extension = branch if pointer == tee else space
+                # i.e. space because last, └── , above so no more |
+                yield from tree(path, prefix=prefix + extension)
+        except Exception as e:
+            yield prefix + f'Error: {e}'
 
-
-def print_tree(path):
+def print_tree(path, printer=print):
     for line in tree(Path(path)):
-        print(line)
+        printer(line)
 
 
 if __name__ == '__main__':
