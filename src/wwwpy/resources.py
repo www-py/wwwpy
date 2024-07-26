@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
-from typing import Iterator, Callable, Optional, TypeVar, Iterable
+from typing import Iterator, Callable, Optional, TypeVar, Iterable, Protocol, Tuple
 from zipfile import ZipFile
 
 from wwwpy.common.iterlib import CallableToIterable
@@ -92,10 +92,25 @@ def from_directory(
         folder: Path, relative_to: Path | None = None,
         resource_accept: ResourceAccept = default_resource_accept
 ) -> FilesystemIterable:
-    relative_to_defined: Path = folder if relative_to is None else relative_to
+    return from_directory_lazy(lambda: (folder, relative_to), resource_accept)
 
+
+class FolderProvider(Protocol):
+    """Return tuple of two Paths[folder, relative_to]. Both are optional"""
+
+    def __call__(self) -> Tuple[Path | None, Path | None]: ...
+
+
+def from_directory_lazy(
+        folder_provider: FolderProvider,
+        resource_accept: ResourceAccept = default_resource_accept
+) -> FilesystemIterable:
     def bundle() -> Iterator[PathResource]:
-        yield from _recurse(folder, relative_to_defined, resource_accept)
+        folder, relative_to = folder_provider()
+        if folder is None:
+            return
+        rel_to: Path = folder if relative_to is None else relative_to
+        yield from _recurse(folder, rel_to, resource_accept)
 
     return CallableToIterable(bundle)
 

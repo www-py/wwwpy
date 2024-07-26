@@ -5,7 +5,7 @@ from typing import NamedTuple
 from zipfile import ZipFile
 
 from wwwpy.resources import from_directory, PathResource, Resource, default_resource_accept, build_archive, \
-    StringResource, stacktrace_pathfinder, _is_path_contained, library_resources
+    StringResource, stacktrace_pathfinder, _is_path_contained, library_resources, from_directory_lazy
 
 parent = Path(__file__).parent
 
@@ -48,6 +48,15 @@ class Test_ResourceIterator_from_filesystem:
         actual = set(from_directory(folder, resource_accept=resource_accept))
         expect = {PathResource(fix_path('yes/yes.txt'), folder / 'yes/yes.txt')}
         assert expect == actual
+
+    def test_lazy__no_path_available_yet(self):
+        target = from_directory_lazy(folder_provider=lambda: (None, None))
+        assert set(target) == set()
+
+    def test_lazy__path_that_does_not_exist(self, tmp_path):
+        tmp_path.rmdir()
+        target = from_directory_lazy(folder_provider=lambda: (tmp_path, None))
+        assert set(target) == set()
 
 
 class Test_build_archive:
