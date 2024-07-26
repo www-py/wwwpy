@@ -37,6 +37,8 @@ def pytest_xvirt_setup(config):
     package_name = 'tests.remote'
 
     location = _get_package_path(package_name)
+    if not location:
+        return None # there is no package to test remotely
     folder_remote = location.parent
     folder_root = folder_remote.parent.parent
     headfull = config.getoption("--headful")
