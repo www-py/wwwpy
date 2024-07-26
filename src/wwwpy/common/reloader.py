@@ -2,20 +2,12 @@ from __future__ import annotations
 
 import inspect
 import sys
-from pathlib import Path
 
 
 def reload(module):
     import importlib
     # importlib.invalidate_caches()
     return importlib.reload(module)
-
-# todo deprecated. use use implib._find_module_path
-def _find_package_location(package_name) -> Path | None:
-    import importlib.util
-
-    spec = importlib.util.find_spec(package_name)
-    return Path(spec.origin) if spec else None
 
 
 def unload_path(path: str):

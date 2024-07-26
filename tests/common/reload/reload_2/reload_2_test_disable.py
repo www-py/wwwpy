@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from wwwpy.common.reloader import _find_package_location, unload_path
+from wwwpy.common.implib import _find_module_path
+from wwwpy.common.reloader import unload_path
 
 parent = Path(__file__).parent / 'package2'
 
@@ -18,7 +19,7 @@ def test_2():
     replace((parent / 'class_a.py'), '.a = 123', '.b = 45')
     replace((parent / 'class_b.py'), '.a = 123', '.b = 45')
 
-    p2 = _find_package_location('package2')
+    p2 = _find_module_path('package2')
 
     unload_path(str(p2.parent))
 

@@ -3,13 +3,14 @@ from __future__ import annotations
 from inspect import iscoroutinefunction
 from typing import Callable, Awaitable, Union
 
+from wwwpy.common import implib
 from wwwpy.common.rpc.serializer import RpcRequest
 import wwwpy.remote.rpc as rpc
 import wwwpy.common.reloader as reloader
 import js
 from js import console, window
 
-bro = reloader._find_package_location('remote').parent
+bro = implib._find_module_path('remote').parent
 root = bro.parent
 
 
