@@ -10,9 +10,9 @@ from typing import Tuple
 from xvirt import XVirt
 
 from wwwpy.bootstrap import bootstrap_routes
-from wwwpy.common.designer.code_finder import find_source_file
+from wwwpy.common import implib
 from wwwpy.http import HttpRoute, HttpRequest, HttpResponse
-from wwwpy.resources import library_resources, from_directory, StringResource, from_directory_lazy
+from wwwpy.resources import library_resources, StringResource, from_directory_lazy
 from wwwpy.server import find_port
 from wwwpy.server.pytest.playwright import start_playwright_in_thread
 from wwwpy.webservers.available_webservers import available_webservers
@@ -22,16 +22,17 @@ _file_parent = Path(__file__).parent
 
 class XVirtImpl(XVirt):
 
-    def __init__(self, parent_remote: Path, relative_to: Path, headless: bool = True):
-        self.parent_remote = parent_remote
-        self.relative_to = relative_to
+    def __init__(self, headless: bool = True):
         self.headless = headless
 
         self.events = Queue()
         self.close_pw = threading.Event()
 
     def virtual_path(self) -> str:
-        return str(self.parent_remote)
+        location = implib._find_module_path('tests.remote')
+        if not location:
+            return 'tests.remote-not-available'
+        return str(location.parent)
 
     def _http_handler(self, req: HttpRequest) -> HttpResponse:
         print(f'server side xvirt_notify_handler({req})')
@@ -49,11 +50,9 @@ class XVirtImpl(XVirt):
             .replace('#xvirt_notify_path_marker#', '/xvirt_notify')
 
         def fs_iterable(package_name: str) -> Tuple[Path | None, Path | None]:
-            import importlib.util as u
-            spec = u.find_spec(package_name)
-            if not spec:
+            location = implib._find_module_path(package_name)
+            if not location:
                 return None, None
-            location = Path(spec.origin)
             target = location.parent
             root = target.parent.parent
             return target, root

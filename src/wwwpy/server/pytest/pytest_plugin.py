@@ -34,16 +34,8 @@ def _get_package_path(package_name: str) -> Path:
 
 @pytest.hookimpl
 def pytest_xvirt_setup(config):
-    package_name = 'tests.remote'
-
-    location = _get_package_path(package_name)
-    if not location:
-        return None # there is no package to test remotely
-    folder_remote = location.parent
-    folder_root = folder_remote.parent.parent
-    headfull = config.getoption("--headful")
-    # Now you can use the headfull variable in your setup
-    return XVirtImpl(folder_remote, folder_root, headless=not headfull)
+    headful = config.getoption("--headful")
+    return XVirtImpl(headless=not headful)
 
 
 def pytest_unconfigure(config):
