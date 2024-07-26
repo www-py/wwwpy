@@ -9,9 +9,12 @@ async def install(package):
 
 
 async def main(rootpath, invocation_dir, args):
+    # Path('/wwwpy_bundle/pytest.ini').write_text("[pytest]\n"
+    #                                             "asyncio_mode = auto")
     await install('pytest==7.2.2')  # didn't work with update to 8.1.1
     await install('pytest-asyncio')
     await install('pytest-xvirt')
+    await install('libcst==1.3.1')
     import pytest
     print('-=-' * 20 + 'pytest imported')
 

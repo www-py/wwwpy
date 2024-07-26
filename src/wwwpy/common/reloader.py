@@ -10,6 +10,7 @@ def reload(module):
     # importlib.invalidate_caches()
     return importlib.reload(module)
 
+# todo rename to _find_package_path and move it to another module
 def _find_package_location(package_name) -> Path | None:
     import importlib.util
 

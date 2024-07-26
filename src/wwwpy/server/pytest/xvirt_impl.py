@@ -1,13 +1,18 @@
+from __future__ import annotations
+
 import json
 import threading
+from functools import partial
 from pathlib import Path
 from queue import Queue
+from typing import Tuple
 
 from xvirt import XVirt
 
 from wwwpy.bootstrap import bootstrap_routes
+from wwwpy.common.designer.code_finder import find_source_file
 from wwwpy.http import HttpRoute, HttpRequest, HttpResponse
-from wwwpy.resources import library_resources, from_directory, StringResource
+from wwwpy.resources import library_resources, from_directory, StringResource, from_directory_lazy
 from wwwpy.server import find_port
 from wwwpy.server.pytest.playwright import start_playwright_in_thread
 from wwwpy.webservers.available_webservers import available_webservers
@@ -43,8 +48,19 @@ class XVirtImpl(XVirt):
         remote_conftest = (_file_parent / 'remote_conftest.py').read_text() \
             .replace('#xvirt_notify_path_marker#', '/xvirt_notify')
 
+        def fs_iterable(package_name: str) -> Tuple[Path | None, Path | None]:
+            import importlib.util as u
+            spec = u.find_spec(package_name)
+            if not spec:
+                return None, None
+            location = Path(spec.origin)
+            target = location.parent
+            root = target.parent.parent
+            return target, root
+
         resources = [library_resources(),
-                     from_directory(self.parent_remote, relative_to=self.relative_to),
+                     from_directory_lazy(partial(fs_iterable, 'tests.remote')),
+                     from_directory_lazy(partial(fs_iterable, 'tests.common')),
                      [
                          # StringResource('tests/__init__.py', ''),
                          # StringResource('pytest.ini', ''),
