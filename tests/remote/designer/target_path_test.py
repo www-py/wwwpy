@@ -1,10 +1,10 @@
 import sys
-from pathlib import Path
-from time import sleep
-from tests.common import restore_sys_path
-from wwwpy.remote.designer.target_path import path_to_target, target_location, TargetLocation
-from wwwpy.common.designer.html_locator import Node
+
 from js import document, console
+
+from tests.common import restore_sys_path
+from wwwpy.common.designer.html_locator import Node
+from wwwpy.remote.designer.target_path import path_to_target, target_location, TargetLocation
 
 
 def test_target_path():
@@ -40,6 +40,7 @@ class Component1(wpc.Component):
     from component1 import Component1
     component1 = Component1()
 
+    document.body.innerHTML = ''
     document.body.appendChild(component1.element)
 
     # WHEN
@@ -52,12 +53,9 @@ class Component1(wpc.Component):
             Node("BUTTON", 0, {'data-name': 'btn1', 'id': 'btn1id'})]
 
     expect = TargetLocation(component=component1, path=path)
-    if str(actual) != str(expect):
-        console.log(f'actual={actual}')
-        console.log(f'expect={expect}')
-        sleep(100)
-
-    assert str(actual) == str(expect)
+    # there is something wonky with the comparison of the objects; if I remove the str()
+    # from the assert, it fails because the `component` seems to be different. But it is not!?
+    assert str(actual) == str(expect), f'\nexpect={expect} \nactual={actual}'
 
 
 def disabled_test_html_locator__data_generator():
