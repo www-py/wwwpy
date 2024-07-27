@@ -1,31 +1,12 @@
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass
 
 from js import HTMLElement, Array, Element, document
 
 from wwwpy.common.designer.html_locator import Node, NodePath
-from wwwpy.common.designer.target_path import ResolvedLocation
-from wwwpy.common.modlib import _find_module_root
-from wwwpy.remote.component import Component
+from wwwpy.common.designer.target_path import TargetLocation
 import inspect
-
-
-@dataclass()
-class TargetLocation:
-    """This class represents the location of a target relative to a Component."""
-    component: Component | None
-    """The Component that contains the target."""
-    path: NodePath
-    """The path from the Component (excluded) to the target."""
-
-    def resolve(self) -> ResolvedLocation | None:
-        full_path = inspect.getfile(self.component.__class__)
-        fqn = _fqn(self.component)
-        source_file = _find_module_root(fqn, full_path)
-        return ResolvedLocation(class_name=_fqn(self.component), relative_path=source_file, concrete_path=full_path,
-                                path=self.path)
 
 
 def _get_source_file_path(instance):
