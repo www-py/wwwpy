@@ -1,4 +1,5 @@
 import ast
+import sys
 from dataclasses import dataclass
 from typing import List
 
@@ -21,6 +22,14 @@ class Attribute:
 class ClassInfo:
     name: str
     attributes: List[Attribute]
+
+    def next_attribute_name(self, base_name):
+        used = set([attr.name for attr in self.attributes])
+        for i in range(1, sys.maxsize):
+            name = f'{base_name}{i}'
+            if name not in used:
+                return name
+        raise ValueError('Really?')
 
 
 @dataclass

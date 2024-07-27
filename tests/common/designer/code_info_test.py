@@ -28,3 +28,11 @@ class MyElement(wpc.Component):
 
     expect = Info(classes=[ClassInfo('MyElement', [Attribute('btn1', 'js.HTMLButtonElement', 'wpc.element()')])])
     assert target == expect
+
+
+def test_next_attribute_name():
+    target = ClassInfo('MyElement', [Attribute('btn1', 'js.HTMLButtonElement', 'wpc.element()')])
+    actual = target.next_attribute_name('btn')
+    expect = 'btn2'
+
+    assert actual == expect
