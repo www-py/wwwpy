@@ -10,7 +10,7 @@ from typing import Tuple
 from xvirt import XVirt
 
 from wwwpy.bootstrap import bootstrap_routes
-from wwwpy.common import implib
+from wwwpy.common import modlib
 from wwwpy.http import HttpRoute, HttpRequest, HttpResponse
 from wwwpy.resources import library_resources, StringResource, from_directory_lazy
 from wwwpy.server import find_port
@@ -29,7 +29,7 @@ class XVirtImpl(XVirt):
         self.close_pw = threading.Event()
 
     def virtual_path(self) -> str:
-        location = implib._find_module_path('tests.remote')
+        location = modlib._find_module_path('tests.remote')
         if not location:
             return 'tests.remote-not-available'
         return str(location.parent)
@@ -50,7 +50,7 @@ class XVirtImpl(XVirt):
             .replace('#xvirt_notify_path_marker#', '/xvirt_notify')
 
         def fs_iterable(package_name: str) -> Tuple[Path | None, Path | None]:
-            location = implib._find_module_path(package_name)
+            location = modlib._find_module_path(package_name)
             if not location:
                 return None, None
             target = location.parent

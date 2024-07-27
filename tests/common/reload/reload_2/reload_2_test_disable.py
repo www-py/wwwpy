@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from wwwpy.common.implib import _find_module_path
+from wwwpy.common.modlib import _find_module_path
 from wwwpy.common.reloader import unload_path
 
 parent = Path(__file__).parent / 'package2'

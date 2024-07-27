@@ -3,14 +3,15 @@ from __future__ import annotations
 from inspect import iscoroutinefunction
 from typing import Callable, Awaitable, Union
 
-from wwwpy.common import implib
-from wwwpy.common.rpc.serializer import RpcRequest
-import wwwpy.remote.rpc as rpc
-import wwwpy.common.reloader as reloader
 import js
 from js import console, window
 
-bro = implib._find_module_path('remote').parent
+import wwwpy.common.reloader as reloader
+import wwwpy.remote.rpc as rpc
+from wwwpy.common import modlib
+from wwwpy.common.rpc.serializer import RpcRequest
+
+bro = modlib._find_module_path('remote').parent
 root = bro.parent
 
 
@@ -73,7 +74,7 @@ async def _invoke_browser_main(reload=False):
 
 
 async def setup_websocket():
-    from js import document, WebSocket, window, console
+    from js import window, console
     import importlib
     def log(msg):
         console.log(msg)
@@ -102,7 +103,7 @@ class _WebSocketReconnect:
         self._connect()
 
     def _connect(self):
-        from js import document, WebSocket, window, console
+        from js import WebSocket, console
         self._counter += 1
         console.log(f'connecting to {self._url} counter={self._counter}')
         es = WebSocket.new(self._url)
