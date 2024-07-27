@@ -3,7 +3,7 @@ from typing import Callable
 import libcst as cst
 
 
-def html_string_edit(source_code: str, html_manipulator: Callable[[str], str]) -> str:
+def html_string_edit(source_code: str, class_name: str, html_manipulator: Callable[[str], str]) -> str:
     """This function modifies the HTML string in the source code using the provided manipulator function.
     There is one parameter missing that is the coordinate of the string constant.
     E.g., the name of the Component class whose string constant is to be modified.
