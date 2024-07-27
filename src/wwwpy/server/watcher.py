@@ -29,9 +29,11 @@ class ChangeHandler(FileSystemEventHandler):
             return
         if event.event_type == 'closed' or event.event_type == 'opened' or event.event_type == 'created':
             return
-        # if event.event_type != 'modified':
-        #     return
-        self._throttler.new_event(Event(str(event.src_path), event))
+
+        key = str(event.src_path)
+        if key.endswith('.py~'):
+            return
+        self._throttler.new_event(Event(key, event))
 
     def watch_directory(self):
         self._observer.schedule(self, str(self._path), recursive=True)
