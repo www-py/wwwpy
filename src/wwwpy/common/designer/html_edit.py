@@ -7,6 +7,7 @@ from wwwpy.common.designer.html_locator import NodePath, locate
 
 
 class Position(Enum):
+    inside = 0
     beforebegin = 1
     afterend = 2
 

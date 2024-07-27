@@ -17,20 +17,19 @@ root = bro.parent
 
 def _setup_browser_dev_mode():
     def file_changed(event_type: str, filename: str, content: str):
-        content_sub = None if content is None else content[:100]
-        console.log(f'filename={filename}, content={content_sub}')
         f = root / filename
-        do_reload = True
+        reload = True
         if event_type == 'deleted':
-            console.log(f'deleting {f}')
             f.unlink(missing_ok=True)
         elif not f.exists() or f.read_text() != content:
-            console.log(f'writing {f}')
             f.write_text(content)
         else:
-            do_reload = False
+            reload = False
 
-        if do_reload:
+        content_sub = None if content is None else (content[:100] + '...')
+        console.log(f'reload={reload} et={event_type} filename={filename}, content={content_sub}')
+
+        if reload:
             _reload()
 
     rpc.file_changed_listeners_add(file_changed)

@@ -21,5 +21,5 @@ def unload_path(path: str):
     names = [name for name, module in sys.modules.items() if accept(module)]
 
     for name in names:
-        print(f'Deleting {name}...')
+        print(f'reloader - Deleting module {name}...')
         del (sys.modules[name])

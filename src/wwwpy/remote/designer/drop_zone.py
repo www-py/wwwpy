@@ -114,6 +114,8 @@ def _calc_position(event: MouseEvent) -> Position:
     y = rect.height - (event.clientY - rect.top)
     h = rect.height
     w = rect.width
+    if w == 0:
+        return Position.inside
     m = h / w
     y2 = m * x
     res = Position.afterend if y <= y2 else Position.beforebegin
