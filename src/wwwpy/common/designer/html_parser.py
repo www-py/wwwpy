@@ -9,6 +9,14 @@ class CstNode:
     position: Tuple[int, int]
     children: List['CstNode'] = field(default_factory=list)
     attributes: Dict[str, str] = field(default_factory=dict)
+    html: str = field(repr=False, compare=False, default='')
+
+
+def html_to_tree(html: str) -> List[CstNode]:
+    parser = _PositionalHTMLParser(html)
+    parse = parser.parse()
+    _compile_html(html, parse)
+    return parse
 
 
 class _PositionalHTMLParser(HTMLParser):
@@ -40,6 +48,8 @@ class _PositionalHTMLParser(HTMLParser):
         self.current_pos += len(text)
 
     def handle_endtag(self, tag):
+        if tag in self.void_tags:  # a void tag with end tag
+            return
         if not self.stack:
             return
 
@@ -58,6 +68,8 @@ class _PositionalHTMLParser(HTMLParser):
         return self.nodes
 
 
-def html_to_tree(html: str) -> List[CstNode]:
-    parser = _PositionalHTMLParser(html)
-    return parser.parse()
+def _compile_html(html: str, tree: List[CstNode]):
+    for node in tree:
+        start, end = node.position
+        node.html = html[start:end]
+        _compile_html(node.html, node.children)

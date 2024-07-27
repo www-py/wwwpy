@@ -35,3 +35,11 @@ def test_void_tags_with_attributes_and_spaces():
     children = [CstNode(tag_name='input', position=(6, 28), attributes={'id': 'input1'})]
     expect = [CstNode(tag_name='div', position=(0, 34), children=children)]
     assert actual == expect
+
+
+def test_issue20240727():
+    # language=html
+    actual = html_to_tree("<div><input/></div><input>")
+    expect = [CstNode(tag_name='div', position=(0, 19), children=[CstNode(tag_name='input', position=(5, 13))]),
+              CstNode(tag_name='input', position=(19, 26))]
+    assert actual == expect
