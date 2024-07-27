@@ -45,6 +45,6 @@ class MyElement1(wpc.Component):
     def manipulate_html(html):
         return html + "<button data-name='btn2'>list files in folder</button>"
 
-    actual_source = html_string_edit(original_source, 'MyElement', manipulate_html)
+    actual_source = html_string_edit(original_source, 'MyElement1', manipulate_html)
 
     assert actual_source == exepct_source
