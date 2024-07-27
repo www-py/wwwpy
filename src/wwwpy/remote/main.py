@@ -15,7 +15,12 @@ bro = modlib._find_module_path('remote').parent
 root = bro.parent
 
 
-def _setup_browser_dev_mode():
+async def _setup_browser_dev_mode():
+    from wwwpy.remote import micropip_install
+    from wwwpy.common import designer
+    for package in designer.pypi_packages:
+        await micropip_install(package)
+
     def file_changed(event_type: str, filename: str, content: str):
         f = root / filename
         reload = True
@@ -50,7 +55,7 @@ async def entry_point(dev_mode: bool = False):
 
     await setup_websocket()
     if dev_mode:
-        _setup_browser_dev_mode()
+        await _setup_browser_dev_mode()
 
     await _invoke_browser_main()
 
