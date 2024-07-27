@@ -1,20 +1,14 @@
 import os
 
 
-async def install(package):
-    from js import pyodide
-    await pyodide.loadPackage('micropip')
-    import micropip
-    await micropip.install([package])
-
-
 async def main(rootpath, invocation_dir, args):
     # Path('/wwwpy_bundle/pytest.ini').write_text("[pytest]\n"
     #                                             "asyncio_mode = auto")
-    await install('pytest==7.2.2')  # didn't work with update to 8.1.1
-    await install('pytest-asyncio')
-    await install('pytest-xvirt')
-    await install('libcst==1.3.1')
+    from wwwpy.remote import micropip_install
+    await micropip_install('pytest==7.2.2')  # didn't work with update to 8.1.1
+    await micropip_install('pytest-asyncio')
+    await micropip_install('pytest-xvirt')
+    await micropip_install('libcst==1.3.1')
     import pytest
     print('-=-' * 20 + 'pytest imported')
 
