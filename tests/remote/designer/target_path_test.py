@@ -7,7 +7,8 @@ from tests.common import restore_sys_path
 from wwwpy.common.designer.html_locator import Node
 from wwwpy.common.modlib import _find_module_path
 from wwwpy.common.tree import print_tree
-from wwwpy.remote.designer.target_path import path_to_target, target_location, TargetLocation, ResolvedLocation
+from wwwpy.remote.designer.target_path import path_to_target, target_location, TargetLocation
+from wwwpy.common.designer.target_path import ResolvedLocation
 
 
 def test_target_path():
@@ -67,7 +68,8 @@ def test_resolve(tmp_path, restore_sys_path):
     remote2 = tmp_path / 'remote2'
     remote2.mkdir()
     (remote2 / '__init__.py').write_text('')
-    (remote2 / 'component2.py').write_text('''
+    component2_py = remote2 / 'component2.py'
+    component2_py.write_text('''
 import wwwpy.remote.component as wpc
 class Component2(wpc.Component): ...
     ''')
@@ -85,7 +87,8 @@ class Component2(wpc.Component): ...
     # THEN
     assert res.path is path
     assert res.class_name == 'remote2.component2.Component2'
-    assert res.source_file == 'remote2/component2.py'
+    assert res.relative_path == 'remote2/component2.py'
+    assert res.concrete_path == str(component2_py)
 
 
 def test_target_path__without_component():

@@ -1,27 +1,15 @@
 from __future__ import annotations
 
-import os
 import sys
 from dataclasses import dataclass
-from time import sleep
-from typing import List
 
 from js import HTMLElement, Array, Element, document
 
 from wwwpy.common.designer.html_locator import Node, NodePath
-from wwwpy.common.modlib import _find_module_path, _find_module_root
+from wwwpy.common.designer.target_path import ResolvedLocation
+from wwwpy.common.modlib import _find_module_root
 from wwwpy.remote.component import Component
 import inspect
-
-
-@dataclass()
-class ResolvedLocation:
-    class_name: str
-    """The fully qualified class name of the Component."""
-    source_file: str
-    """The file path of the .py containing the class, starting from the root of the module path"""
-    path: NodePath
-    """The path from the Component (excluded) to the target."""
 
 
 @dataclass()
@@ -36,7 +24,8 @@ class TargetLocation:
         full_path = inspect.getfile(self.component.__class__)
         fqn = _fqn(self.component)
         source_file = _find_module_root(fqn, full_path)
-        return ResolvedLocation(class_name=_fqn(self.component), source_file=source_file, path=self.path)
+        return ResolvedLocation(class_name=_fqn(self.component), relative_path=source_file, concrete_path=full_path,
+                                path=self.path)
 
 
 def _get_source_file_path(instance):
