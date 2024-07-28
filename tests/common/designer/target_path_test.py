@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path
 
 from tests.common import restore_sys_path
 from wwwpy.common.designer.html_locator import Node
@@ -31,5 +32,5 @@ class Component2: ...
     assert res.path is path
     assert res.class_name == 'Component2'
     assert res.class_module == 'package1.component2'
-    assert res.relative_path == 'package1/component2.py'
+    assert Path(res.relative_path) == Path('package1/component2.py')  # issue with windows path
     assert res.concrete_path == str(component2_py)
