@@ -40,6 +40,14 @@ def test_server_convention_empty__folder(page: Page, webserver: Webserver, resto
     expect(page.locator("body")).to_contain_text(_no_remote_infrastructure_found_text)
 
 
+@for_all_webservers()
+def test_empty__folder__error_message(page: Page, webserver: Webserver, restore_sys_path, tmp_path: Path):
+    configure.convention(tmp_path, webserver)
+    webserver.start_listen()
+    page.goto(webserver.localhost_url())
+    from wwwpy.common import _no_remote_infrastructure_found_text
+    expect(page.locator("body")).to_contain_text(_no_remote_infrastructure_found_text)
+
 def _test_convention(directory, page, webserver):
     configure.convention(file_parent / 'layer_4_support' / directory, webserver)
     webserver.start_listen()

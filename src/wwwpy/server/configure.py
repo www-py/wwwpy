@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 
 from wwwpy.bootstrap import bootstrap_routes
+from wwwpy.common.quickstart import _setup_quickstart
 from wwwpy.common.rpc.custom_loader import CustomFinder
 from wwwpy.resources import library_resources, from_directory, from_file
 from wwwpy.server.rpc import configure_services
@@ -25,8 +26,12 @@ websocket_pool: WebsocketPool = None
 
 
 # todo convention(dev_mode=True) without a ./remote folder fails
-def convention(directory: Path, webserver: Webserver, dev_mode=False):
+def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
     print(f'applying convention to working_dir: {directory}')
+    if dev_mode:
+        if not any(directory.iterdir()):
+            print(f'empty directory, creating quickstart in {directory.absolute()}')
+            _setup_quickstart(directory)
     sys.path.insert(0, str(directory))
     sys.meta_path.insert(0, CustomFinder({'remote', 'remote.rpc', 'wwwpy.remote', 'wwwpy.remote.rpc'}))
     global websocket_pool
