@@ -26,6 +26,8 @@ async def _setup_browser_dev_mode():
         if event_type == 'deleted':
             f.unlink(missing_ok=True)
         elif not f.exists() or f.read_text() != content:
+            if not f.parent.exists():
+                f.parent.mkdir(parents=True)
             f.write_text(content)
         else:
             reload = False
@@ -42,7 +44,7 @@ async def _setup_browser_dev_mode():
 def _reload():
     async def reload():
         console.log('reloading')
-        reloader.unload_path(str(_get_dir().bro))
+        reloader.unload_path(str(_get_dir().remote))
         await _invoke_browser_main(True)
 
     _set_timeout(reload)
@@ -127,11 +129,13 @@ def _set_timeout(callback: Callable[[], Union[None, Awaitable[None]]], timeout_m
 
 @dataclass
 class _Dir:
-    bro: Path
     root: Path
+    remote: Path
 
 
 def _get_dir():
-    bro = modlib._find_module_path('remote').parent
-    root = bro.parent
-    return _Dir(bro, root)
+    # this works because both wwwpy and user code are flattened in the same folder
+    root = modlib._find_module_path('wwwpy').parent.parent
+    console.log(f'root={root}')
+    remote = root / 'remote'
+    return _Dir(root, remote)
