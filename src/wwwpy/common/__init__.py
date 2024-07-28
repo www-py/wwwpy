@@ -1,0 +1,1 @@
+_no_remote_infrastructure_found_text = 'No remote found'

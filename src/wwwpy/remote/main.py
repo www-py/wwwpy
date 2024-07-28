@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from inspect import iscoroutinefunction
+from pathlib import Path
 from typing import Callable, Awaitable, Union
 
 import js
@@ -8,11 +10,8 @@ from js import console, window
 
 import wwwpy.common.reloader as reloader
 import wwwpy.remote.rpc as rpc
-from wwwpy.common import modlib
+from wwwpy.common import modlib, _no_remote_infrastructure_found_text
 from wwwpy.common.rpc.serializer import RpcRequest
-
-bro = modlib._find_module_path('remote').parent
-root = bro.parent
 
 
 async def _setup_browser_dev_mode():
@@ -22,7 +21,7 @@ async def _setup_browser_dev_mode():
         await micropip_install(package)
 
     def file_changed(event_type: str, filename: str, content: str):
-        f = root / filename
+        f = _get_dir().root / filename
         reload = True
         if event_type == 'deleted':
             f.unlink(missing_ok=True)
@@ -43,7 +42,7 @@ async def _setup_browser_dev_mode():
 def _reload():
     async def reload():
         console.log('reloading')
-        reloader.unload_path(str(bro))
+        reloader.unload_path(str(_get_dir().bro))
         await _invoke_browser_main(True)
 
     _set_timeout(reload)
@@ -70,7 +69,7 @@ async def _invoke_browser_main(reload=False):
             importlib.reload(remote)
     except ImportError as e:
         import traceback
-        msg = 'module remote load failed. Error: ' + str(e) + '\n\n' + traceback.format_exc() + '\n\n'
+        msg = _no_remote_infrastructure_found_text + ' Exception: ' + str(e) + '\n\n' + traceback.format_exc() + '\n\n'
         js.document.body.innerHTML = msg.replace('\n', '<br>')
         return
 
@@ -124,3 +123,15 @@ class _WebSocketReconnect:
 def _set_timeout(callback: Callable[[], Union[None, Awaitable[None]]], timeout_millis: int | None = 0):
     from pyodide.ffi import create_once_callable
     window.setTimeout(create_once_callable(callback), timeout_millis)
+
+
+@dataclass
+class _Dir:
+    bro: Path
+    root: Path
+
+
+def _get_dir():
+    bro = modlib._find_module_path('remote').parent
+    root = bro.parent
+    return _Dir(bro, root)
