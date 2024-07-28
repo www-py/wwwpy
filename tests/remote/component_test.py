@@ -1,6 +1,7 @@
-from js import document, HTMLElement
+from js import document, HTMLElement, Event
 
 from wwwpy.remote.component import Component, Metadata, attribute, element
+import wwwpy.remote.component as wpc
 
 
 def test_component_metadata():
@@ -219,6 +220,21 @@ class TestElementEventBinding:
         target = Comp1()
         foo = target.element.querySelector(f'[data-name="foo"]')
         foo.click()
+        assert [1] == actual
+
+    def test_underscore_in_event_is_seen_as_dash(self):
+        actual = []
+
+        class Comp1(Component):
+            def init_component(self):
+                self.element.innerHTML = "<button data-name='foo'>foo</button>"
+
+            def foo__custom_1(self, *args):
+                actual.append(1)
+
+        target = Comp1()
+        foo = target.element.querySelector(f'[data-name="foo"]')
+        foo.dispatchEvent(Event.new('custom-1'))
         assert [1] == actual
 
 

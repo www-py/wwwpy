@@ -4,7 +4,7 @@ import inspect
 
 import js
 from js import HTMLElement, console
-from pyodide.ffi import create_proxy
+from pyodide.ffi import create_proxy, create_once_callable
 
 namespace = "window.python_custom_elements"
 
@@ -150,7 +150,7 @@ class Component:
                 continue
 
             element_name = parts[0]
-            event_name = parts[1]
+            event_name = parts[1].replace('_', '-')
             if element_name == '' or event_name == '':
                 continue
 
