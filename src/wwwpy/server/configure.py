@@ -46,7 +46,8 @@ def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
             from_file(directory / 'common.py', relative_to=directory),  # remove .py support
             from_file(directory / 'remote.py', relative_to=directory),  # remove .py support
         ],
-        python=f'from wwwpy.remote.main import entry_point; await entry_point(dev_mode={dev_mode})'
+        # language=python
+        python=f'from wwwpy.remote.browser_main import entry_point; await entry_point(dev_mode={dev_mode})'
     )]
 
     if dev_mode:
