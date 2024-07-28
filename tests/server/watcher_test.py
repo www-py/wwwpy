@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from pathlib import Path
 from time import sleep
 from typing import List
 
@@ -18,7 +19,7 @@ class MockEvent:
 
 
 class WatcherMock:
-    def __init__(self, tmp_path):
+    def __init__(self, tmp_path: Path):
         self.tmp_path = tmp_path
         self.target = watcher.ChangeHandler(tmp_path, self.callback)
         self.prev = datetime.utcnow()
@@ -49,8 +50,25 @@ def watcher_mock(tmp_path):
     return WatcherMock(tmp_path)
 
 
+def test_watcher__unmonitored_folder(watcher_mock):
+    watcher_mock.target.watch_directory()
+    (watcher_mock.tmp_path / 'unmonitored').mkdir()
+    watcher_mock.wait_for_events(0)
+    assert watcher_mock.events == []
+
+
+def test_watcher__common_should_be_monitored(watcher_mock):
+    common = watcher_mock.tmp_path / 'common'
+    common.mkdir()
+    watcher_mock.target.watch_directory()
+    (common / 'hello.py').write_text('hello')
+    watcher_mock.wait_for_events(1)
+    assert len(watcher_mock.events) == 1
+
+
 def test_watcher_modify(watcher_mock):
-    file = watcher_mock.tmp_path / 'file.txt'
+    file = watcher_mock.tmp_path / 'common' / 'file.txt'
+    file.parent.mkdir()
     file.write_text('hello')
 
     watcher_mock.target.watch_directory()
@@ -66,7 +84,8 @@ def test_watcher_modify(watcher_mock):
 def test_watcher_new_file(watcher_mock):
     watcher_mock.target.watch_directory()
 
-    file = watcher_mock.tmp_path / 'file.txt'
+    file = watcher_mock.tmp_path / 'common/file.txt'
+    file.parent.mkdir()
     file.write_text('world')
     watcher_mock.wait_for_events(1)
 
@@ -77,7 +96,8 @@ def test_watcher_new_file(watcher_mock):
 
 
 def test_watcher_delete(watcher_mock):
-    file = watcher_mock.tmp_path / 'file.txt'
+    file = watcher_mock.tmp_path / 'common' / 'file.txt'
+    file.parent.mkdir()
     file.write_text('world')
 
     watcher_mock.target.watch_directory()

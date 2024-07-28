@@ -8,12 +8,18 @@ from watchdog.observers import Observer
 from wwwpy.common.throttler import Event
 from wwwpy.server.throttler_thread import EventThrottlerThread
 
+_default_folders = {'remote', 'common'}
+
 
 class ChangeHandler(FileSystemEventHandler):
 
-    def __init__(self, path: Path, callback: Callable[[FileSystemEvent], None]):
+    def __init__(self, path: Path, callback: Callable[[FileSystemEvent], None], folders: set[str] = _default_folders):
+        """path need to exist, otherwise the observer will throw an exception. Path should be the root of wwwpy working dir.
+        folders is a set of folder names (children of path) that are monitored for changes.
+        """
         self._path = path
         self._callback = callback
+        self._folders = map(lambda f: path / f, folders)
         self._observer = Observer()
 
         def _emit(event: Event):
@@ -26,6 +32,10 @@ class ChangeHandler(FileSystemEventHandler):
         if Path(event.src_path) == self._path:
             return
         if isinstance(event, DirModifiedEvent):
+            return
+        src_path = Path(event.src_path)
+        rel = src_path.relative_to(self._path)
+        if rel.parts[0] not in _default_folders:
             return
         if event.event_type == 'closed' or event.event_type == 'opened' or event.event_type == 'created':
             return
