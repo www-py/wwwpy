@@ -1,53 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from inspect import iscoroutinefunction
-from pathlib import Path
 from typing import Callable, Awaitable, Union
 
 import js
 from js import console, window
 
 import wwwpy.common.reloader as reloader
-import wwwpy.remote.rpc as rpc
-from wwwpy.common import modlib, _no_remote_infrastructure_found_text
+from wwwpy.common import _no_remote_infrastructure_found_text
 from wwwpy.common.rpc.serializer import RpcRequest
-
-
-async def _setup_browser_dev_mode():
-    from wwwpy.remote import micropip_install
-    from wwwpy.common import designer
-    for package in designer.pypi_packages:
-        await micropip_install(package)
-
-    def file_changed(event_type: str, filename: str, content: str):
-        f = _get_dir().root / filename
-        reload = True
-        if event_type == 'deleted':
-            f.unlink(missing_ok=True)
-        elif not f.exists() or f.read_text() != content:
-            if not f.parent.exists():
-                f.parent.mkdir(parents=True)
-            f.write_text(content)
-        else:
-            reload = False
-
-        content_sub = None if content is None else (content[:100] + '...')
-        console.log(f'reload={reload} et={event_type} filename={filename}, content={content_sub}')
-
-        if reload:
-            _reload()
-
-    rpc.file_changed_listeners_add(file_changed)
-
-
-def _reload():
-    async def reload():
-        console.log('reloading')
-        reloader.unload_path(str(_get_dir().remote))
-        await _invoke_browser_main(True)
-
-    _set_timeout(reload)
+from wwwpy.remote.designer.dev_mode import _setup_browser_dev_mode
+from wwwpy.remote.root_path import _get_dir
 
 
 async def entry_point(dev_mode: bool = False):
@@ -59,6 +22,15 @@ async def entry_point(dev_mode: bool = False):
         await _setup_browser_dev_mode()
 
     await _invoke_browser_main()
+
+
+def _reload():
+    async def reload():
+        console.log('reloading')
+        reloader.unload_path(str(_get_dir().remote))
+        await _invoke_browser_main(True)
+
+    _set_timeout(reload)
 
 
 async def _invoke_browser_main(reload=False):
@@ -127,15 +99,3 @@ def _set_timeout(callback: Callable[[], Union[None, Awaitable[None]]], timeout_m
     window.setTimeout(create_once_callable(callback), timeout_millis)
 
 
-@dataclass
-class _Dir:
-    root: Path
-    remote: Path
-
-
-def _get_dir():
-    # this works because both wwwpy and user code are flattened in the same folder
-    root = modlib._find_module_path('wwwpy').parent.parent
-    console.log(f'root={root}')
-    remote = root / 'remote'
-    return _Dir(root, remote)
