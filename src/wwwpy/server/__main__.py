@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 from wwwpy.server import configure
+from wwwpy.webserver import wait_forever
 
 
 def main():
@@ -21,6 +22,10 @@ def main():
 
     working_dir = Path(args.directory).absolute()
     configure.start_default(args.port, working_dir, dev_mode=args.dev)
+
+    import webbrowser
+    webbrowser.open(f'http://localhost:{args.port}')
+    wait_forever()
 
 
 if __name__ == '__main__':

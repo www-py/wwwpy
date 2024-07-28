@@ -8,19 +8,17 @@ from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.common.rpc.custom_loader import CustomFinder
 from wwwpy.resources import library_resources, from_directory, from_file
 from wwwpy.server.rpc import configure_services
-from wwwpy.webserver import wait_forever, Webserver
+from wwwpy.webserver import Webserver
 from wwwpy.webservers.available_webservers import available_webservers
 from wwwpy.websocket import WebsocketPool
 
 
-def start_default(port: int, directory: Path, dev_mode=False, wait=True):
+def start_default(port: int, directory: Path, dev_mode=False):
     webserver = available_webservers().new_instance()
 
     convention(directory, webserver, dev_mode=dev_mode)
 
     webserver.set_port(port).start_listen()
-    if wait:
-        wait_forever()
 
 
 websocket_pool: WebsocketPool = None
