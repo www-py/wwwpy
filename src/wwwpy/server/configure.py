@@ -13,16 +13,18 @@ from wwwpy.webservers.available_webservers import available_webservers
 from wwwpy.websocket import WebsocketPool
 
 
-def start_default(port: int, directory: Path, dev_mode=False):
+def start_default(port: int, directory: Path, dev_mode=False, wait=True):
     webserver = available_webservers().new_instance()
 
     convention(directory, webserver, dev_mode=dev_mode)
 
     webserver.set_port(port).start_listen()
-    wait_forever()
+    if wait:
+        wait_forever()
 
 
 websocket_pool: WebsocketPool = None
+
 
 # todo convention(dev_mode=True) without a ./remote folder fails
 def convention(directory: Path, webserver: Webserver, dev_mode=False):
@@ -32,12 +34,11 @@ def convention(directory: Path, webserver: Webserver, dev_mode=False):
     global websocket_pool
     websocket_pool = WebsocketPool('/wwwpy/ws')
     services = configure_services('/wwwpy/rpc')
-    browser_dir = directory / 'remote'
     routes = [services.route, websocket_pool.http_route, *bootstrap_routes(
         resources=[
             library_resources(),
             services.remote_stub_resources(),
-            from_directory(browser_dir, relative_to=directory),
+            from_directory(directory / 'remote', relative_to=directory),
             from_directory(directory / 'common', relative_to=directory),
             from_file(directory / 'common.py', relative_to=directory),  # remove .py support
             from_file(directory / 'remote.py', relative_to=directory),  # remove .py support
@@ -66,7 +67,7 @@ def convention(directory: Path, webserver: Webserver, dev_mode=False):
                 import traceback
                 print(f'on_file_changed {traceback.format_exc()}')
 
-        handler = watcher.ChangeHandler(browser_dir, on_file_changed)
+        handler = watcher.ChangeHandler(directory, on_file_changed)
         handler.watch_directory()
 
     if webserver is not None:

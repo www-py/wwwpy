@@ -45,3 +45,6 @@ pytest_wwwpy = "wwwpy.server.pytest.pytest_plugin"
 
 # the following should be already the default see: https://setuptools.pypa.io/en/latest/userguide/datafiles.html
 # include_package_data = True
+
+[project.scripts]
+wwwpy = "wwwpy:main"

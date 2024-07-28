@@ -16,7 +16,7 @@ def main():
                         default=8000, type=int,
                         nargs='?',
                         help='Specify alternate port [default: 8000]')
-    parser.add_argument('--dev', action='store_true',)
+    parser.add_argument('dev', action='store', default=False, type=bool, help="Run in development mode")
     args = parser.parse_args()
 
     working_dir = Path(args.directory).absolute()
