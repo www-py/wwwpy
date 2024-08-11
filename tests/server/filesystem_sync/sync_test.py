@@ -16,8 +16,10 @@ def target(tmp_path, request):
     fixture.debounced_watcher.stop()
     fixture.debounced_watcher.join()
 
+# todo this code does not rely on watchdog events generated during testing
+# todo, remove the old code and minimize the dependencies
 
-def test_a_read_on_source__should_not_generate_events(target):
+def disable_test_a_read_on_source__should_not_generate_events(target):
     """This is needed because if during the collection of source changes,
     we will fire new events and we will end up in an infinite loop"""
     # GIVEN
@@ -29,7 +31,7 @@ def test_a_read_on_source__should_not_generate_events(target):
     target.wait_at_rest()
 
     # THEN
-    assert target.all_events == []
+    assert target.all_events == [], target.sync_error()
 
 
 def test_new_file(target):
@@ -50,8 +52,8 @@ def test_new_file(target):
     target.apply_events(events)
 
     # THEN
-    assert (target.target / 'new_file.txt').exists()
-    assert (target.target / 'new_file.txt').read_text() == 'new file'
+    assert (target.target / 'new_file.txt').exists(), target.sync_error()
+    assert (target.target / 'new_file.txt').read_text() == 'new file', target.sync_error()
 
 
 def test_new_file__optimize(target):
@@ -76,9 +78,9 @@ def test_new_file__optimize(target):
     changes = target.apply_events(events)
 
     # THEN
-    assert (target.target / 'new_file.txt').exists()
-    assert (target.target / 'new_file.txt').read_text() == 'new file2'
-    assert len(changes) == 1
+    assert (target.target / 'new_file.txt').exists(), target.sync_error()
+    assert (target.target / 'new_file.txt').read_text() == 'new file2', target.sync_error()
+    assert len(changes) == 1, target.sync_error()
 
 
 def test_new_file_and_delete(target):
@@ -132,8 +134,8 @@ def test_new_file_in_subfolder(target):
     target.apply_events(events)
 
     # THEN
-    assert (target.target / 'sub1/foo.txt').exists()
-    assert (target.target / 'sub1/foo.txt').read_text() == 'sub-file'
+    assert (target.target / 'sub1/foo.txt').exists(), target.sync_error()
+    assert (target.target / 'sub1/foo.txt').read_text() == 'sub-file', target.sync_error()
 
 
 def test_delete_file(target):
@@ -155,8 +157,8 @@ def test_delete_file(target):
     changes = target.apply_events(events)
 
     # THEN
-    assert not target_foo.exists()
-    assert len(changes) == 1
+    assert not target_foo.exists(), target.sync_error()
+    assert len(changes) == 1, target.sync_error()
 
 
 def test_created(target):
@@ -175,8 +177,8 @@ def test_created(target):
     changes = target.apply_events(events)
 
     # THEN
-    assert (target.target / 'foo.txt').exists()
-    assert (target.target / 'foo.txt').stat().st_size == 0
+    assert (target.target / 'foo.txt').exists(), target.sync_error()
+    assert (target.target / 'foo.txt').stat().st_size == 0, target.sync_error()
     assert len(changes) == 1
 
 
@@ -189,8 +191,8 @@ def test_init(target):
     target.do_init()
 
     # THEN
-    assert (target.target / 'foo.txt').read_text() == 'c1'
-    assert (target.target / 'foo.bin').read_bytes() == invalid_utf8
+    assert (target.target / 'foo.txt').read_text() == 'c1', target.sync_error()
+    assert (target.target / 'foo.bin').read_bytes() == invalid_utf8, target.sync_error()
     assert target.synchronized(), target.sync_error()
 
 
@@ -311,8 +313,8 @@ def test_rename_file(target):
     target.apply_events(events)
 
     # THEN
-    assert not (target.target / 'foo.txt').exists()
-    assert (target.target / 'bar.txt').exists()
+    assert not (target.target / 'foo.txt').exists(), target.sync_error()
+    assert (target.target / 'bar.txt').exists(), target.sync_error()
     assert (target.target / 'bar.txt').read_text() == 'content1'
 
 
