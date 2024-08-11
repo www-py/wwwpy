@@ -11,6 +11,7 @@ from typing import List
 import pytest
 from watchdog.events import FileSystemEvent
 
+from tests import timeout_multiplier
 from tests.server.filesystem_sync.activity_monitor import ActivityMonitor
 from wwwpy.server.filesystem_sync import filesystemevents_print, Sync, new_tmp_path
 from wwwpy.server.filesystem_sync import sync_delta, sync_zip
@@ -27,8 +28,8 @@ class SyncFixture:
         self.target = tmp_path / 'target'
         self.target.mkdir(exist_ok=exist_ok)
         self.all_events = []
-        self.window = timedelta(milliseconds=100)
-        self.activities = ActivityMonitor(self.window + timedelta(milliseconds=10))
+        self.window = timedelta(milliseconds=100 * timeout_multiplier())
+        self.activities = ActivityMonitor(self.window + timedelta(milliseconds=10 * timeout_multiplier()))
         self.dircmp = None
         self._lock = Lock()
         self.callback_count = 0
@@ -48,7 +49,7 @@ class SyncFixture:
         self.debounced_watcher.start()
 
     def wait_at_rest(self):
-        [sleep(0.1) for _ in range(40) if not self.activities.at_rest()]
+        [sleep(0.1) for _ in range(40 * timeout_multiplier()) if not self.activities.at_rest()]
         assert self.activities.at_rest(), self.activities.rest_delta()
 
     def do_sync(self):
