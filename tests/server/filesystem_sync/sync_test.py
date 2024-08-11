@@ -13,9 +13,8 @@ def target(tmp_path, request):
     print(f'\ntmp_path file://{tmp_path}')
     fixture = SyncFixture(tmp_path, sync=request.param)
     yield fixture
-    if fixture.debounced_watcher:
-        fixture.debounced_watcher.stop()
-        fixture.debounced_watcher.join()
+    fixture.debounced_watcher.stop()
+    fixture.debounced_watcher.join()
 
 
 def test_a_read_on_source__should_not_generate_events(target):
