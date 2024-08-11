@@ -1,5 +1,12 @@
 # Abstraction for editing a wwwpy.remote.component.Component
 
+
+A ComponentLocator class has a:
+- name, e.g., Component1
+- filename, e.g.,  remote/component1.py
+- some way to locate its html, e.g., a string constant inside the class or an external file like component1.html
+
+
 ## Definition of Component and Element:
 - A Component is an Element (as in  html5 custom element)
 - Not all Elements are Components.
@@ -10,23 +17,17 @@ HTMLInputElement is an Element but it is not a Component
 ## Editing needs on an Element
 ### Affects both python and html:
 - add
-- rename
-- remove
+- rename (available when an element is selected)
+- remove (available when an element is selected)
 
-### Affects only the html
+### Affects only the html (todo expand because it needs metadat)
 - attributes, e.g., value='123'
 - innerHTML
 - move the element in the tree hierarchy
 - slots?
 
 ### Affects only the python
-- add or remove an event handler
-
-
-## A Component class has a:
-- name, e.g., Component1
-- filename, e.g.,  remote/component1.py
-- some way to locate its html, e.g., a string constant inside the class or an external file like component1.html
+- add or remove an event handler (available when an element is selected + an event associated to that element)
 
 
 ## Metadata needed for a Component class:
