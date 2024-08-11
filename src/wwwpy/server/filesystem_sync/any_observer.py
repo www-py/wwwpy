@@ -28,4 +28,6 @@ class AnyObserver(FileSystemEventHandler):
             pass # catch if it was not started
 
     def on_any_event(self, event: FileSystemEvent) -> None:
+        if not Path(event.src_path).is_relative_to(self._path):
+            return
         self._callback(event)
