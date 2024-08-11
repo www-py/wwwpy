@@ -1,7 +1,7 @@
 # Example usage
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import pytest
 
@@ -86,9 +86,11 @@ def test_wrong_type():
     with pytest.raises(Exception):
         serialization.to_json(john, datetime)
 
+
 def test_wrong_type2():
     with pytest.raises(Exception):
         serialization.to_json(Person('bob', 42, address=datetime(2000, 12, 31)), Person)
+
 
 def test_wrong_type3():
     with pytest.raises(Exception):
@@ -105,11 +107,27 @@ def test_tuple_datetime():
 
 
 def test_optional():
-    from typing import Optional
-
     expected = None
 
     serialized = serialization.to_json(expected, Optional[int])
     deserialized = serialization.from_json(serialized, Optional[int])
+
+    assert deserialized == expected
+
+
+def test_bytes():
+    expected = b'\x80\x81\x82'
+
+    serialized = serialization.to_json(expected, bytes)
+    deserialized = serialization.from_json(serialized, bytes)
+
+    assert deserialized == expected
+
+
+def test_bytes_optional():
+    expected = b'\x80\x81\x82'
+
+    serialized = serialization.to_json(expected, Optional[bytes])
+    deserialized = serialization.from_json(serialized, Optional[bytes])
 
     assert deserialized == expected

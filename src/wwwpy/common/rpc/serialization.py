@@ -1,3 +1,4 @@
+import base64
 import json
 import types
 import typing
@@ -35,6 +36,8 @@ def serialize(obj: Any, cls: Type) -> Any:
     #     return {key: serialize(value) for key, value in obj.items()}
     elif isinstance(obj, datetime):
         return obj.isoformat()
+    elif isinstance(obj, bytes):
+        return base64.b64encode(obj).decode('utf-8')
     else:
         return obj
 
@@ -50,6 +53,11 @@ def _get_optional_type(cls):
     return None
 
 def deserialize(data: Any, cls: Type) -> Any:
+    optional_type = _get_optional_type(cls)
+    if optional_type:
+        if data is None:
+            return None
+        return deserialize(data, optional_type)
     if is_dataclass(cls):
         field_types = {field.name: field.type for field in fields(cls)}
         return cls(**{
@@ -70,6 +78,8 @@ def deserialize(data: Any, cls: Type) -> Any:
     #     }
     elif cls == datetime:
         return datetime.fromisoformat(data)
+    elif cls == bytes:
+        return base64.b64decode(data.encode('utf-8'))
     else:
         return data
 
