@@ -1,3 +1,4 @@
+import dataclasses
 import filecmp
 import json
 import shutil
@@ -9,11 +10,11 @@ from time import sleep
 from typing import List
 
 import pytest
-from watchdog.events import FileSystemEvent
 
 from tests import timeout_multiplier
 from tests.server.filesystem_sync.activity_monitor import ActivityMonitor
-from wwwpy.server.filesystem_sync import filesystemevents_print, Sync, new_tmp_path
+from wwwpy.common.rpc import serialization
+from wwwpy.server.filesystem_sync import filesystemevents_print, Sync, new_tmp_path, Event
 from wwwpy.server.filesystem_sync import sync_delta, sync_zip
 from wwwpy.server.filesystem_sync.watchdog_debouncer import WatchdogDebouncer
 
@@ -23,6 +24,7 @@ class SyncFixture:
     def __init__(self, tmp_path: Path, exist_ok=False, print_changes=True, sync: Sync = sync_delta):
         self.sync = sync
         self.print_changes = print_changes
+        self.tmp_path = tmp_path
         self.source = tmp_path / 'source'
         self.source.mkdir(exist_ok=exist_ok)
         self.target = tmp_path / 'target'
@@ -34,9 +36,9 @@ class SyncFixture:
         self._lock = Lock()
         self.callback_count = 0
 
-        def callback(events: List[FileSystemEvent]):
+        def callback(events: List[Event]):
             self.callback_count += 1
-            filesystemevents_print(events)
+            _events_serialize_print(events, tmp_path)
             self.activities.touch()
             with self._lock:
                 self.all_events.extend(events)
@@ -97,6 +99,38 @@ class SyncFixture:
     def skip_for(self, sync, reason):
         if self.sync == sync:
             pytest.skip(f'Skipped for {sync} {reason}')
+
+    def apply_events(self, events_str: str):
+        events = _deserialize_events(events_str)
+
+        def relocate(e: Event) -> Event:
+            src_path = '' if e.src_path == '' else str(self.tmp_path / e.src_path)
+            dest_path = '' if e.dest_path == '' else str(self.tmp_path / e.dest_path)
+            return dataclasses.replace(e, src_path=src_path, dest_path=dest_path)
+
+        events_fix = [relocate(e) for e in events]
+        with self._lock:
+            self.all_events.extend(events_fix)
+        return self.do_sync()
+
+
+def _events_serialize_print(events: List[Event], tmp_path):
+    for e in events:
+        ser = serialization.to_json(e, Event)
+        ser2 = ser.replace(str(tmp_path) + '/', '')
+        print(f'  {ser2}')
+    print(f'FileSystemEvent serialized: {len(events)}')
+
+
+def _deserialize_events(events: str) -> List[Event]:
+    result = []
+    for line in events.split('\n'):
+        line = line.strip()
+        if not line:
+            continue
+        event = serialization.from_json(line, Event)
+        result.append(event)
+    return result
 
 
 def main():
