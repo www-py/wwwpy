@@ -34,6 +34,12 @@ class SyncFixture:
         self._lock = Lock()
         self.callback_count = 0
 
+        self.debounced_watcher = None
+
+        self.activities.touch()
+
+    def start(self):
+
         def callback(events: List[FileSystemEvent]):
             self.callback_count += 1
             filesystemevents_print(events)
@@ -42,10 +48,6 @@ class SyncFixture:
                 self.all_events.extend(events)
 
         self.debounced_watcher = WatchdogDebouncer(self.source, self.window, callback)
-
-        self.activities.touch()
-
-    def start(self):
         self.debounced_watcher.start()
 
     def wait_at_rest(self):
