@@ -4,21 +4,20 @@ from pathlib import Path
 from time import sleep
 from typing import Callable, List
 
-from watchdog.events import FileSystemEvent
-
 from wwwpy.server.filesystem_sync import new_tmp_path
 from wwwpy.server.filesystem_sync.any_observer import AnyObserver
 from wwwpy.server.filesystem_sync.debouncer import Debouncer
 from wwwpy.server.filesystem_sync.debouncer_thread import DebouncerThread
+from wwwpy.server.filesystem_sync.event import Event
 
 
 class WatchdogDebouncer(DebouncerThread):
 
-    def __init__(self, path: Path, window: timedelta, callback: Callable[[List[FileSystemEvent]], None]):
+    def __init__(self, path: Path, window: timedelta, callback: Callable[[List[Event]], None]):
         self._debouncer = Debouncer(window)
         super().__init__(self._debouncer, callback)
 
-        def skip_open(event: FileSystemEvent):
+        def skip_open(event: Event):
             if event.event_type != 'opened':
                 self._debouncer.add_event(event)
 
@@ -40,7 +39,7 @@ class WatchdogDebouncer(DebouncerThread):
 def main():
     tmp_path = new_tmp_path()
 
-    def print_events(events: List[FileSystemEvent]):
+    def print_events(events: List[Event]):
         print('=' * 20 + f' current thread name={threading.current_thread().name}')
         print(f'len={len(events)} events={events}')
 

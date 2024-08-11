@@ -2,14 +2,14 @@ import tempfile
 from pathlib import Path
 from typing import List, Protocol, Any
 
-from watchdog.events import FileSystemEvent
+from wwwpy.server.filesystem_sync.event import Event
 
 
 def new_tmp_path() -> Path:
     return Path(tempfile.mkdtemp(prefix='debounce-tmp-path-'))
 
 
-def filesystemevents_print(events: List[FileSystemEvent]):
+def filesystemevents_print(events: List[Event]):
     for e in events:
         print(f'  {e}')
     print(f'FileSystemEvent received: {len(events)}')
@@ -18,7 +18,7 @@ def filesystemevents_print(events: List[FileSystemEvent]):
 class Sync(Protocol):
 
     @staticmethod
-    def sync_source(source: Path, events: List[FileSystemEvent]) -> List[Any]:
+    def sync_source(source: Path, events: List[Event]) -> List[Any]:
         """Could be called 'sync_produce'. This part has the following input:
 - a reference to the root of the monitored source filesystem
 - a list of filesystem change events

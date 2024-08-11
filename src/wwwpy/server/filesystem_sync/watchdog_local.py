@@ -5,10 +5,9 @@ from pathlib import Path
 from time import sleep
 from typing import List
 
-from watchdog.events import FileSystemEvent
-
 from wwwpy.server.filesystem_sync import new_tmp_path, filesystemevents_print, Sync
 from wwwpy.server.filesystem_sync import sync_zip
+from wwwpy.server.filesystem_sync.event import Event
 from wwwpy.server.filesystem_sync.watchdog_debouncer import WatchdogDebouncer
 
 
@@ -22,7 +21,7 @@ class WatchdogLocal:
         self.window = timedelta(milliseconds=100)
         self.callback_count = 0
 
-        def callback(events: List[FileSystemEvent]):
+        def callback(events: List[Event]):
             assert events
             self.callback_count += 1
             filesystemevents_print(events)

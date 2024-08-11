@@ -4,10 +4,12 @@ from typing import Callable
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
 from watchdog.observers import Observer
 
+from wwwpy.server.filesystem_sync.event import Event
+
 
 class AnyObserver(FileSystemEventHandler):
 
-    def __init__(self, path: Path, callback: Callable[[FileSystemEvent], None]):
+    def __init__(self, path: Path, callback: Callable[[Event], None]):
         """path need to exist, otherwise the observer will throw an exception."""
         self._path = path
         self._callback = callback
@@ -30,4 +32,5 @@ class AnyObserver(FileSystemEventHandler):
     def on_any_event(self, event: FileSystemEvent) -> None:
         if not Path(event.src_path).is_relative_to(self._path):
             return
-        self._callback(event)
+        e = Event(event.event_type, event.is_directory, event.src_path, event.dest_path)
+        self._callback(e)

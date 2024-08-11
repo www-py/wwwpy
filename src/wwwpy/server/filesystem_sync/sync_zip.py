@@ -10,10 +10,10 @@ import shutil
 from pathlib import Path
 from typing import List, Any
 
-from watchdog.events import FileSystemEvent
+from wwwpy.server.filesystem_sync import Event
 
 
-def sync_source(source: Path, events: List[FileSystemEvent]) -> List[Any]:
+def sync_source(source: Path, events: List[Event]) -> List[Any]:
     if not events:
         return []
     return sync_init(source)
