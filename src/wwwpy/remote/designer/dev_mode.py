@@ -24,7 +24,8 @@ async def _setup_browser_dev_mode():
             reload = False
 
         content_sub = None if content is None else (content[:100] + '...')
-        console.log(f'reload={reload} et={event_type} filename={filename}, content={content_sub}')
+        content_piece = f', content_len={len(content)} content={content_sub}'
+        console.log(f'reload={reload} et={event_type} filename={filename}' + content_piece)
 
         if reload:
             from wwwpy.remote.browser_main import _reload
