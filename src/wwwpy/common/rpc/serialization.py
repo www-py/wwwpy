@@ -1,4 +1,6 @@
 import json
+import types
+import typing
 from dataclasses import is_dataclass, fields, dataclass
 from datetime import datetime
 from typing import Any, Type, get_origin, get_args
@@ -7,7 +9,12 @@ from typing import Any, Type, get_origin, get_args
 # todo this should also receive the expected cls Type.
 # this way we can check that the instance is of the expected type
 def serialize(obj: Any, cls: Type) -> Any:
-    origin = get_origin(cls)
+    optional_type = _get_optional_type(cls)
+    if optional_type:
+        if obj is None:
+            return None
+        return serialize(obj, optional_type)
+    origin = typing.get_origin(cls)
     if origin is not None:
         if not isinstance(obj, origin):
             raise ValueError(f"Expected object of type {origin}, got {type(obj)}")
@@ -19,7 +26,7 @@ def serialize(obj: Any, cls: Type) -> Any:
             for field in fields(obj)
         }
     elif isinstance(obj, list):
-        item_type = get_args(cls)[0]
+        item_type = typing.get_args(cls)[0]
         return [serialize(item, item_type) for item in obj]
     elif isinstance(obj, tuple):
         return [serialize(item, get_args(cls)[i]) for i, item in enumerate(obj)]
@@ -31,6 +38,16 @@ def serialize(obj: Any, cls: Type) -> Any:
     else:
         return obj
 
+def _get_optional_type(cls):
+    origin = typing.get_origin(cls)
+    args = typing.get_args(cls)
+
+    if origin is typing.Union:
+        if type(None) in args:
+            return args[0]
+    # if origin is types.UnionType:
+    #     return type(None) in args
+    return None
 
 def deserialize(data: Any, cls: Type) -> Any:
     if is_dataclass(cls):

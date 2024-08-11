@@ -102,3 +102,14 @@ def test_tuple_datetime():
     deserialized = serialization.from_json(serialized, Tuple[datetime])
 
     assert deserialized == expected
+
+
+def test_optional():
+    from typing import Optional
+
+    expected = None
+
+    serialized = serialization.to_json(expected, Optional[int])
+    deserialized = serialization.from_json(serialized, Optional[int])
+
+    assert deserialized == expected
