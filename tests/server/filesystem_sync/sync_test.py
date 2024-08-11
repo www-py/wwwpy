@@ -5,7 +5,6 @@ import pytest
 from tests.server.filesystem_sync.sync_fixture import SyncFixture
 from wwwpy.server.filesystem_sync import sync_delta, sync_zip
 
-
 invalid_utf8 = b'\x80\x81\x82'
 
 
@@ -30,7 +29,7 @@ def test_a_read_on_source__should_not_generate_events(target):
     target.wait_at_rest()
 
     # THEN
-    assert target.callback_count == 0
+    assert target.all_events == []
 
 
 def test_new_file(target):
