@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Protocol, Callable
 
 from js import document, MouseEvent
 from pyodide.ffi import create_proxy
@@ -17,16 +17,18 @@ class DropZone:
 
 
 class _DropZoneSelector:
-    def __init__(self):
+    def __init__(self, ):
         self._last_zone: DropZone | None = None
+        self._accept = None
         self._callback: SelectorProtocol | None = None
         self._mousemove_proxy = create_proxy(self._mousemove)
 
-    def start_selector(self, callback: SelectorProtocol = None):
+    def start_selector(self, callback: SelectorProtocol = None, accept: Callable[[DropZone], bool] = None):
         """It starts the process for the user to select a drop zone.
         While moving the mouse, it highlights the drop zones.
         """
         self._callback = callback
+        self._accept = accept
         _ensure_drop_zone_style()
         document.addEventListener('mousemove', self._mousemove_proxy)
 
@@ -44,6 +46,8 @@ class _DropZoneSelector:
         position = _calc_position(event)
         element: HTMLElement = event.target
         zone_event = DropZone(element, position)
+        if self._accept and not self._accept(zone_event):
+            return
         if self._last_zone != zone_event:
             self._remove_marker()
             # console.log(f'candidate sending zone_event', zone_event.position, zone_event.target)
