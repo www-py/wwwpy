@@ -2,6 +2,7 @@
 # credits to: https://stackoverflow.com/a/59109706/316766
 
 from pathlib import Path
+from typing import Protocol, Iterable
 
 # prefix components:
 space = '    '
@@ -11,7 +12,16 @@ tee = '├── '
 last = '└── '
 
 
-def tree(dir_path: Path, prefix: str = ''):
+class NodeProtocol(Protocol):
+    def iterdir(self) -> Iterable['NodeProtocol']: ...
+
+    def is_dir(self) -> bool: ...
+
+    @property
+    def name(self) -> str: ...
+
+
+def tree(dir_path: NodeProtocol, prefix: str = ''):
     """A recursive generator, given a directory Path object
     will yield a visual tree structure line by line
     with each line prefixed by the same characters
@@ -28,6 +38,7 @@ def tree(dir_path: Path, prefix: str = ''):
                 yield from tree(path, prefix=prefix + extension)
         except Exception as e:
             yield prefix + f'Error: {e}'
+
 
 def print_tree(path, printer=print):
     for line in tree(Path(path)):
