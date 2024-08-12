@@ -60,7 +60,9 @@ class SyncFixture:
         return changes
 
     def apply_changes(self, changes):
-        self.sync.sync_target(self.target, json.loads(json.dumps(changes)))
+        dumps = json.dumps(changes)
+        loads = json.loads(dumps)
+        self.sync.sync_target(self.target, loads)
 
     def get_changes(self):
         with self._lock:
@@ -87,6 +89,9 @@ class SyncFixture:
         self.dircmp = filecmp.dircmp(self.source, self.target)
 
     def sync_error(self):
+        if not self.dircmp:
+            self._calc_synchronized()
+
         def diff_printable():
             return f'source_only={self.dircmp.left_only} target_only={self.dircmp.right_only} diff_files={self.dircmp.diff_files}'
 
