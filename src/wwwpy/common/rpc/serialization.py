@@ -32,15 +32,21 @@ def serialize(obj: Any, cls: Type) -> Any:
         return [serialize(item, item_type) for item in obj]
     elif isinstance(obj, tuple):
         return [serialize(item, get_args(cls)[i]) for i, item in enumerate(obj)]
-        # return [serialize(item) for item in obj]
-    # elif isinstance(obj, dict):
-    #     return {key: serialize(value) for key, value in obj.items()}
+    elif isinstance(obj, dict):
+        key_type, value_type = typing.get_args(cls)
+        return {
+            serialize(key, key_type): serialize(value, value_type)
+            for key, value in obj.items()
+        }
     elif isinstance(obj, datetime):
         return obj.isoformat()
     elif isinstance(obj, bytes):
         return base64.b64encode(obj).decode('utf-8')
-    else:
+    elif isinstance(obj, (int, float, str)):
         return obj
+    else:
+        raise ValueError(f"Unsupported type: {type(obj)}")
+
 
 def _get_optional_type(cls):
     origin = typing.get_origin(cls)
@@ -52,6 +58,7 @@ def _get_optional_type(cls):
     # if origin is types.UnionType:
     #     return type(None) in args
     return None
+
 
 def deserialize(data: Any, cls: Type) -> Any:
     optional_type = _get_optional_type(cls)
@@ -69,20 +76,22 @@ def deserialize(data: Any, cls: Type) -> Any:
         item_type = get_args(cls)[0]
         return [deserialize(item, item_type) for item in data]
     elif get_origin(cls) == tuple or cls == tuple:
-        item_type = get_args(cls)[0]
-        return tuple(deserialize(item, item_type) for item in data)
-    # elif get_origin(cls) == dict:
-    #     key_type, value_type = get_args(cls)
-    #     return {
-    #         deserialize(key, key_type): deserialize(value, value_type)
-    #         for key, value in data.items()
-    #     }
+        item_types = get_args(cls)
+        return tuple(deserialize(data[i], item_types[i]) for i in range(len(data)))
+    elif get_origin(cls) == dict or cls == dict:
+        key_type, value_type = get_args(cls)
+        return {
+            deserialize(key, key_type): deserialize(value, value_type)
+            for key, value in data.items()
+        }
     elif cls == datetime:
         return datetime.fromisoformat(data)
     elif cls == bytes:
         return base64.b64decode(data.encode('utf-8'))
+    elif cls in (int, float, str):
+        return cls(data)
     else:
-        return data
+        raise ValueError(f"Unsupported type: {cls}")
 
 
 def to_json(obj: Any, cls: Type) -> str:

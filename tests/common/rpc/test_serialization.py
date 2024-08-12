@@ -146,10 +146,23 @@ class Node:
     value: int
     node: Optional['Node'] = None
 
-def test_recursive():
 
+def test_recursive():
     expected = Node(1, Node(2))
     serialized = serialization.to_json(expected, Node)
     deserialized = serialization.from_json(serialized, Node)
+
+    assert deserialized == expected
+
+
+@dataclass
+class NodeDict:
+    value: int
+    node: Dict[str, 'Node'] = None
+
+def test_recursive_dict():
+    expected = NodeDict(1, {'a': Node(2)})
+    serialized = serialization.to_json(expected, NodeDict)
+    deserialized = serialization.from_json(serialized, NodeDict)
 
     assert deserialized == expected
