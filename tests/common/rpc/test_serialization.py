@@ -1,7 +1,6 @@
-# Example usage
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 
 import pytest
 
@@ -129,5 +128,28 @@ def test_bytes_optional():
 
     serialized = serialization.to_json(expected, Optional[bytes])
     deserialized = serialization.from_json(serialized, Optional[bytes])
+
+    assert deserialized == expected
+
+
+def test_dictionary():
+    expected = {'a': 1, 'b': 2}
+
+    serialized = serialization.to_json(expected, Dict[str, int])
+    deserialized = serialization.from_json(serialized, Dict[str, int])
+
+    assert deserialized == expected
+
+
+@dataclass
+class Node:
+    value: int
+    node: Optional['Node'] = None
+
+def test_recursive():
+
+    expected = Node(1, Node(2))
+    serialized = serialization.to_json(expected, Node)
+    deserialized = serialization.from_json(serialized, Node)
 
     assert deserialized == expected

@@ -22,9 +22,10 @@ def serialize(obj: Any, cls: Type) -> Any:
     elif not isinstance(obj, cls):
         raise ValueError(f"Expected object of type {cls}, got {type(obj)}")
     if is_dataclass(obj):
+        field_types = typing.get_type_hints(cls)
         return {
-            field.name: serialize(getattr(obj, field.name), field.type)
-            for field in fields(obj)
+            field_name: serialize(getattr(obj, field_name), field_type)
+            for field_name, field_type in field_types.items()
         }
     elif isinstance(obj, list):
         item_type = typing.get_args(cls)[0]
@@ -59,7 +60,7 @@ def deserialize(data: Any, cls: Type) -> Any:
             return None
         return deserialize(data, optional_type)
     if is_dataclass(cls):
-        field_types = {field.name: field.type for field in fields(cls)}
+        field_types = typing.get_type_hints(cls)
         return cls(**{
             field_name: deserialize(data.get(field_name), field_type)
             for field_name, field_type in field_types.items()
