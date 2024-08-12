@@ -42,7 +42,7 @@ def serialize(obj: Any, cls: Type) -> Any:
         return obj.isoformat()
     elif isinstance(obj, bytes):
         return base64.b64encode(obj).decode('utf-8')
-    elif isinstance(obj, (int, float, str)):
+    elif isinstance(obj, (int, float, str, bool)):
         return obj
     else:
         raise ValueError(f"Unsupported type: {type(obj)}")
@@ -88,7 +88,7 @@ def deserialize(data: Any, cls: Type) -> Any:
         return datetime.fromisoformat(data)
     elif cls == bytes:
         return base64.b64decode(data.encode('utf-8'))
-    elif cls in (int, float, str):
+    elif cls in (int, float, str, bool):
         return cls(data)
     else:
         raise ValueError(f"Unsupported type: {cls}")

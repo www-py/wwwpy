@@ -31,6 +31,13 @@ def test_ser():
 
     assert deserialized == expected
 
+def test_bool():
+    expected = True
+
+    serialized = serialization.to_json(expected, bool)
+    deserialized = serialization.from_json(serialized, bool)
+
+    assert deserialized == expected
 
 def test_dc_datetime():
     from datetime import datetime
