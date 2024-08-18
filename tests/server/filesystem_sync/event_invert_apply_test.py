@@ -28,14 +28,30 @@ def test_new_file(tmp_path: Path):
     new_file.touch()
 
     # WHEN
-    events = """
-  {"event_type": "created", "is_directory": true, "src_path": "new_file.txt"}
-    """
+    events = """{"event_type": "created", "is_directory": true, "src_path": "new_file.txt"}"""
 
     invert_apply(expected_fs, events, initial_fs)
 
     # THEN
     assert (initial_fs / 'new_file.txt').exists()
+
+
+def test_delete_file(tmp_path: Path):
+    # GIVEN
+    initial_fs = tmp_path / 'initial'
+    expected_fs = tmp_path / 'expected'
+
+    initial_fs.mkdir(parents=True, exist_ok=True)
+    file = initial_fs / 'file.txt'
+    file.touch()
+
+    # WHEN
+    events = """{"event_type": "deleted", "is_directory": false, "src_path": "file.txt"}"""
+
+    invert_apply(expected_fs, events, initial_fs)
+
+    # THEN
+    assert not (initial_fs / 'file.txt').exists()
 
 
 def invert_apply(expected_fs: Path, events_str: str, initial_fs: Path):
@@ -67,3 +83,5 @@ def events_apply(fs: Path, events: List[Event]):
 def event_apply(fs: Path, event: Event):
     if event.event_type == 'created':
         (fs / event.src_path).touch()
+    elif event.event_type == 'deleted':
+        (fs / event.src_path).unlink()
