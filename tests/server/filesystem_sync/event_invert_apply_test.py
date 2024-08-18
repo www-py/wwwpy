@@ -12,108 +12,12 @@ The tests of this module are created with the following steps:
 - WHEN invoke target
 - THEN assert the result
 """
-import shutil
 from pathlib import Path
-from typing import List, AnyStr
 
 import pytest
 
-from tests.server.filesystem_sync.fs_compare import FsCompare
-from tests.server.filesystem_sync.sync_fixture import _deserialize_events
+from tests.server.filesystem_sync.filesystem_fixture import FilesystemFixture
 from wwwpy.server.filesystem_sync import Event
-from wwwpy.server.filesystem_sync.event_invert_apply import events_invert, events_apply
-
-
-class FilesystemFixture:
-    def __init__(self, tmp_path: Path):
-        self.tmp_path = tmp_path
-        self.verify_mutator_events = True
-
-        def mk(path):
-            p = tmp_path / path
-            p.mkdir(parents=True, exist_ok=True)
-            return p
-
-        self.initial_fs = mk('initial')
-        self.expected_fs = mk('expected')
-        self.inverted_events = None
-        self.fs_compare = FsCompare(self.initial_fs, self.expected_fs, 'initial', 'expected')
-        self.source_mutator = Mutator(self.expected_fs)
-        """This transform the initial_fs into the expected_fs.
-    In other words it should execute the operations that will create 
-    events e_list that when applied to A_0 should result in A_n"""
-
-    def assert_filesystem_are_equal(self):
-        __tracebackhide__ = True
-        assert self.fs_compare.synchronized(), self.fs_compare.sync_error()
-
-    def invoke(self, events_str: str):
-        events = _deserialize_events(events_str)
-
-        # verify that we specified events_str correctly
-        if self.verify_mutator_events:
-            assert self.source_mutator.events == events
-
-        events_fix = [e.to_absolute(self.expected_fs) for e in events]
-
-        self.inverted_events = events_invert(self.expected_fs, events_fix)
-        events_apply(self.initial_fs, self.inverted_events)
-
-    @property
-    def source_init(self):
-        """This should be used to create the initial state of the filesystem.
-        In other words this is setting up the A_0 filesystem"""
-
-        def on_init_exit():
-            shutil.rmtree(self.expected_fs, ignore_errors=True)
-            shutil.copytree(self.initial_fs, self.expected_fs, dirs_exist_ok=True)
-
-        return Mutator(self.initial_fs, on_init_exit)
-
-
-class Mutator:
-    def __init__(self, fs: Path, on_exit=None):
-        self.fs = fs
-        self.on_exit = on_exit
-        self.events: List[Event] = []
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.on_exit:
-            self.on_exit()
-
-    def touch(self, path: str):
-        self.events.append(Event(event_type='created', is_directory=False, src_path=path))
-        (self.fs / path).touch()
-
-    def mkdir(self, path: str):
-        self.events.append(Event(event_type='created', is_directory=True, src_path=path))
-        (self.fs / path).mkdir()
-
-    def unlink(self, path: str):
-        self.events.append(Event(event_type='deleted', is_directory=False, src_path=path))
-        (self.fs / path).unlink()
-
-    def rmdir(self, path):
-        self.events.append(Event(event_type='deleted', is_directory=True, src_path=path))
-        shutil.rmtree(self.fs / path)
-
-    def move(self, old, new):
-        fs_old = self.fs / old
-        self.events.append(Event(event_type='moved', is_directory=fs_old.is_dir(), src_path=old, dest_path=new))
-        shutil.move(fs_old, self.fs / new)
-
-    def write(self, path: str, content: AnyStr):
-        self.events.append(Event(event_type='modified', is_directory=False, src_path=path))
-        p = self.fs / path
-        if isinstance(content, bytes):
-            p.write_bytes(content)
-        elif isinstance(content, str):
-            p.write_text(content)
-        else:
-            raise ValueError(f"Unsupported content type: {type(content)}")
 
 
 @pytest.fixture
