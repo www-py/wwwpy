@@ -1,8 +1,10 @@
 import base64
+import builtins
+import importlib
 import json
-import types
+import re
 import typing
-from dataclasses import is_dataclass, fields, dataclass
+from dataclasses import is_dataclass
 from datetime import datetime
 from typing import Any, Type, get_origin, get_args
 
@@ -16,6 +18,14 @@ def serialize(obj: Any, cls: Type) -> Any:
             return None
         return serialize(obj, optional_type)
     origin = typing.get_origin(cls)
+    if origin is typing.Union:
+        args = set(get_args(cls))
+        obj_type = type(obj)
+        if obj_type not in args:
+            raise ValueError(f"Expected object of type {args}, got {obj_type}")
+        obj_ser = serialize(obj, obj_type)
+        return [str(obj_type), obj_ser]
+
     if origin is not None:
         if not isinstance(obj, origin):
             raise ValueError(f"Expected object of type {origin}, got {type(obj)}")
@@ -66,6 +76,13 @@ def deserialize(data: Any, cls: Type) -> Any:
         if data is None:
             return None
         return deserialize(data, optional_type)
+    origin = get_origin(cls)
+    if origin is typing.Union:
+        args = set(get_args(cls))
+        obj_type = _get_type_from_string(data[0])
+        if obj_type not in args:
+            raise ValueError(f"Expected object of type {args}, got {obj_type}")
+        return deserialize(data[1], obj_type)
     if is_dataclass(cls):
         args = {}
         field_types = typing.get_type_hints(cls)
@@ -73,13 +90,13 @@ def deserialize(data: Any, cls: Type) -> Any:
             args[name] = deserialize(value, field_types[name])
         instance = cls(**args)
         return instance
-    elif get_origin(cls) == list or cls == list:
+    elif origin == list or cls == list:
         item_type = get_args(cls)[0]
         return [deserialize(item, item_type) for item in data]
-    elif get_origin(cls) == tuple or cls == tuple:
+    elif origin == tuple or cls == tuple:
         item_types = get_args(cls)
         return tuple(deserialize(data[i], item_types[i]) for i in range(len(data)))
-    elif get_origin(cls) == dict or cls == dict:
+    elif origin == dict or cls == dict:
         key_type, value_type = get_args(cls)
         return {
             deserialize(key, key_type): deserialize(value, value_type)
@@ -102,3 +119,31 @@ def to_json(obj: Any, cls: Type) -> str:
 def from_json(json_str: str, cls: Type) -> Any:
     data = json.loads(json_str)
     return deserialize(data, cls)
+
+
+def _get_type_from_string(type_str):
+    # Use regex to extract the full type path
+    match = re.search(r"<class '(.+)'>|(.+)", type_str)
+    if not match:
+        raise ValueError(f"Invalid type string format: {type_str}")
+
+    full_path = match.group(1) or match.group(2)
+
+    # Check if it's a builtin type
+    if hasattr(builtins, full_path):
+        return getattr(builtins, full_path)
+
+    # Split the path into parts
+    parts = full_path.split('.')
+
+    # The class name is the last part
+    class_name = parts.pop()
+
+    # The module name is everything else
+    module_name = '.'.join(parts)
+
+    # Import the module dynamically
+    module = importlib.import_module(module_name)
+
+    # Get the class from the module
+    return getattr(module, class_name)

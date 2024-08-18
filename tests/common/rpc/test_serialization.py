@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Tuple, Optional, Dict
+from typing import List, Tuple, Optional, Dict, Union
 
 import pytest
 
@@ -196,3 +196,28 @@ def test_dataclass_deserialize_with_static_value():
 
     deserialized = serialization.from_json('{"name":"foo" }', PersonDef)
     assert deserialized == PersonDef(name='foo')
+
+
+class TestUnion:
+    birth: Union[datetime, str]
+
+    def test_union_a(self):
+        birth = datetime(2000, 12, 31)
+        serialized = serialization.to_json(birth, Union[datetime, str])
+        deserialized = serialization.from_json(serialized, Union[datetime, str])
+        assert deserialized == birth
+
+    def test_union_b(self):
+        birth = '2000-12-31'
+        serialized = serialization.to_json(birth, Union[datetime, str])
+        deserialized = serialization.from_json(serialized, Union[datetime, str])
+        assert deserialized == birth
+
+    def test_type_injection(self):
+        serialized = serialization.to_json(3.14, Union[int, float])
+        with pytest.raises(Exception):
+            serialization.from_json(serialized, Union[datetime, str])
+
+    def test_wrong_type(self):
+        with pytest.raises(Exception):
+            serialization.to_json(3.14, Union[int, str])
