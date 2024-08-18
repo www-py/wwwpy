@@ -40,11 +40,11 @@ def test_new_file(target):
     (target.source / 'new_file.txt').write_text('new file')
     # target.wait_at_rest()
     events = """
-  {"event_type": "created", "is_directory": false, "src_path": "source/new_file.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
-  {"event_type": "modified", "is_directory": false, "src_path": "source/new_file.txt", "dest_path": ""}
-  {"event_type": "closed", "is_directory": false, "src_path": "source/new_file.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
+  {"event_type": "created", "is_directory": false, "src_path": "source/new_file.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
+  {"event_type": "modified", "is_directory": false, "src_path": "source/new_file.txt"}
+  {"event_type": "closed", "is_directory": false, "src_path": "source/new_file.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
     """
 
     # WHEN
@@ -63,15 +63,15 @@ def test_new_file__optimize(target):
     (target.source / 'new_file.txt').write_text('new file2')
     # target.wait_at_rest()
     events = """
-  {"event_type": "created", "is_directory": false, "src_path": "source/new_file.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
-  {"event_type": "modified", "is_directory": false, "src_path": "source/new_file.txt", "dest_path": ""}
-  {"event_type": "closed", "is_directory": false, "src_path": "source/new_file.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
-  {"event_type": "modified", "is_directory": false, "src_path": "source/new_file.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": false, "src_path": "source/new_file.txt", "dest_path": ""}
-  {"event_type": "closed", "is_directory": false, "src_path": "source/new_file.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
+  {"event_type": "created", "is_directory": false, "src_path": "source/new_file.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
+  {"event_type": "modified", "is_directory": false, "src_path": "source/new_file.txt"}
+  {"event_type": "closed", "is_directory": false, "src_path": "source/new_file.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
+  {"event_type": "modified", "is_directory": false, "src_path": "source/new_file.txt"}
+  {"event_type": "modified", "is_directory": false, "src_path": "source/new_file.txt"}
+  {"event_type": "closed", "is_directory": false, "src_path": "source/new_file.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
     """
     # WHEN
     # changes = target.do_sync()
@@ -91,17 +91,17 @@ def test_new_file_and_delete(target):
     (target.source / 'new_file.txt').unlink()
     # target.wait_at_rest()
     events = """
-  {"event_type": "created", "is_directory": false, "src_path": "source/new_file.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
-  {"event_type": "modified", "is_directory": false, "src_path": "source/new_file.txt", "dest_path": ""}
-  {"event_type": "closed", "is_directory": false, "src_path": "source/new_file.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
-  {"event_type": "modified", "is_directory": false, "src_path": "source/new_file.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": false, "src_path": "source/new_file.txt", "dest_path": ""}
-  {"event_type": "closed", "is_directory": false, "src_path": "source/new_file.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
-  {"event_type": "deleted", "is_directory": false, "src_path": "source/new_file.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
+  {"event_type": "created", "is_directory": false, "src_path": "source/new_file.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
+  {"event_type": "modified", "is_directory": false, "src_path": "source/new_file.txt"}
+  {"event_type": "closed", "is_directory": false, "src_path": "source/new_file.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
+  {"event_type": "modified", "is_directory": false, "src_path": "source/new_file.txt"}
+  {"event_type": "modified", "is_directory": false, "src_path": "source/new_file.txt"}
+  {"event_type": "closed", "is_directory": false, "src_path": "source/new_file.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
+  {"event_type": "deleted", "is_directory": false, "src_path": "source/new_file.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
   """
     # WHEN
     # changes = target.get_changes()
@@ -119,15 +119,15 @@ def test_new_file_in_subfolder(target):
     (sub1 / 'foo.txt').write_text('sub-file')
     # target.wait_at_rest()
     events = """
-  {"event_type": "created", "is_directory": true, "src_path": "source/sub1", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
-  {"event_type": "created", "is_directory": false, "src_path": "source/sub1/foo.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source/sub1", "dest_path": ""}
-  {"event_type": "created", "is_directory": false, "src_path": "source/sub1/foo.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source/sub1", "dest_path": ""}
-  {"event_type": "modified", "is_directory": false, "src_path": "source/sub1/foo.txt", "dest_path": ""}
-  {"event_type": "closed", "is_directory": false, "src_path": "source/sub1/foo.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source/sub1", "dest_path": ""}
+  {"event_type": "created", "is_directory": true, "src_path": "source/sub1"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
+  {"event_type": "created", "is_directory": false, "src_path": "source/sub1/foo.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source/sub1"}
+  {"event_type": "created", "is_directory": false, "src_path": "source/sub1/foo.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source/sub1"}
+  {"event_type": "modified", "is_directory": false, "src_path": "source/sub1/foo.txt"}
+  {"event_type": "closed", "is_directory": false, "src_path": "source/sub1/foo.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source/sub1"}
     """
     # WHEN
     # target.do_sync()
@@ -149,8 +149,8 @@ def test_delete_file(target):
     source_foo.unlink()
     # target.wait_at_rest()
     events = """
-  {"event_type": "deleted", "is_directory": false, "src_path": "source/foo.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
+  {"event_type": "deleted", "is_directory": false, "src_path": "source/foo.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
     """
     # WHEN
     # changes = target.do_sync()
@@ -167,10 +167,10 @@ def test_created(target):
     (target.source / 'foo.txt').touch()
     # target.wait_at_rest()
     events = """
-  {"event_type": "created", "is_directory": false, "src_path": "source/foo.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
-  {"event_type": "closed", "is_directory": false, "src_path": "source/foo.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
+  {"event_type": "created", "is_directory": false, "src_path": "source/foo.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
+  {"event_type": "closed", "is_directory": false, "src_path": "source/foo.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
     """
     # WHEN
     # changes = target.do_sync()
@@ -225,10 +225,10 @@ def test_delete_folder(target):
     shutil.rmtree(target.source / 'sub1')
     # target.wait_at_rest()
     events = """
-  {"event_type": "deleted", "is_directory": false, "src_path": "source/sub1/foo.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source/sub1", "dest_path": ""}
-  {"event_type": "deleted", "is_directory": true, "src_path": "source/sub1", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
+  {"event_type": "deleted", "is_directory": false, "src_path": "source/sub1/foo.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source/sub1"}
+  {"event_type": "deleted", "is_directory": true, "src_path": "source/sub1"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
     """
     # WHEN
     # target.do_sync()
@@ -253,17 +253,17 @@ def test_delete_folder__and_recreate_it(target):
     build()
     # target.wait_at_rest()
     events = """
-  {"event_type": "deleted", "is_directory": false, "src_path": "source/sub1/foo.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source/sub1", "dest_path": ""}
-  {"event_type": "deleted", "is_directory": true, "src_path": "source/sub1", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
-  {"event_type": "created", "is_directory": true, "src_path": "source/sub1", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
-  {"event_type": "created", "is_directory": false, "src_path": "source/sub1/foo.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source/sub1", "dest_path": ""}
-  {"event_type": "modified", "is_directory": false, "src_path": "source/sub1/foo.txt", "dest_path": ""}
-  {"event_type": "closed", "is_directory": false, "src_path": "source/sub1/foo.txt", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source/sub1", "dest_path": ""}
+  {"event_type": "deleted", "is_directory": false, "src_path": "source/sub1/foo.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source/sub1"}
+  {"event_type": "deleted", "is_directory": true, "src_path": "source/sub1"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
+  {"event_type": "created", "is_directory": true, "src_path": "source/sub1"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
+  {"event_type": "created", "is_directory": false, "src_path": "source/sub1/foo.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source/sub1"}
+  {"event_type": "modified", "is_directory": false, "src_path": "source/sub1/foo.txt"}
+  {"event_type": "closed", "is_directory": false, "src_path": "source/sub1/foo.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source/sub1"}
 """
 
     # target.do_sync()
@@ -280,11 +280,11 @@ def test_invalid_text(target):
     (target.source / 'foo.bin').write_bytes(invalid_utf8)
     # target.wait_at_rest()
     events = """
-  {"event_type": "created", "is_directory": false, "src_path": "source/foo.bin", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
-  {"event_type": "modified", "is_directory": false, "src_path": "source/foo.bin", "dest_path": ""}
-  {"event_type": "closed", "is_directory": false, "src_path": "source/foo.bin", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
+  {"event_type": "created", "is_directory": false, "src_path": "source/foo.bin"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
+  {"event_type": "modified", "is_directory": false, "src_path": "source/foo.bin"}
+  {"event_type": "closed", "is_directory": false, "src_path": "source/foo.bin"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
     """
     # WHEN
     # target.do_sync()
@@ -307,7 +307,7 @@ def test_rename_file(target):
     # target.wait_at_rest()
     events = """
   {"event_type": "moved", "is_directory": false, "src_path": "source/foo.txt", "dest_path": "source/bar.txt"}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
 """
     # target.do_sync()
     target.apply_events(events)
@@ -331,7 +331,7 @@ def test_rename_folder(target):
     # target.wait_at_rest()
     events = """
   {"event_type": "moved", "is_directory": true, "src_path": "source/sub1", "dest_path": "source/sub2"}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
   {"event_type": "moved", "is_directory": false, "src_path": "source/sub1/foo.txt", "dest_path": "source/sub2/foo.txt"}
 """
     # target.do_sync()
@@ -355,8 +355,8 @@ def test_move_folder_in_subfolder(target):
     # target.wait_at_rest()
     events = """
   {"event_type": "moved", "is_directory": true, "src_path": "source/sub1", "dest_path": "source/sub2/sub1"}
-  {"event_type": "modified", "is_directory": true, "src_path": "source", "dest_path": ""}
-  {"event_type": "modified", "is_directory": true, "src_path": "source/sub2", "dest_path": ""}
+  {"event_type": "modified", "is_directory": true, "src_path": "source"}
+  {"event_type": "modified", "is_directory": true, "src_path": "source/sub2"}
   {"event_type": "moved", "is_directory": false, "src_path": "source/sub1/foo.txt", "dest_path": "source/sub2/sub1/foo.txt"}
 """
     # target.do_sync()
