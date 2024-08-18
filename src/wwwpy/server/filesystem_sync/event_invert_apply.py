@@ -225,3 +225,15 @@ class _NodePrint(tree.NodeProtocol):
 def print_node(node: Node, printer=print):
     for line in tree.tree(_NodePrint(node)):
         printer(line)
+
+
+def events_init(source: Path) -> List[Event]:
+    result = []
+    for path in source.rglob('*'):
+        src_path = str(path.relative_to(source))
+        if path.is_dir():
+            result.append(Event(event_type='created', src_path=src_path, is_directory=True))
+        else:
+            result.append(Event(event_type='modified', src_path=src_path, is_directory=False,
+                                content=_get_content(path)))
+    return result

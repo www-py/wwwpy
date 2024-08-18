@@ -247,6 +247,7 @@ def test_rename_move_file_and_rename_dir(target):
     assert not (target.initial_fs / 'f.txt').exists()
     assert (target.initial_fs / 'dir2/f2.txt').exists()
 
+
 def test_modify_folder__should_be_ignored(target):
     # GIVEN
     target.verify_mutator_events = False
@@ -456,7 +457,7 @@ class TestRealEvents:
         target.assert_filesystem_are_equal()
         assert (target.initial_fs / 'sub1/foo.txt').exists()
 
-    def test_delete_folder(self,target):
+    def test_delete_folder(self, target):
         # GIVEN
         target.verify_mutator_events = False
         with target.source_mutator as m:
