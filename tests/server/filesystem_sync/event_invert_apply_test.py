@@ -14,7 +14,7 @@ The tests of this module are created with the following steps:
 """
 import shutil
 from pathlib import Path
-from typing import List
+from typing import List, AnyStr
 
 import pytest
 
@@ -101,6 +101,16 @@ class Mutator:
         fs_old = self.fs / old
         self.events.append(Event(event_type='moved', is_directory=fs_old.is_dir(), src_path=old, dest_path=new))
         shutil.move(fs_old, self.fs / new)
+
+    def write(self, path: str, content: AnyStr):
+        self.events.append(Event(event_type='modified', is_directory=False, src_path=path))
+        p = self.fs / path
+        if isinstance(content, bytes):
+            p.write_bytes(content)
+        elif isinstance(content, str):
+            p.write_text(content)
+        else:
+            raise ValueError(f"Unsupported content type: {type(content)}")
 
 
 @pytest.fixture
@@ -220,3 +230,35 @@ def test_move_file_to_directory(target):
     target.assert_filesystem_are_equal()
     assert not (target.initial_fs / 'f.txt').exists()
     assert (target.initial_fs / 'dir/f.txt').exists()
+
+
+def test_change_file_text(target):
+    # GIVEN
+    with target.source_init as m:
+        m.touch('f.txt')
+
+    with target.source_mutator as m:
+        m.write('f.txt', 'new content')
+
+    # WHEN
+    target.invoke("""{"event_type": "modified", "is_directory": false, "src_path": "f.txt"}""")
+
+    # THEN
+    assert Path(target.initial_fs / 'f.txt').read_text() == 'new content'
+    target.assert_filesystem_are_equal()
+
+
+def test_change_file_binary(target):
+    # GIVEN
+    with target.source_init as m:
+        m.touch('f.txt')
+
+    with target.source_mutator as m:
+        m.write('f.txt', b'\x80\x81\x82')
+
+    # WHEN
+    target.invoke("""{"event_type": "modified", "is_directory": false, "src_path": "f.txt"}""")
+
+    # THEN
+    assert Path(target.initial_fs / 'f.txt').read_bytes() == b'\x80\x81\x82'
+    target.assert_filesystem_are_equal()

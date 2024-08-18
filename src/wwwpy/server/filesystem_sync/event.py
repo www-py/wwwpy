@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import dataclasses
 from dataclasses import dataclass
+from optparse import Option
 from pathlib import Path
+from typing import AnyStr, Union, Optional
 
 
 @dataclass(frozen=True)
@@ -9,6 +13,7 @@ class Event:
     is_directory: bool
     src_path: str
     dest_path: str = ''
+    content: Union[str, bytes, None] = None
 
     def strip_container(self, container_path: str) -> 'Event':
         if (not self.src_path.startswith(container_path) or (
