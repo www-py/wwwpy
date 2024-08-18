@@ -45,6 +45,8 @@ def events_invert(fs: Path, events: List[Event]) -> List[Event]:
 
     relative_events = []
     for e in reversed(events):
+        if e.event_type == 'closed':
+            continue
         rel = e.relative_to(fs)
         if rel.src_path == '' or rel.src_path == '.':
             continue  # skip any event on the root

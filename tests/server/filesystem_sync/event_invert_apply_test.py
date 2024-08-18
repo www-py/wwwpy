@@ -452,6 +452,25 @@ class TestCompression:
         ]
         target.assert_filesystem_are_equal()
 
+    def test_closed_file_should_be_ignored(self, target):
+        # GIVEN
+        target.verify_mutator_events = False
+
+        # WHEN
+        target.invoke("""{"event_type": "closed", "is_directory": false, "src_path": "f.txt"}""")
+
+        # THEN
+        assert target.inverted_events == []
+
+    def test_closed_directory_should_be_ignored(self, target):
+        # GIVEN
+        target.verify_mutator_events = False
+
+        # WHEN
+        target.invoke("""{"event_type": "closed", "is_directory": true, "src_path": "dir"}""")
+
+        # THEN
+        assert target.inverted_events == []
 
 class TestRealEvents:
     def test_new_file(self, target):
