@@ -35,6 +35,7 @@ class FilesystemFixture:
 
         self.initial_fs = mk('initial')
         self.expected_fs = mk('expected')
+        self.inverted_events = None
         self.fs_compare = FsCompare(self.initial_fs, self.expected_fs, 'initial', 'expected')
         self.source_mutator = Mutator(self.expected_fs)
         """This transform the initial_fs into the expected_fs.
@@ -53,8 +54,8 @@ class FilesystemFixture:
 
         events_fix = [e.to_absolute(self.expected_fs) for e in events]
 
-        inverted = events_invert(self.expected_fs, events_fix)
-        events_apply(self.initial_fs, inverted)
+        self.inverted_events = events_invert(self.expected_fs, events_fix)
+        events_apply(self.initial_fs, self.inverted_events)
 
     @property
     def source_init(self):
@@ -300,3 +301,36 @@ def test_create_modify_rename_folder(target):
     # THEN
     assert Path(target.initial_fs / 'dir2/f.txt').read_text() == 'new content'
     target.assert_filesystem_are_equal()
+
+
+class TestCompression:
+    def test_create_delete(self, target):
+        # GIVEN
+        with target.source_mutator as m:
+            m.touch('f.txt')
+            m.unlink('f.txt')
+
+        # WHEN
+        target.invoke("""
+        {"event_type": "created", "is_directory": false, "src_path": "f.txt"}\n
+        {"event_type": "deleted", "is_directory": false, "src_path": "f.txt"}""")
+
+        # THEN
+        assert target.inverted_events == [Event('deleted', False, 'f.txt')]
+
+    def test_create_delete_create(self, target):
+        # GIVEN
+        with target.source_mutator as m:
+            m.touch('f.txt')
+            m.unlink('f.txt')
+            m.touch('f.txt')
+
+        # WHEN
+        target.invoke("""
+        {"event_type": "created", "is_directory": false, "src_path": "f.txt"}\n
+        {"event_type": "deleted", "is_directory": false, "src_path": "f.txt"}\n
+        {"event_type": "created", "is_directory": false, "src_path": "f.txt"}""")
+
+        # THEN
+        assert target.inverted_events[-1] == Event('created', False, 'f.txt')
+        assert len(target.inverted_events) < 3

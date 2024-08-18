@@ -12,19 +12,19 @@ from dataclasses import dataclass, field
 
 def events_invert(fs: Path, events: List[Event]) -> List[Event]:
     root = Node('', '', True)
-    nodes_map: Dict[str, Node] = {}
+
     """This is the root node of the tree that will be used to keep track of the path changes"""
 
-    # intant_paths: Dict[str, Node] = {}
-    # """This is a map that keep track of the path changes, starting backwards from the A_n state.
-    # It's a map <path of the instant i>:<final path in A_n>"""
+    def _get_or_create_node(path_str: str) -> Node:
+        path_node = _get_node_chain(root, path_str)[-1]
+        if path_node is None:
+            is_dir = (fs / path_str).is_dir()
+            path_node = _create_node(root, path_str, is_dir)
+        return path_node
 
     def augment(event: Event) -> Event:
         if event.event_type == 'modified':
-            path_node = _get_node_chain(root, event.src_path)[-1]
-            if path_node is None:
-                path_node = _create_node(root, event.src_path, False)
-
+            path_node = _get_or_create_node(event.src_path)
             assert path_node is not None
             path = path_node.final_path
             content = _get_content(Path(fs / path))
@@ -32,20 +32,32 @@ def events_invert(fs: Path, events: List[Event]) -> List[Event]:
             return aug
         return event
 
+    def is_deleted_entity(rel: Event) -> bool:
+        chain = _get_node_chain(root, rel.src_path)
+        for node in chain:
+            if node is not None and node.is_deleted:
+                return True
+        return False
+
     relative_events = []
     for e in reversed(events):
         rel = e.relative_to(fs)
+        if is_deleted_entity(rel):
+            continue
         # we are processing the events backwards in time to go from A_n to A_0
-        if rel.event_type == 'modified':
+        current_path = rel.dest_path  # this is the path in A_i
+        if rel.event_type == 'deleted':
+            """mark this entity such as we are ignoring all events children of this entity"""
+            node = _get_or_create_node(current_path)
+            node.is_deleted = True
+        elif rel.event_type == 'modified':
             rel = augment(rel)
-        if e.event_type == 'moved':
-            current_path = rel.dest_path  # this is the path in A_i
+        elif e.event_type == 'moved':
             new_path = rel.src_path  # this is the path in A_(i-1)
             final_node = _get_node_chain(root, current_path)[-1]
             if final_node is None:
                 # this is the first rename of this path
-                final_node = _create_node(root, current_path, (fs / current_path).is_dir())
-                nodes_map[current_path] = final_node
+                _create_node(root, current_path, (fs / current_path).is_dir())
 
             _move_node(root, current_path, new_path)  # we mutate the tree backwards in time
 
@@ -69,10 +81,11 @@ def _event_apply(fs: Path, event: Event):
         else:
             path.touch()
     elif t == 'deleted':
-        if is_dir:
-            shutil.rmtree(path)
-        else:
-            path.unlink()
+        if path.exists(): # it could not exist because of events compression
+            if is_dir:
+                shutil.rmtree(path)
+            else:
+                path.unlink()
     elif t == 'moved':
         shutil.move(path, fs / event.dest_path)
     elif t == 'modified':
@@ -101,6 +114,7 @@ class Node:
     final_path: str
     """This is the final path of the node in the A_n state. It is a relative complete path"""
     is_directory: bool
+    is_deleted: bool = False
     children: Dict[str, 'Node'] = field(default_factory=dict)
 
     # validate in post init
