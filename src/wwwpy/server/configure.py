@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
+from typing import List
 
 from wwwpy.bootstrap import bootstrap_routes
+from wwwpy.common.filesystem.sync import filesystemevents_print
 from wwwpy.common.quickstart import _setup_quickstart
 from wwwpy.common.rpc.custom_loader import CustomFinder
 from wwwpy.resources import library_resources, from_directory, from_file
+from wwwpy.server.filesystem_sync.watchdog_debouncer import WatchdogDebouncer
 from wwwpy.server.rpc import configure_services
 from wwwpy.webserver import Webserver
 from wwwpy.webservers.available_webservers import available_webservers
@@ -52,26 +55,25 @@ def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
 
     if dev_mode:
         import wwwpy.remote.rpc as rpc
-        from wwwpy.server import watcher
-        from watchdog.events import FileSystemEvent
 
-        def on_file_changed(event: FileSystemEvent):
-            # todo if this throws an exception, the hot reload stops
+        from wwwpy.common.filesystem import sync
+        from wwwpy.common.filesystem.sync import sync_delta2
+        from wwwpy.common.filesystem.sync import Sync
+        sync_impl: Sync = sync_delta2
+
+        def on_sync_events(events: List[sync.Event]):
             try:
-                path = Path(event.src_path)
-                if path.is_dir() or path == directory:
-                    return
-                rel_path = path.relative_to(directory)
-                content = None if path.is_dir() or not path.exists() else path.read_text()
-                print(f'{datetime.now()} clients len: {len(websocket_pool.clients)} file changed: {rel_path}')
+                filesystemevents_print(events)
+                payload = sync_impl.sync_source(directory, events)
                 for client in websocket_pool.clients:
                     remote_rpc = client.rpc(rpc.BrowserRpc)
-                    remote_rpc.file_changed(event.event_type, str(rel_path).replace('\\', '/'), content)
+                    remote_rpc.file_changed_sync(payload)
             except:
+                # we could send a sync_init
                 import traceback
-                print(f'on_file_changed {traceback.format_exc()}')
+                print(f'on_sync_events {traceback.format_exc()}')
 
-        handler = watcher.ChangeHandler(directory, on_file_changed)
+        handler = WatchdogDebouncer(directory / 'remote', timedelta(milliseconds=100), on_sync_events)
         handler.watch_directory()
 
     if webserver is not None:

@@ -43,6 +43,9 @@ class WatchdogDebouncer(DebouncerThread):
         self._any_observer.join()
         super().join()
 
+    def watch_directory(self):
+        self.start()
+
 
 def main():
     tmp_path = new_tmp_path()

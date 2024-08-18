@@ -1,8 +1,8 @@
-from typing import Protocol, List
+from typing import Protocol, List, Any
 
 
 class FileChangedListener(Protocol):
-    def __call__(self, event_type: str, filename: str, content: str):
+    def __call__(self, events: List[Any]):
         ...
 
 
@@ -11,9 +11,9 @@ _file_changed_listeners: List[FileChangedListener] = []
 
 class BrowserRpc:
 
-    def file_changed(self, event_type: str, filename: str, content: str):
+    def file_changed_sync(self, events: List[Any]):
         for listener in _file_changed_listeners:
-            listener(event_type, filename, content)
+            listener(events)
 
 
 def file_changed_listeners_add(listener: FileChangedListener):
