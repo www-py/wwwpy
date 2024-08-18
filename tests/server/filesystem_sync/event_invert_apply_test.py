@@ -201,3 +201,21 @@ def test_move_directory(target):
     assert not (target.initial_fs / 'dir').exists()
     assert (target.initial_fs / 'dir2').exists()
     assert (target.initial_fs / 'dir2').is_dir()
+
+
+def test_move_file_to_directory(target):
+    # GIVEN
+    with target.source_init() as m:
+        m.touch('f.txt')
+        m.mkdir('dir')
+
+    with target.source_mutator as m:
+        m.move('f.txt', 'dir/f.txt')
+
+    # WHEN
+    target.invoke("""{"event_type": "moved", "is_directory": false, "src_path": "f.txt", "dest_path": "dir/f.txt"}""")
+
+    # THEN
+    target.assert_filesystem_are_equal()
+    assert not (target.initial_fs / 'f.txt').exists()
+    assert (target.initial_fs / 'dir/f.txt').exists()
