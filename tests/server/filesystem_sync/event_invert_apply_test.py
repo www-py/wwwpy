@@ -38,6 +38,9 @@ class FilesystemFixture:
         __tracebackhide__ = True
         assert self.fs_compare.synchronized(), self.fs_compare.sync_error()
 
+    def invoke(self, events_str: str):
+        invert_apply(self.expected_fs, events_str, self.initial_fs)
+
 
 @pytest.fixture
 def target(tmp_path):
@@ -52,11 +55,10 @@ def test_new_file(target):
     new_file.touch()
 
     # WHEN
-    events = """{"event_type": "created", "is_directory": true, "src_path": "new_file.txt"}"""
-
-    invert_apply(target.expected_fs, events, target.initial_fs)
+    target.invoke("""{"event_type": "created", "is_directory": true, "src_path": "new_file.txt"}""")
 
     # THEN
+    target.assert_filesystem_are_equal()
     assert (target.initial_fs / 'new_file.txt').exists()
 
 
@@ -66,11 +68,10 @@ def test_delete_file(target):
     file.touch()
 
     # WHEN
-    events = """{"event_type": "deleted", "is_directory": false, "src_path": "file.txt"}"""
-
-    invert_apply(target.expected_fs, events, target.initial_fs)
+    target.invoke("""{"event_type": "deleted", "is_directory": false, "src_path": "file.txt"}""")
 
     # THEN
+    target.assert_filesystem_are_equal()
     assert not (target.initial_fs / 'file.txt').exists()
 
 
@@ -80,13 +81,11 @@ def test_new_directory(target):
     new_dir.mkdir()
 
     # WHEN
-    events = """{"event_type": "created", "is_directory": true, "src_path": "new_dir"}"""
-
-    invert_apply(target.expected_fs, events, target.initial_fs)
+    target.invoke("""{"event_type": "created", "is_directory": true, "src_path": "new_dir"}""")
 
     # THEN
-    assert (target.initial_fs / 'new_dir').exists()
     target.assert_filesystem_are_equal()
+    assert (target.initial_fs / 'new_dir').exists()
     assert (target.initial_fs / 'new_dir').is_dir()
 
 
