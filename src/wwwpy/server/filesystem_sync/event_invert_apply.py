@@ -35,13 +35,13 @@ def events_invert(fs: Path, events: List[Event]) -> List[Event]:
     def is_deleted_entity(rel: Event) -> bool:
         chain = _get_node_chain(root, rel.src_path)
         for node in chain:
-            if node is not None and node.is_deleted:
+            if node is not None and node.to_ignore:
                 return True
         return False
 
     def mark_ignore(path: str):
         node = _get_or_create_node(path)
-        node.is_deleted = True
+        node.to_ignore = True
 
     relative_events = []
     for e in reversed(events):
@@ -118,7 +118,7 @@ class Node:
     final_path: str
     """This is the final path of the node in the A_n state. It is a relative complete path"""
     is_directory: bool
-    is_deleted: bool = False
+    to_ignore: bool = False
     children: Dict[str, 'Node'] = field(default_factory=dict)
 
     # validate in post init
@@ -205,7 +205,7 @@ class _NodePrint(tree.NodeProtocol):
 
     @property
     def name(self) -> str:
-        msg = f' ({self.node.final_path}) is_dir={self.node.is_directory} is_deleted={self.node.is_deleted}'
+        msg = f' ({self.node.final_path}) is_dir={self.node.is_directory} is_deleted={self.node.to_ignore}'
         return self.node.str().strip('/') + msg
 
 
