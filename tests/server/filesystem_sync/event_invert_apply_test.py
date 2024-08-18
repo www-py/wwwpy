@@ -262,3 +262,22 @@ def test_change_file_binary(target):
     # THEN
     assert Path(target.initial_fs / 'f.txt').read_bytes() == b'\x80\x81\x82'
     target.assert_filesystem_are_equal()
+
+
+def test_create_modify_rename(target):
+    # GIVEN
+    with target.source_init as m:
+        m.touch('f.txt')
+
+    with target.source_mutator as m:
+        m.write('f.txt', 'new content')
+        m.move('f.txt', 'f2.txt')
+
+    # WHEN
+    target.invoke("""
+    {"event_type": "modified", "is_directory": false, "src_path": "f.txt"}\n
+    {"event_type": "moved", "is_directory": false, "src_path": "f.txt", "dest_path": "f2.txt"}""")
+
+    # THEN
+    assert Path(target.initial_fs / 'f2.txt').read_text() == 'new content'
+    target.assert_filesystem_are_equal()
