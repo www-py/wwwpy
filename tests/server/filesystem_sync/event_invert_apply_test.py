@@ -25,8 +25,9 @@ from wwwpy.server.filesystem_sync.event_invert_apply import events_invert, event
 
 
 class FilesystemFixture:
-    def __init__(self, tmp_path: Path, ):
+    def __init__(self, tmp_path: Path):
         self.tmp_path = tmp_path
+        self.check_events_correctness = True
 
         def mk(path):
             p = tmp_path / path
@@ -50,7 +51,8 @@ class FilesystemFixture:
         events = _deserialize_events(events_str)
 
         # verify that we specified events_str correctly
-        assert self.source_mutator.events == events
+        if self.check_events_correctness:
+            assert self.source_mutator.events == events
 
         events_fix = [e.to_absolute(self.expected_fs) for e in events]
 
@@ -409,3 +411,40 @@ class TestCompression:
 
         # THEN
         assert target.inverted_events == [Event('deleted', True, 'dir')]
+
+    def test_modify_modify__should_be_compacted(self, target):
+        # GIVEN
+        with target.source_init as m:
+            m.touch('f.txt')
+
+        with target.source_mutator as m:
+            m.write('f.txt', 'new content')
+            m.write('f.txt', 'new content2')
+
+        # WHEN
+        target.invoke("""
+        {"event_type": "modified", "is_directory": false, "src_path": "f.txt"}\n
+        {"event_type": "modified", "is_directory": false, "src_path": "f.txt"}""")
+
+        # THEN
+        assert target.inverted_events == [Event('modified', False, 'f.txt', content='new content2')]
+
+
+class TestRealEvents:
+    def todo_test_new_file(self, target):
+        # GIVEN
+        target.check_events = False
+        with target.source_mutator as m:
+            m.touch('new_file.txt')
+
+        # WHEN
+        target.invoke("""
+          {"event_type": "created", "is_directory": false, "src_path": "source/new_file.txt"}
+          {"event_type": "modified", "is_directory": true, "src_path": "source"}
+          {"event_type": "modified", "is_directory": false, "src_path": "source/new_file.txt"}
+          {"event_type": "closed", "is_directory": false, "src_path": "source/new_file.txt"}
+          {"event_type": "modified", "is_directory": true, "src_path": "source"}""")
+
+        # THEN
+        target.assert_filesystem_are_equal()
+        assert (target.initial_fs / 'new_file.txt').exists()

@@ -39,6 +39,10 @@ def events_invert(fs: Path, events: List[Event]) -> List[Event]:
                 return True
         return False
 
+    def mark_ignore(path: str):
+        node = _get_or_create_node(path)
+        node.is_deleted = True
+
     relative_events = []
     for e in reversed(events):
         rel = e.relative_to(fs)
@@ -47,11 +51,11 @@ def events_invert(fs: Path, events: List[Event]) -> List[Event]:
         # we are processing the events backwards in time to go from A_n to A_0
         current_path = rel.dest_path  # this is the path in A_i
         if rel.event_type == 'deleted':
-            """mark this entity such as we are ignoring all events children of this entity"""
-            node = _get_or_create_node(current_path)
-            node.is_deleted = True
+            """mark this entity such as we are ignore all preceding events"""
+            mark_ignore(current_path)
         elif rel.event_type == 'modified':
             rel = augment(rel)
+            mark_ignore(current_path)
         elif e.event_type == 'moved':
             new_path = rel.src_path  # this is the path in A_(i-1)
             final_node = _get_node_chain(root, current_path)[-1]
@@ -83,7 +87,7 @@ def _event_apply(fs: Path, event: Event):
     elif t == 'deleted':
         if path.exists():  # it could not exist because of events compression
             if is_dir:
-                shutil.rmtree(path) # again because of events compression we could need to remove a whole tree
+                shutil.rmtree(path)  # again because of events compression we could need to remove a whole tree
             else:
                 path.unlink()
     elif t == 'moved':
