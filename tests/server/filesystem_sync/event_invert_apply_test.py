@@ -56,6 +56,7 @@ class FilesystemFixture:
         inverted = events_invert(self.expected_fs, events_fix)
         events_apply(self.initial_fs, inverted)
 
+    @property
     def source_init(self):
         """This should be used to create the initial state of the filesystem.
         In other words this is setting up the A_0 filesystem"""
@@ -124,7 +125,7 @@ def test_new_file(target):
 
 def test_delete_file(target):
     # GIVEN
-    with target.source_init() as m:
+    with target.source_init as m:
         m.touch('file.txt')
 
     with target.source_mutator as m:
@@ -154,7 +155,7 @@ def test_new_directory(target):
 
 def test_delete_directory(target):
     # GIVEN
-    with target.source_init() as m:
+    with target.source_init as m:
         m.mkdir('dir')
 
     with target.source_mutator as m:
@@ -170,7 +171,7 @@ def test_delete_directory(target):
 
 def test_move_file(target):
     # GIVEN
-    with target.source_init() as m:
+    with target.source_init as m:
         m.touch('f.txt')
 
     with target.source_mutator as m:
@@ -187,7 +188,7 @@ def test_move_file(target):
 
 def test_move_directory(target):
     # GIVEN
-    with target.source_init() as m:
+    with target.source_init as m:
         m.mkdir('dir')
 
     with target.source_mutator as m:
@@ -205,7 +206,7 @@ def test_move_directory(target):
 
 def test_move_file_to_directory(target):
     # GIVEN
-    with target.source_init() as m:
+    with target.source_init as m:
         m.touch('f.txt')
         m.mkdir('dir')
 
