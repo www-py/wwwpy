@@ -27,7 +27,7 @@ from wwwpy.server.filesystem_sync.event_invert_apply import events_invert, event
 class FilesystemFixture:
     def __init__(self, tmp_path: Path):
         self.tmp_path = tmp_path
-        self.check_events_correctness = True
+        self.verify_mutator_events = True
 
         def mk(path):
             p = tmp_path / path
@@ -51,7 +51,7 @@ class FilesystemFixture:
         events = _deserialize_events(events_str)
 
         # verify that we specified events_str correctly
-        if self.check_events_correctness:
+        if self.verify_mutator_events:
             assert self.source_mutator.events == events
 
         events_fix = [e.to_absolute(self.expected_fs) for e in events]
@@ -456,17 +456,17 @@ class TestCompression:
 class TestRealEvents:
     def todo_test_new_file(self, target):
         # GIVEN
-        target.check_events = False
+        target.verify_mutator_events = False
         with target.source_mutator as m:
             m.touch('new_file.txt')
 
         # WHEN
         target.invoke("""
-          {"event_type": "created", "is_directory": false, "src_path": "source/new_file.txt"}
-          {"event_type": "modified", "is_directory": true, "src_path": "source"}
-          {"event_type": "modified", "is_directory": false, "src_path": "source/new_file.txt"}
-          {"event_type": "closed", "is_directory": false, "src_path": "source/new_file.txt"}
-          {"event_type": "modified", "is_directory": true, "src_path": "source"}""")
+          {"event_type": "created", "is_directory": false, "src_path": "new_file.txt"}
+          {"event_type": "modified", "is_directory": true, "src_path": ""}
+          {"event_type": "modified", "is_directory": false, "src_path": "new_file.txt"}
+          {"event_type": "closed", "is_directory": false, "src_path": "new_file.txt"}
+          {"event_type": "modified", "is_directory": true, "src_path": ""}""")
 
         # THEN
         target.assert_filesystem_are_equal()

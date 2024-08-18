@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 # production code
 
 def events_invert(fs: Path, events: List[Event]) -> List[Event]:
-    root = Node('', '', True)
+    root = Node('.', '.', True)
 
     """This is the root node of the tree that will be used to keep track of the path changes"""
 
@@ -23,14 +23,12 @@ def events_invert(fs: Path, events: List[Event]) -> List[Event]:
         return path_node
 
     def augment(event: Event) -> Event:
-        if event.event_type == 'modified':
-            path_node = _get_or_create_node(event.src_path)
-            assert path_node is not None
-            path = path_node.final_path
-            content = _get_content(Path(fs / path))
-            aug = dataclasses.replace(event, content=content)
-            return aug
-        return event
+        path_node = _get_or_create_node(event.src_path)
+        assert path_node is not None
+        path = path_node.final_path
+        content = _get_content(Path(fs / path))
+        aug = dataclasses.replace(event, content=content)
+        return aug
 
     def is_deleted_entity(rel: Event) -> bool:
         chain = _get_node_chain(root, rel.src_path)
@@ -47,6 +45,8 @@ def events_invert(fs: Path, events: List[Event]) -> List[Event]:
 
     relative_events = []
     for e in reversed(events):
+        if e.src_path == '':
+            continue  # skip any event on the root
         rel = e.relative_to(fs)
         if is_deleted_entity(rel):
             continue
@@ -138,7 +138,7 @@ class Node:
 
 
 def _get_node_chain(root: Node, path: str) -> List[Optional[Node]]:
-    if path == '/':
+    if path == '.':
         return [root]
     parts = _get_parts(path)
     current = root
@@ -167,8 +167,7 @@ def _create_node(root: Node, final_path: str, is_dir: bool) -> Node:
 
     for i, name in enumerate(parts):
         if name not in current.children:
-            sep = '' if i == 0 else '/'
-            path = current.final_path + sep + name
+            path = current.final_path + '/' + name
             current.children[name] = Node(name, path, is_dir)
         current = current.children[name]
 

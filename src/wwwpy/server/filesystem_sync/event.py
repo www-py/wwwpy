@@ -37,7 +37,7 @@ class Event:
 
     def to_absolute(self, into: Path) -> 'Event':
         e = self
-        src_path = '' if e.src_path == '' else str(into / e.src_path)
+        src_path = str(into / e.src_path)
         dest_path = '' if e.dest_path == '' else str(into / e.dest_path)
         return dataclasses.replace(e, src_path=src_path, dest_path=dest_path)
 
