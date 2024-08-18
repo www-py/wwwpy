@@ -1,11 +1,13 @@
 """
-E = event_invert(A_n, e)
-A_n = event_apply(A_0, E)
+e_list = [e_1, e_2, e_n ]
+
+E_list = event_invert(A_n, e_list)
+A_n = event_apply(A_0, E_list)
 
 The tests of this module are created with the following steps:
 - GIVEN
     - the initial state of the filesystem A_0
-    - the events E
+    - the events E_list
     - the expected state of the filesystem after the event is applied A_n
 - WHEN invoke target
 - THEN assert the result
@@ -43,15 +45,55 @@ class FilesystemFixture:
     def invoke(self, events_str: str):
         events = _deserialize_events(events_str)
 
-        def relocate(e: Event) -> Event:
-            src_path = '' if e.src_path == '' else str(self.initial_fs / e.src_path)
-            dest_path = '' if e.dest_path == '' else str(self.initial_fs / e.dest_path)
+        def relocate(e: Event, into: Path) -> Event:
+            src_path = '' if e.src_path == '' else str(into / e.src_path)
+            dest_path = '' if e.dest_path == '' else str(into / e.dest_path)
             return dataclasses.replace(e, src_path=src_path, dest_path=dest_path)
 
-        events_fix = [relocate(e) for e in events]
+        events_fix = [relocate(e, self.expected_fs) for e in events]
 
         inverted = events_invert(self.expected_fs, events_fix)
-        events_apply(self.expected_fs, inverted)
+        events_apply(self.initial_fs, inverted)
+
+    def source_mutate(self):
+        """This transform the initial_fs into the expected_fs.
+        In other words it should generate events e_list that when applied to A_0 should result in A_n"""
+        return Mutator(self.expected_fs)
+
+    def source_init(self):
+        """This should be used to create the initial state of the filesystem.
+        In other words this is setting up the A_0 filesystem"""
+
+        def on_exit():
+            shutil.rmtree(self.expected_fs, ignore_errors=True)
+            shutil.copytree(self.initial_fs, self.expected_fs, dirs_exist_ok=True)
+
+        return Mutator(self.initial_fs, on_exit)
+
+
+class Mutator:
+    def __init__(self, fs: Path, on_exit=None):
+        self.fs = fs
+        self.on_exit = on_exit
+
+    def touch(self, path: str):
+        (self.fs / path).touch()
+
+    def mkdir(self, path: str):
+        (self.fs / path).mkdir()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.on_exit:
+            self.on_exit()
+
+    def unlink(self, path: str):
+        (self.fs / path).unlink()
+
+    def rmdir(self, path):
+        (self.fs / path).rmdir()
 
 
 @pytest.fixture
@@ -63,8 +105,8 @@ def target(tmp_path):
 
 def test_new_file(target):
     # GIVEN
-    new_file = target.expected_fs / 'new_file.txt'
-    new_file.touch()
+    with target.source_mutate() as source:
+        source.touch('new_file.txt')
 
     # WHEN
     target.invoke("""{"event_type": "created", "is_directory": false, "src_path": "new_file.txt"}""")
@@ -76,8 +118,11 @@ def test_new_file(target):
 
 def test_delete_file(target):
     # GIVEN
-    file = target.initial_fs / 'file.txt'
-    file.touch()
+    with target.source_init() as source:
+        source.touch('file.txt')
+
+    with target.source_mutate() as source:
+        source.unlink('file.txt')
 
     # WHEN
     target.invoke("""{"event_type": "deleted", "is_directory": false, "src_path": "file.txt"}""")
@@ -89,8 +134,8 @@ def test_delete_file(target):
 
 def test_new_directory(target):
     # GIVEN
-    new_dir = target.expected_fs / 'new_dir'
-    new_dir.mkdir()
+    with target.source_mutate() as source:
+        source.mkdir('new_dir')
 
     # WHEN
     target.invoke("""{"event_type": "created", "is_directory": true, "src_path": "new_dir"}""")
@@ -103,8 +148,11 @@ def test_new_directory(target):
 
 def test_delete_directory(target):
     # GIVEN
-    dir = target.initial_fs / 'dir'
-    dir.mkdir()
+    with target.source_init() as source:
+        source.mkdir('dir')
+
+    with target.source_mutate() as source:
+        source.rmdir('dir')
 
     # WHEN
     target.invoke("""{"event_type": "deleted", "is_directory": true, "src_path": "dir"}""")
@@ -112,3 +160,17 @@ def test_delete_directory(target):
     # THEN
     target.assert_filesystem_are_equal()
     assert not (target.initial_fs / 'dir').exists()
+
+
+def xx_test_move_file(target):
+    # GIVEN
+    file = target.initial_fs / 'f.txt'
+    file.touch()
+
+    # WHEN
+    target.invoke("""{"event_type": "moved", "is_directory": false, "src_path": "f.txt", "dest_path": "f2.txt"}""")
+
+    # THEN
+    target.assert_filesystem_are_equal()
+    assert not (target.initial_fs / 'f.txt').exists()
+    assert (target.initial_fs / 'f2.txt').exists()
