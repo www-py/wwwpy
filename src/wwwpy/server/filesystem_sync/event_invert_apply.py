@@ -83,7 +83,7 @@ def _event_apply(fs: Path, event: Event):
     elif t == 'deleted':
         if path.exists():  # it could not exist because of events compression
             if is_dir:
-                shutil.rmtree(path)
+                shutil.rmtree(path) # again because of events compression we could need to remove a whole tree
             else:
                 path.unlink()
     elif t == 'moved':

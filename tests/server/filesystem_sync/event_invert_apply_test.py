@@ -96,7 +96,7 @@ class Mutator:
 
     def rmdir(self, path):
         self.events.append(Event(event_type='deleted', is_directory=True, src_path=path))
-        (self.fs / path).rmdir()
+        shutil.rmtree(self.fs / path)
 
     def move(self, old, new):
         fs_old = self.fs / old
@@ -373,3 +373,39 @@ class TestCompression:
         # THEN
         assert target.inverted_events[-1] == Event('created', False, 'f.txt')
         assert len(target.inverted_events) < 3
+
+    def test_delete_folder_with_files(self, target):
+        # GIVEN
+        with target.source_mutator as m:
+            m.mkdir('dir')
+            m.touch('dir/f.txt')
+            m.touch('dir/g.txt')
+            m.rmdir('dir')
+
+        # WHEN
+        target.invoke("""
+        {"event_type": "created", "is_directory": true, "src_path": "dir"}\n
+        {"event_type": "created", "is_directory": false, "src_path": "dir/f.txt"}\n
+        {"event_type": "created", "is_directory": false, "src_path": "dir/g.txt"}\n
+        {"event_type": "deleted", "is_directory": true, "src_path": "dir"}""")
+
+        # THEN
+        assert target.inverted_events == [Event('deleted', True, 'dir')]
+
+    def test_need_recursive_delete_directory(self, target):
+        # GIVEN
+        with target.source_init as m:
+            m.mkdir('dir')
+            m.touch('dir/f.txt')
+
+        with target.source_mutator as m:
+            m.touch('dir/g.txt')
+            m.rmdir('dir')
+
+        # WHEN
+        target.invoke("""
+        {"event_type": "created", "is_directory": false, "src_path": "dir/g.txt"}\n
+        {"event_type": "deleted", "is_directory": true, "src_path": "dir"}""")
+
+        # THEN
+        assert target.inverted_events == [Event('deleted', True, 'dir')]
