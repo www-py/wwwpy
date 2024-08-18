@@ -41,7 +41,17 @@ class FilesystemFixture:
         assert self.fs_compare.synchronized(), self.fs_compare.sync_error()
 
     def invoke(self, events_str: str):
-        invert_apply(self.expected_fs, events_str, self.initial_fs)
+        events = _deserialize_events(events_str)
+
+        def relocate(e: Event) -> Event:
+            src_path = '' if e.src_path == '' else str(self.initial_fs / e.src_path)
+            dest_path = '' if e.dest_path == '' else str(self.initial_fs / e.dest_path)
+            return dataclasses.replace(e, src_path=src_path, dest_path=dest_path)
+
+        events_fix = [relocate(e) for e in events]
+
+        inverted = events_invert(self.expected_fs, events_fix)
+        events_apply(self.expected_fs, inverted)
 
 
 @pytest.fixture
@@ -102,19 +112,3 @@ def test_delete_directory(target):
     # THEN
     target.assert_filesystem_are_equal()
     assert not (target.initial_fs / 'dir').exists()
-
-
-def invert_apply(expected_fs: Path, events_str: str, initial_fs: Path):
-    expected_fs.mkdir(parents=True, exist_ok=True)
-    initial_fs.mkdir(parents=True, exist_ok=True)
-    events = _deserialize_events(events_str)
-
-    def relocate(e: Event) -> Event:
-        src_path = '' if e.src_path == '' else str(initial_fs / e.src_path)
-        dest_path = '' if e.dest_path == '' else str(initial_fs / e.dest_path)
-        return dataclasses.replace(e, src_path=src_path, dest_path=dest_path)
-
-    events_fix = [relocate(e) for e in events]
-
-    inverted = events_invert(expected_fs, events_fix)
-    events_apply(expected_fs, inverted)
