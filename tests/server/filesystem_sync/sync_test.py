@@ -3,7 +3,8 @@ import shutil
 import pytest
 
 from tests.server.filesystem_sync.sync_fixture import SyncFixture
-from wwwpy.server.filesystem_sync import sync_delta, sync_zip, sync_delta2
+from wwwpy.server.filesystem_sync import sync_delta, sync_zip
+from wwwpy.common.filesystem.sync import sync_delta2
 
 invalid_utf8 = b'\x80\x81\x82'
 

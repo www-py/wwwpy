@@ -4,7 +4,7 @@ from pathlib import Path
 from tests.server.filesystem_sync.mutator import Mutator
 from tests.server.filesystem_sync.fs_compare import FsCompare
 from tests.server.filesystem_sync.sync_fixture import _deserialize_events
-from wwwpy.server.filesystem_sync.event_invert_apply import events_invert, events_apply
+from wwwpy.common.filesystem.sync.event_invert_apply import events_invert, events_apply
 
 
 class FilesystemFixture:

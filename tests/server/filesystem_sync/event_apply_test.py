@@ -1,5 +1,5 @@
-from wwwpy.server.filesystem_sync import Event
-from wwwpy.server.filesystem_sync.event_apply import event_apply
+from wwwpy.common.filesystem.sync import Event
+from wwwpy.common.filesystem.sync.event_apply import event_apply
 
 
 def test_create_file(tmp_path):

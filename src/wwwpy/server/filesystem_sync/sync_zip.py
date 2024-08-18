@@ -10,7 +10,7 @@ import shutil
 from pathlib import Path
 from typing import List, Any
 
-from wwwpy.server.filesystem_sync import Event
+from wwwpy.common.filesystem.sync import Event
 
 
 def sync_source(source: Path, events: List[Event]) -> List[Any]:

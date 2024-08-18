@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Any, Optional
 
 from wwwpy.common.rpc import serialization
-from wwwpy.server.filesystem_sync import Event
+from wwwpy.common.filesystem.sync import Event
 
 
 @dataclass

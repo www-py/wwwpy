@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 from typing import List, AnyStr
 
-from wwwpy.server.filesystem_sync import Event
+from wwwpy.common.filesystem.sync import Event
 
 
 class Mutator:

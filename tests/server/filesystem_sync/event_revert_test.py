@@ -2,7 +2,7 @@ import pytest
 from pathlib import Path
 from dataclasses import dataclass
 
-from wwwpy.server.filesystem_sync import Event
+from wwwpy.common.filesystem.sync import Event
 from wwwpy.server.filesystem_sync.event_revert import event_revert
 
 

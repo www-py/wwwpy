@@ -7,7 +7,7 @@ from typing import List
 
 from wwwpy.server.filesystem_sync import new_tmp_path, filesystemevents_print, Sync
 from wwwpy.server.filesystem_sync import sync_zip
-from wwwpy.server.filesystem_sync.event import Event
+from wwwpy.common.filesystem.sync.event import Event
 from wwwpy.server.filesystem_sync.watchdog_debouncer import WatchdogDebouncer
 
 

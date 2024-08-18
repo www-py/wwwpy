@@ -4,11 +4,11 @@ from pathlib import Path
 from time import sleep
 from typing import Callable, List
 
-from wwwpy.server.filesystem_sync import new_tmp_path
+from wwwpy.common.filesystem.sync import new_tmp_path
 from wwwpy.server.filesystem_sync.any_observer import AnyObserver
 from wwwpy.server.filesystem_sync.debouncer import Debouncer
 from wwwpy.server.filesystem_sync.debouncer_thread import DebouncerThread
-from wwwpy.server.filesystem_sync.event import Event
+from wwwpy.common.filesystem.sync.event import Event
 from watchdog.events import FileSystemEvent
 
 

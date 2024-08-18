@@ -1,13 +1,11 @@
-import threading
 from pathlib import Path
 from time import sleep
-from typing import Callable, List
+from typing import Callable
 
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
 from watchdog.observers import Observer
 
-from wwwpy.server.filesystem_sync import new_tmp_path
-from wwwpy.server.filesystem_sync.event import Event
+from wwwpy.common.filesystem.sync import new_tmp_path
 
 
 class AnyObserver(FileSystemEventHandler):

@@ -1,6 +1,6 @@
 import pytest
 
-from wwwpy.server.filesystem_sync import Event
+from wwwpy.common.filesystem.sync import Event
 
 
 def test_strip_container():

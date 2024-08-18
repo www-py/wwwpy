@@ -17,7 +17,7 @@ from pathlib import Path
 import pytest
 
 from tests.server.filesystem_sync.filesystem_fixture import FilesystemFixture
-from wwwpy.server.filesystem_sync import Event
+from wwwpy.common.filesystem.sync import Event
 
 
 @pytest.fixture

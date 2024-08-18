@@ -14,7 +14,7 @@ from tests import timeout_multiplier
 from tests.server.filesystem_sync.activity_monitor import ActivityMonitor
 from tests.server.filesystem_sync.fs_compare import FsCompare
 from wwwpy.common.rpc import serialization
-from wwwpy.server.filesystem_sync import Sync, new_tmp_path, Event
+from wwwpy.common.filesystem.sync import Sync, new_tmp_path, Event
 from wwwpy.server.filesystem_sync import sync_delta, sync_zip
 from wwwpy.server.filesystem_sync.watchdog_debouncer import WatchdogDebouncer
 

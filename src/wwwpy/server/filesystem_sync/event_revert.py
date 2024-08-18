@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Dict, Any
 import shutil
 
-from wwwpy.server.filesystem_sync import Event
+from wwwpy.common.filesystem.sync import Event
 
 
 def event_revert(path: Path, event: Event, file_contents: Dict[str, str]) -> Path:

@@ -2,8 +2,8 @@ from pathlib import Path
 from typing import List, Any
 
 from wwwpy.common.rpc import serialization
-from wwwpy.server.filesystem_sync import Event
-from wwwpy.server.filesystem_sync import event_invert_apply
+from wwwpy.common.filesystem.sync import Event
+from wwwpy.common.filesystem.sync import event_invert_apply
 
 
 def sync_source(source: Path, events: List[Event]) -> List[Any]:

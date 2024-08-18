@@ -4,11 +4,9 @@ from pathlib import Path
 from typing import List, Dict, Iterable, Union, Optional
 
 from wwwpy.common import tree
-from wwwpy.server.filesystem_sync import Event
+from wwwpy.common.filesystem.sync import Event
 from dataclasses import dataclass, field
 
-
-# production code
 
 def events_invert(fs: Path, events: List[Event]) -> List[Event]:
     root = Node('.', '.', True)
