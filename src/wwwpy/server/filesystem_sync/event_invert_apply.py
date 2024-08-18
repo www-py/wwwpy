@@ -45,9 +45,9 @@ def events_invert(fs: Path, events: List[Event]) -> List[Event]:
 
     relative_events = []
     for e in reversed(events):
-        if e.src_path == '':
-            continue  # skip any event on the root
         rel = e.relative_to(fs)
+        if rel.src_path == '' or rel.src_path == '.':
+            continue  # skip any event on the root
         if is_deleted_entity(rel):
             continue
         # we are processing the events backwards in time to go from A_n to A_0

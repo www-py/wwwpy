@@ -454,7 +454,7 @@ class TestCompression:
 
 
 class TestRealEvents:
-    def todo_test_new_file(self, target):
+    def test_new_file(self, target):
         # GIVEN
         target.verify_mutator_events = False
         with target.source_mutator as m:
