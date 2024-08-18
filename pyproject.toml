@@ -47,4 +47,4 @@ pytest_wwwpy = "wwwpy.server.pytest.pytest_plugin"
 # include_package_data = True
 
 [project.scripts]
-wwwpy = "wwwpy:main"
+wwwpy = "wwwpy.server.__main__:main"
