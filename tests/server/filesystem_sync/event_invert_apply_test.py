@@ -16,6 +16,7 @@ from typing import List
 
 import pytest
 
+from tests.server.filesystem_sync.fs_compare import FsCompare
 from tests.server.filesystem_sync.sync_fixture import _deserialize_events
 from wwwpy.server.filesystem_sync import Event
 
@@ -31,6 +32,11 @@ class FilesystemFixture:
 
         self.initial_fs = mk('initial')
         self.expected_fs = mk('expected')
+        self.fs_compare = FsCompare(self.initial_fs, self.expected_fs, 'initial', 'expected')
+
+    def assert_filesystem_are_equal(self):
+        __tracebackhide__ = True
+        assert self.fs_compare.synchronized(), self.fs_compare.sync_error()
 
 
 @pytest.fixture
@@ -68,6 +74,22 @@ def test_delete_file(target):
     assert not (target.initial_fs / 'file.txt').exists()
 
 
+def test_new_directory(target):
+    # GIVEN
+    new_dir = target.expected_fs / 'new_dir'
+    new_dir.mkdir()
+
+    # WHEN
+    events = """{"event_type": "created", "is_directory": true, "src_path": "new_dir"}"""
+
+    invert_apply(target.expected_fs, events, target.initial_fs)
+
+    # THEN
+    assert (target.initial_fs / 'new_dir').exists()
+    target.assert_filesystem_are_equal()
+    assert (target.initial_fs / 'new_dir').is_dir()
+
+
 def invert_apply(expected_fs: Path, events_str: str, initial_fs: Path):
     expected_fs.mkdir(parents=True, exist_ok=True)
     initial_fs.mkdir(parents=True, exist_ok=True)
@@ -96,6 +118,9 @@ def events_apply(fs: Path, events: List[Event]):
 
 def event_apply(fs: Path, event: Event):
     if event.event_type == 'created':
-        (fs / event.src_path).touch()
+        if event.is_directory:
+            (fs / event.src_path).mkdir()
+        else:
+            (fs / event.src_path).touch()
     elif event.event_type == 'deleted':
         (fs / event.src_path).unlink()
