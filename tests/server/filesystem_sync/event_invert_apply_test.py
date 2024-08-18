@@ -14,44 +14,58 @@ import dataclasses
 from pathlib import Path
 from typing import List
 
+import pytest
+
 from tests.server.filesystem_sync.sync_fixture import _deserialize_events
 from wwwpy.server.filesystem_sync import Event
 
 
-def test_new_file(tmp_path: Path):
-    # GIVEN
-    initial_fs = tmp_path / 'initial'
-    expected_fs = tmp_path / 'expected'
+class FilesystemFixture:
+    def __init__(self, tmp_path: Path, ):
+        self.tmp_path = tmp_path
 
-    expected_fs.mkdir(parents=True, exist_ok=True)
-    new_file = expected_fs / 'new_file.txt'
+        def mk(dir):
+            p = tmp_path / dir
+            p.mkdir(parents=True, exist_ok=True)
+            return p
+
+        self.initial_fs = mk('initial')
+        self.expected_fs = mk('expected')
+
+
+@pytest.fixture
+def target(tmp_path):
+    print(f'\ntmp_path file://{tmp_path}')
+    fixture = FilesystemFixture(tmp_path)
+    yield fixture
+
+
+def test_new_file(target):
+    # GIVEN
+    new_file = target.expected_fs / 'new_file.txt'
     new_file.touch()
 
     # WHEN
     events = """{"event_type": "created", "is_directory": true, "src_path": "new_file.txt"}"""
 
-    invert_apply(expected_fs, events, initial_fs)
+    invert_apply(target.expected_fs, events, target.initial_fs)
 
     # THEN
-    assert (initial_fs / 'new_file.txt').exists()
+    assert (target.initial_fs / 'new_file.txt').exists()
 
 
-def test_delete_file(tmp_path: Path):
+def test_delete_file(target):
     # GIVEN
-    initial_fs = tmp_path / 'initial'
-    expected_fs = tmp_path / 'expected'
-
-    initial_fs.mkdir(parents=True, exist_ok=True)
-    file = initial_fs / 'file.txt'
+    file = target.initial_fs / 'file.txt'
     file.touch()
 
     # WHEN
     events = """{"event_type": "deleted", "is_directory": false, "src_path": "file.txt"}"""
 
-    invert_apply(expected_fs, events, initial_fs)
+    invert_apply(target.expected_fs, events, target.initial_fs)
 
     # THEN
-    assert not (initial_fs / 'file.txt').exists()
+    assert not (target.initial_fs / 'file.txt').exists()
 
 
 def invert_apply(expected_fs: Path, events_str: str, initial_fs: Path):
