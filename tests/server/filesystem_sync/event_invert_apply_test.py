@@ -281,3 +281,22 @@ def test_create_modify_rename(target):
     # THEN
     assert Path(target.initial_fs / 'f2.txt').read_text() == 'new content'
     target.assert_filesystem_are_equal()
+
+
+def test_create_modify_rename_folder(target):
+    # GIVEN
+    with target.source_init as m:
+        m.mkdir('dir')
+
+    with target.source_mutator as m:
+        m.write('dir/f.txt', 'new content')
+        m.move('dir', 'dir2')
+
+    # WHEN
+    target.invoke("""
+    {"event_type": "modified", "is_directory": false, "src_path": "dir/f.txt"}\n
+    {"event_type": "moved", "is_directory": true, "src_path": "dir", "dest_path": "dir2"}""")
+
+    # THEN
+    assert Path(target.initial_fs / 'dir2/f.txt').read_text() == 'new content'
+    target.assert_filesystem_are_equal()
