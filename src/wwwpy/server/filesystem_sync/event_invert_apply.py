@@ -81,7 +81,7 @@ def _event_apply(fs: Path, event: Event):
         else:
             path.touch()
     elif t == 'deleted':
-        if path.exists(): # it could not exist because of events compression
+        if path.exists():  # it could not exist because of events compression
             if is_dir:
                 shutil.rmtree(path)
             else:
@@ -201,7 +201,8 @@ class _NodePrint(tree.NodeProtocol):
 
     @property
     def name(self) -> str:
-        return self.node.str().strip('/')
+        msg = f' ({self.node.final_path}) is_dir={self.node.is_directory} is_deleted={self.node.is_deleted}'
+        return self.node.str().strip('/') + msg
 
 
 def print_node(node: Node, printer=print):

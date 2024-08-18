@@ -303,6 +303,45 @@ def test_create_modify_rename_folder(target):
     target.assert_filesystem_are_equal()
 
 
+def test_rename_move_file(target):
+    # GIVEN
+    with target.source_init as m:
+        m.touch('f.txt')
+        m.mkdir('dir')
+
+    with target.source_mutator as m:
+        m.move('f.txt', 'dir/f2.txt')
+
+    # WHEN
+    target.invoke("""{"event_type": "moved", "is_directory": false, "src_path": "f.txt", "dest_path": "dir/f2.txt"}""")
+
+    # THEN
+    target.assert_filesystem_are_equal()
+    assert not (target.initial_fs / 'f.txt').exists()
+    assert (target.initial_fs / 'dir/f2.txt').exists()
+
+
+def test_rename_move_file_and_rename_dir(target):
+    # GIVEN
+    with target.source_init as m:
+        m.touch('f.txt')
+        m.mkdir('dir')
+
+    with target.source_mutator as m:
+        m.move('f.txt', 'dir/f2.txt')
+        m.move('dir', 'dir2')
+
+    # WHEN
+    target.invoke("""
+    {"event_type": "moved", "is_directory": false, "src_path": "f.txt", "dest_path": "dir/f2.txt"}\n
+    {"event_type": "moved", "is_directory": true, "src_path": "dir", "dest_path": "dir2"}""")
+
+    # THEN
+    target.assert_filesystem_are_equal()
+    assert not (target.initial_fs / 'f.txt').exists()
+    assert (target.initial_fs / 'dir2/f2.txt').exists()
+
+
 class TestCompression:
     def test_create_delete(self, target):
         # GIVEN
