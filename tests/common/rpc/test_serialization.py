@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Tuple, Optional, Dict, Union
+from typing import List, Tuple, Optional, Dict, Union, AnyStr
 
 import pytest
 
@@ -221,3 +221,10 @@ class TestUnion:
     def test_wrong_type(self):
         with pytest.raises(Exception):
             serialization.to_json(3.14, Union[int, str])
+
+    @pytest.mark.parametrize('value', ['foo', b'\x80\x81\x82', None])
+    def test_anystr_optional(self, value):
+        union_optional = Union[str, bytes, None]
+        serialized = serialization.to_json(value, union_optional)
+        deserialized = serialization.from_json(serialized, union_optional)
+        assert deserialized == value

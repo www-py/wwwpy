@@ -54,6 +54,8 @@ def serialize(obj: Any, cls: Type) -> Any:
         return base64.b64encode(obj).decode('utf-8')
     elif isinstance(obj, (int, float, str, bool)):
         return obj
+    elif obj is None:
+        return None
     else:
         raise ValueError(f"Unsupported type: {type(obj)}")
 
@@ -63,7 +65,7 @@ def _get_optional_type(cls):
     args = typing.get_args(cls)
 
     if origin is typing.Union:
-        if type(None) in args:
+        if type(None) in args and len(args) == 2:
             return args[0]
     # if origin is types.UnionType:
     #     return type(None) in args
@@ -108,6 +110,8 @@ def deserialize(data: Any, cls: Type) -> Any:
         return base64.b64decode(data.encode('utf-8'))
     elif cls in (int, float, str, bool):
         return cls(data)
+    elif cls is type(None):
+        return None
     else:
         raise ValueError(f"Unsupported type: {cls}")
 
@@ -128,6 +132,9 @@ def _get_type_from_string(type_str):
         raise ValueError(f"Invalid type string format: {type_str}")
 
     full_path = match.group(1) or match.group(2)
+
+    if full_path == 'NoneType':
+        return type(None)
 
     # Check if it's a builtin type
     if hasattr(builtins, full_path):
