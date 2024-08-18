@@ -551,4 +551,21 @@ class TestRealEvents:
         # THEN
         target.assert_filesystem_are_equal()
         assert (target.initial_fs / 'sub1/foo.txt').exists()
-    
+
+    def test_delete_folder(self,target):
+        # GIVEN
+        target.verify_mutator_events = False
+        with target.source_mutator as m:
+            m.mkdir('sub1')
+            m.touch('sub1/foo.txt')
+            m.rmdir('sub1')
+
+        # WHEN
+        target.invoke("""
+  {"event_type": "deleted", "is_directory": false, "src_path": "sub1/foo.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "sub1"}
+  {"event_type": "deleted", "is_directory": true, "src_path": "sub1"}
+  {"event_type": "modified", "is_directory": true, "src_path": ""}""")
+
+        # THEN
+        target.assert_filesystem_are_equal()
