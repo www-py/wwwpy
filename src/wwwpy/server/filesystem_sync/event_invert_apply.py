@@ -8,25 +8,7 @@ from wwwpy.server.filesystem_sync import Event
 
 # production code
 def events_invert(fs: Path, events: List[Event]) -> List[Event]:
-    """events paths should already be absolute contained in fs.
-    The returned events will be relative to fs."""
-
-    def validate(e: Event):
-        if e.src_path == '' or e.src_path == '/':
-            raise ValueError(f'Invalid src_path: {e.src_path}')
-        src = Path(e.src_path).relative_to(fs)
-        res = dataclasses.replace(e, src_path=str(src))
-
-        if e.dest_path == '':
-            return res
-        if e.dest_path and (e.dest_path == '' or e.dest_path == '/'):
-            raise ValueError(f'Invalid dest_path: {e.dest_path}')
-        dst = Path(e.dest_path).relative_to(fs)
-        res2 = dataclasses.replace(res, dest_path=str(dst))
-        return res2
-
-    relative_events = [validate(e) for e in events]
-
+    relative_events = [e.relative_to(fs) for e in events]
     return relative_events
 
 

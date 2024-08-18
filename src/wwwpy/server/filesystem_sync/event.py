@@ -35,3 +35,18 @@ class Event:
         src_path = '' if e.src_path == '' else str(into / e.src_path)
         dest_path = '' if e.dest_path == '' else str(into / e.dest_path)
         return dataclasses.replace(e, src_path=src_path, dest_path=dest_path)
+
+    def relative_to(self, other):
+        e = self
+        if e.src_path == '' or e.src_path == '/':
+            raise ValueError(f'Invalid src_path: {e.src_path}')
+        src = Path(e.src_path).relative_to(other)
+        res = dataclasses.replace(e, src_path=str(src))
+
+        if e.dest_path == '':
+            return res
+        if e.dest_path and (e.dest_path == '' or e.dest_path == '/'):
+            raise ValueError(f'Invalid dest_path: {e.dest_path}')
+        dst = Path(e.dest_path).relative_to(other)
+        res2 = dataclasses.replace(res, dest_path=str(dst))
+        return res2
