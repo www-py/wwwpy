@@ -14,11 +14,13 @@ The tests of this module are created with the following steps:
 """
 import shutil
 from pathlib import Path
+from typing import List
 
 import pytest
 
 from tests.server.filesystem_sync.fs_compare import FsCompare
 from tests.server.filesystem_sync.sync_fixture import _deserialize_events
+from wwwpy.server.filesystem_sync import Event
 from wwwpy.server.filesystem_sync.event_invert_apply import events_invert, events_apply
 
 
@@ -26,14 +28,17 @@ class FilesystemFixture:
     def __init__(self, tmp_path: Path, ):
         self.tmp_path = tmp_path
 
-        def mk(dir):
-            p = tmp_path / dir
+        def mk(path):
+            p = tmp_path / path
             p.mkdir(parents=True, exist_ok=True)
             return p
 
         self.initial_fs = mk('initial')
         self.expected_fs = mk('expected')
         self.fs_compare = FsCompare(self.initial_fs, self.expected_fs, 'initial', 'expected')
+        self.source_mutator = Mutator(self.expected_fs)
+        """This transform the initial_fs into the expected_fs.
+    In other words it should generate events e_list that when applied to A_0 should result in A_n"""
 
     def assert_filesystem_are_equal(self):
         __tracebackhide__ = True
@@ -46,11 +51,6 @@ class FilesystemFixture:
 
         inverted = events_invert(self.expected_fs, events_fix)
         events_apply(self.initial_fs, inverted)
-
-    def source_mutate(self):
-        """This transform the initial_fs into the expected_fs.
-        In other words it should generate events e_list that when applied to A_0 should result in A_n"""
-        return Mutator(self.expected_fs)
 
     def source_init(self):
         """This should be used to create the initial state of the filesystem.
@@ -67,6 +67,7 @@ class Mutator:
     def __init__(self, fs: Path, on_exit=None):
         self.fs = fs
         self.on_exit = on_exit
+        self.events: List[Event] = []
 
     def touch(self, path: str):
         (self.fs / path).touch()
@@ -97,8 +98,8 @@ def target(tmp_path):
 
 def test_new_file(target):
     # GIVEN
-    with target.source_mutate() as source:
-        source.touch('new_file.txt')
+    with target.source_mutator as m:
+        m.touch('new_file.txt')
 
     # WHEN
     target.invoke("""{"event_type": "created", "is_directory": false, "src_path": "new_file.txt"}""")
@@ -110,11 +111,11 @@ def test_new_file(target):
 
 def test_delete_file(target):
     # GIVEN
-    with target.source_init() as source:
-        source.touch('file.txt')
+    with target.source_init() as m:
+        m.touch('file.txt')
 
-    with target.source_mutate() as source:
-        source.unlink('file.txt')
+    with target.source_mutator as m:
+        m.unlink('file.txt')
 
     # WHEN
     target.invoke("""{"event_type": "deleted", "is_directory": false, "src_path": "file.txt"}""")
@@ -126,8 +127,8 @@ def test_delete_file(target):
 
 def test_new_directory(target):
     # GIVEN
-    with target.source_mutate() as source:
-        source.mkdir('new_dir')
+    with target.source_mutator as m:
+        m.mkdir('new_dir')
 
     # WHEN
     target.invoke("""{"event_type": "created", "is_directory": true, "src_path": "new_dir"}""")
@@ -140,11 +141,11 @@ def test_new_directory(target):
 
 def test_delete_directory(target):
     # GIVEN
-    with target.source_init() as source:
-        source.mkdir('dir')
+    with target.source_init() as m:
+        m.mkdir('dir')
 
-    with target.source_mutate() as source:
-        source.rmdir('dir')
+    with target.source_mutator as m:
+        m.rmdir('dir')
 
     # WHEN
     target.invoke("""{"event_type": "deleted", "is_directory": true, "src_path": "dir"}""")
