@@ -1,5 +1,4 @@
 import dataclasses
-import filecmp
 import json
 import shutil
 import sys
@@ -13,8 +12,9 @@ import pytest
 
 from tests import timeout_multiplier
 from tests.server.filesystem_sync.activity_monitor import ActivityMonitor
+from tests.server.filesystem_sync.fs_compare import FsCompare
 from wwwpy.common.rpc import serialization
-from wwwpy.server.filesystem_sync import filesystemevents_print, Sync, new_tmp_path, Event
+from wwwpy.server.filesystem_sync import Sync, new_tmp_path, Event
 from wwwpy.server.filesystem_sync import sync_delta, sync_zip
 from wwwpy.server.filesystem_sync.watchdog_debouncer import WatchdogDebouncer
 
@@ -32,7 +32,7 @@ class SyncFixture:
         self.all_events = []
         self.window = timedelta(milliseconds=100 * timeout_multiplier())
         self.activities = ActivityMonitor(self.window + timedelta(milliseconds=10 * timeout_multiplier()))
-        self.dircmp = None
+        self.fs_compare = FsCompare(self.source, self.target, 'source', 'target')
         self._lock = Lock()
         self.callback_count = 0
 
@@ -79,23 +79,10 @@ class SyncFixture:
         self.apply_changes(self.sync.sync_init(self.source))
 
     def synchronized(self):
-        self._calc_synchronized()
-        return self._is_synchronized()
-
-    def _is_synchronized(self) -> bool:
-        return not self.dircmp.left_only and not self.dircmp.right_only and not self.dircmp.diff_files
-
-    def _calc_synchronized(self):
-        self.dircmp = filecmp.dircmp(self.source, self.target)
+        return self.fs_compare.synchronized()
 
     def sync_error(self):
-        if not self.dircmp:
-            self._calc_synchronized()
-
-        def diff_printable():
-            return f'source_only={self.dircmp.left_only} target_only={self.dircmp.right_only} diff_files={self.dircmp.diff_files}'
-
-        return None if self._is_synchronized() else diff_printable()
+        return self.fs_compare.sync_error()
 
     def copy_source_to_target(self):
         shutil.rmtree(self.target, ignore_errors=True)

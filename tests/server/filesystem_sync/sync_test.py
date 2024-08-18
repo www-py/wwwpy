@@ -23,11 +23,11 @@ def disable_test_a_read_on_source__should_not_generate_events(target):
     """This is needed because if during the collection of source changes,
     we will fire new events and we will end up in an infinite loop"""
     # GIVEN
-    (target.source / 'foo.txt').write_text('content1')
+    (target.left / 'foo.txt').write_text('content1')
     target.start()
 
     # WHEN
-    (target.source / 'foo.txt').read_text()
+    (target.left / 'foo.txt').read_text()
     target.wait_at_rest()
 
     # THEN
