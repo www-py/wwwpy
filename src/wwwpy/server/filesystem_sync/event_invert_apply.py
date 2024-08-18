@@ -22,11 +22,14 @@ def events_invert(fs: Path, events: List[Event]) -> List[Event]:
             path_node = _create_node(root, path_str, is_dir)
         return path_node
 
-    def augment(event: Event) -> Event:
+    def get_final_path(event: Event) -> Path:
         path_node = _get_or_create_node(event.src_path)
         assert path_node is not None
-        path = path_node.final_path
-        content = _get_content(Path(fs / path))
+        return Path(fs / path_node.final_path)
+
+    def augment(event: Event) -> Event:
+        fp = get_final_path(event)
+        content = _get_content(fp)
         aug = dataclasses.replace(event, content=content)
         return aug
 
@@ -69,6 +72,8 @@ def events_invert(fs: Path, events: List[Event]) -> List[Event]:
             # mark this entity such as we are ignore all preceding events, 'moved' included
             _get_or_create_node(rel.src_path).is_deleted = True
         elif rel.event_type == 'modified':
+            if get_final_path(rel).is_dir():
+                continue
             rel = augment(rel)
             # mark this entity such as we are ignore all preceding events, except 'moved'
             _get_or_create_node(rel.src_path).is_modified = True
@@ -111,8 +116,8 @@ def _event_apply(fs: Path, event: Event):
 
 
 def _get_content(path: Path):
-    assert path.exists()
-    assert path.is_file()
+    assert path.exists(), f'Path does not exist: {path}'
+    assert path.is_file(), f'Not a file: {path}'
     try:
         return path.read_text()
     except UnicodeDecodeError:

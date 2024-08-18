@@ -343,6 +343,18 @@ def test_rename_move_file_and_rename_dir(target):
     assert not (target.initial_fs / 'f.txt').exists()
     assert (target.initial_fs / 'dir2/f2.txt').exists()
 
+def test_modify_folder__should_be_ignored(target):
+    # GIVEN
+    target.verify_mutator_events = False
+    with target.source_init as m:
+        m.mkdir('dir')
+
+    # WHEN
+    target.invoke("""{"event_type": "modified", "is_directory": true, "src_path": "dir"}""")
+
+    # THEN
+    target.assert_filesystem_are_equal()
+
 
 class TestCompression:
     def test_create_delete(self, target):
@@ -472,6 +484,7 @@ class TestCompression:
         # THEN
         assert target.inverted_events == []
 
+
 class TestRealEvents:
     def test_new_file(self, target):
         # GIVEN
@@ -490,3 +503,52 @@ class TestRealEvents:
         # THEN
         target.assert_filesystem_are_equal()
         assert (target.initial_fs / 'new_file.txt').exists()
+
+    def test_new_file_and_delete(self, target):
+        # GIVEN
+        target.verify_mutator_events = False
+        with target.source_mutator as m:
+            m.touch('new_file.txt')
+            m.unlink('new_file.txt')
+
+        # WHEN
+        target.invoke("""
+  {"event_type": "created", "is_directory": false, "src_path": "new_file.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": ""}
+  {"event_type": "modified", "is_directory": false, "src_path": "new_file.txt"}
+  {"event_type": "closed", "is_directory": false, "src_path": "new_file.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": ""}
+  {"event_type": "modified", "is_directory": false, "src_path": "new_file.txt"}
+  {"event_type": "modified", "is_directory": false, "src_path": "new_file.txt"}
+  {"event_type": "closed", "is_directory": false, "src_path": "new_file.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": ""}
+  {"event_type": "deleted", "is_directory": false, "src_path": "new_file.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": ""}""")
+
+        # THEN
+        assert not (target.initial_fs / 'new_file.txt').exists()
+        target.assert_filesystem_are_equal()
+
+    def test_new_file_in_subfolder(self, target):
+        # GIVEN
+        target.verify_mutator_events = False
+        with target.source_mutator as m:
+            m.mkdir('sub1')
+            m.touch('sub1/foo.txt')
+            m.write('sub1/foo.txt', 'content')
+
+        # WHEN
+        target.invoke("""
+  {"event_type": "created", "is_directory": true, "src_path": "sub1"}
+  {"event_type": "modified", "is_directory": true, "src_path": ""}
+  {"event_type": "created", "is_directory": false, "src_path": "sub1/foo.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "sub1"}
+  {"event_type": "created", "is_directory": false, "src_path": "sub1/foo.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "sub1"}
+  {"event_type": "modified", "is_directory": false, "src_path": "sub1/foo.txt"}
+  {"event_type": "closed", "is_directory": false, "src_path": "sub1/foo.txt"}
+  {"event_type": "modified", "is_directory": true, "src_path": "sub1"}""")
+        # THEN
+        target.assert_filesystem_are_equal()
+        assert (target.initial_fs / 'sub1/foo.txt').exists()
+    
