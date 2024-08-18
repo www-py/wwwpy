@@ -20,6 +20,7 @@ import pytest
 from tests.server.filesystem_sync.fs_compare import FsCompare
 from tests.server.filesystem_sync.sync_fixture import _deserialize_events
 from wwwpy.server.filesystem_sync import Event
+from wwwpy.server.filesystem_sync.event_invert_apply import events_invert, events_apply
 
 
 class FilesystemFixture:
@@ -117,26 +118,3 @@ def invert_apply(expected_fs: Path, events_str: str, initial_fs: Path):
 
     inverted = events_invert(expected_fs, events_fix)
     events_apply(expected_fs, inverted)
-
-
-# production code
-def events_invert(fs: Path, events: List[Event]) -> List[Event]:
-    return events
-
-
-def events_apply(fs: Path, events: List[Event]):
-    for event in events:
-        event_apply(fs, event)
-
-
-def event_apply(fs: Path, event: Event):
-    if event.event_type == 'created':
-        if event.is_directory:
-            (fs / event.src_path).mkdir()
-        else:
-            (fs / event.src_path).touch()
-    elif event.event_type == 'deleted':
-        if event.is_directory:
-            shutil.rmtree(fs / event.src_path)
-        else:
-            (fs / event.src_path).unlink()
