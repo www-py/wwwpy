@@ -96,6 +96,11 @@ class Mutator:
         self.events.append(Event(event_type='deleted', is_directory=True, src_path=path))
         (self.fs / path).rmdir()
 
+    def move(self, old, new):
+        fs_old = self.fs / old
+        self.events.append(Event(event_type='moved', is_directory=fs_old.is_dir(), src_path=old, dest_path=new))
+        shutil.move(fs_old, self.fs / new)
+
 
 @pytest.fixture
 def target(tmp_path):
@@ -163,10 +168,13 @@ def test_delete_directory(target):
     assert not (target.initial_fs / 'dir').exists()
 
 
-def xx_test_move_file(target):
+def test_move_file(target):
     # GIVEN
-    file = target.initial_fs / 'f.txt'
-    file.touch()
+    with target.source_init() as m:
+        m.touch('f.txt')
+
+    with target.source_mutator as m:
+        m.move('f.txt', 'f2.txt')
 
     # WHEN
     target.invoke("""{"event_type": "moved", "is_directory": false, "src_path": "f.txt", "dest_path": "f2.txt"}""")
@@ -175,3 +183,21 @@ def xx_test_move_file(target):
     target.assert_filesystem_are_equal()
     assert not (target.initial_fs / 'f.txt').exists()
     assert (target.initial_fs / 'f2.txt').exists()
+
+
+def test_move_directory(target):
+    # GIVEN
+    with target.source_init() as m:
+        m.mkdir('dir')
+
+    with target.source_mutator as m:
+        m.move('dir', 'dir2')
+
+    # WHEN
+    target.invoke("""{"event_type": "moved", "is_directory": true, "src_path": "dir", "dest_path": "dir2"}""")
+
+    # THEN
+    target.assert_filesystem_are_equal()
+    assert not (target.initial_fs / 'dir').exists()
+    assert (target.initial_fs / 'dir2').exists()
+    assert (target.initial_fs / 'dir2').is_dir()
