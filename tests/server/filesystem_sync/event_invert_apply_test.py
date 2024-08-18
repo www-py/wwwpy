@@ -12,16 +12,13 @@ The tests of this module are created with the following steps:
 - WHEN invoke target
 - THEN assert the result
 """
-import dataclasses
 import shutil
 from pathlib import Path
-from typing import List
 
 import pytest
 
 from tests.server.filesystem_sync.fs_compare import FsCompare
 from tests.server.filesystem_sync.sync_fixture import _deserialize_events
-from wwwpy.server.filesystem_sync import Event
 from wwwpy.server.filesystem_sync.event_invert_apply import events_invert, events_apply
 
 
@@ -45,12 +42,7 @@ class FilesystemFixture:
     def invoke(self, events_str: str):
         events = _deserialize_events(events_str)
 
-        def relocate(e: Event, into: Path) -> Event:
-            src_path = '' if e.src_path == '' else str(into / e.src_path)
-            dest_path = '' if e.dest_path == '' else str(into / e.dest_path)
-            return dataclasses.replace(e, src_path=src_path, dest_path=dest_path)
-
-        events_fix = [relocate(e, self.expected_fs) for e in events]
+        events_fix = [e.to_absolute(self.expected_fs) for e in events]
 
         inverted = events_invert(self.expected_fs, events_fix)
         events_apply(self.initial_fs, inverted)

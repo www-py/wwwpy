@@ -1,4 +1,6 @@
+import dataclasses
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass(frozen=True)
@@ -27,3 +29,9 @@ class Event:
         dest_path = fix(self.dest_path)
 
         return Event(self.event_type, self.is_directory, src_path, dest_path)
+
+    def to_absolute(self, into: Path) -> 'Event':
+        e = self
+        src_path = '' if e.src_path == '' else str(into / e.src_path)
+        dest_path = '' if e.dest_path == '' else str(into / e.dest_path)
+        return dataclasses.replace(e, src_path=src_path, dest_path=dest_path)
