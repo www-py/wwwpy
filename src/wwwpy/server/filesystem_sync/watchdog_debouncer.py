@@ -9,17 +9,25 @@ from wwwpy.server.filesystem_sync.any_observer import AnyObserver
 from wwwpy.server.filesystem_sync.debouncer import Debouncer
 from wwwpy.server.filesystem_sync.debouncer_thread import DebouncerThread
 from wwwpy.server.filesystem_sync.event import Event
+from watchdog.events import FileSystemEvent
 
 
 class WatchdogDebouncer(DebouncerThread):
 
     def __init__(self, path: Path, window: timedelta, callback: Callable[[List[Event]], None]):
         self._debouncer = Debouncer(window)
+        self.skip_synthetic = True
+        self.skip_opened = True
         super().__init__(self._debouncer, callback)
 
-        def skip_open(event: Event):
-            if event.event_type != 'opened':
-                self._debouncer.add_event(event)
+        def skip_open(event: FileSystemEvent):
+            if event.event_type == 'opened' and self.skip_opened:
+                return
+            if event.is_synthetic and self.skip_synthetic:
+                return
+
+            e = Event(event.event_type, event.is_directory, event.src_path, event.dest_path)
+            self._debouncer.add_event(e)
 
         self._any_observer = AnyObserver(path, skip_open)
 
@@ -38,33 +46,23 @@ class WatchdogDebouncer(DebouncerThread):
 
 def main():
     tmp_path = new_tmp_path()
+    print(f'watching {tmp_path}')
 
     def print_events(events: List[Event]):
         print('=' * 20 + f' current thread name={threading.current_thread().name}')
-        print(f'len={len(events)} events={events}')
+        print(f'originals:')
+        for e in events:
+            print(f'  {e}')
+        print('relative:')
+        for e in events:
+            e = e.relative_to(tmp_path)
+            print(f'  {e}')
+        print(f'len={len(events)}')
 
     WatchdogDebouncer(tmp_path, timedelta(milliseconds=100), print_events).start()
 
-    counter = 0
-
-    def send(n, between, final):
-        nonlocal counter
-        counter += 1
-        for _ in range(n, ):
-            (tmp_path / f"e{counter}.txt").write_text(f"e{counter}")
-            sleep(between)
-        sleep(final)
-
-    send(1, 0.01, 1)
-    send(10, 0.01, 1)
-
-    sleep(3)
-    return
-
-    for t in range(10):
-        send(5, 0.09, 1)
-        send(100, 0.01, 0.3)
-        send(10, 0.05, 0.5)
+    while True:
+        sleep(1)
 
 
 if __name__ == '__main__':
