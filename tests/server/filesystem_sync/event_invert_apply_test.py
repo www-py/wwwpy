@@ -11,6 +11,7 @@ The tests of this module are created with the following steps:
 - THEN assert the result
 """
 import dataclasses
+import shutil
 from pathlib import Path
 from typing import List
 
@@ -55,7 +56,7 @@ def test_new_file(target):
     new_file.touch()
 
     # WHEN
-    target.invoke("""{"event_type": "created", "is_directory": true, "src_path": "new_file.txt"}""")
+    target.invoke("""{"event_type": "created", "is_directory": false, "src_path": "new_file.txt"}""")
 
     # THEN
     target.assert_filesystem_are_equal()
@@ -87,6 +88,19 @@ def test_new_directory(target):
     target.assert_filesystem_are_equal()
     assert (target.initial_fs / 'new_dir').exists()
     assert (target.initial_fs / 'new_dir').is_dir()
+
+
+def test_delete_directory(target):
+    # GIVEN
+    dir = target.initial_fs / 'dir'
+    dir.mkdir()
+
+    # WHEN
+    target.invoke("""{"event_type": "deleted", "is_directory": true, "src_path": "dir"}""")
+
+    # THEN
+    target.assert_filesystem_are_equal()
+    assert not (target.initial_fs / 'dir').exists()
 
 
 def invert_apply(expected_fs: Path, events_str: str, initial_fs: Path):
@@ -122,4 +136,7 @@ def event_apply(fs: Path, event: Event):
         else:
             (fs / event.src_path).touch()
     elif event.event_type == 'deleted':
-        (fs / event.src_path).unlink()
+        if event.is_directory:
+            shutil.rmtree(fs / event.src_path)
+        else:
+            (fs / event.src_path).unlink()
