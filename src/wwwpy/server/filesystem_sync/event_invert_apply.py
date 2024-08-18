@@ -35,13 +35,15 @@ def events_invert(fs: Path, events: List[Event]) -> List[Event]:
     def is_deleted_entity(rel: Event) -> bool:
         chain = _get_node_chain(root, rel.src_path)
         for node in chain:
-            if node is not None and node.to_ignore:
+            if node is not None and node.is_deleted:
                 return True
         return False
 
-    def mark_ignore(path: str):
-        node = _get_or_create_node(path)
-        node.to_ignore = True
+    def is_modified_entity(rel: Event) -> bool:
+        node = _get_node_chain(root, rel.src_path)[-1]
+        if node is not None and node.is_modified:
+            return True
+        return False
 
     relative_events = []
     for e in reversed(events):
@@ -49,14 +51,8 @@ def events_invert(fs: Path, events: List[Event]) -> List[Event]:
         if is_deleted_entity(rel):
             continue
         # we are processing the events backwards in time to go from A_n to A_0
-        current_path = rel.dest_path  # this is the path in A_i
-        if rel.event_type == 'deleted':
-            """mark this entity such as we are ignore all preceding events"""
-            mark_ignore(current_path)
-        elif rel.event_type == 'modified':
-            rel = augment(rel)
-            mark_ignore(current_path)
-        elif e.event_type == 'moved':
+        if e.event_type == 'moved':
+            current_path = rel.dest_path  # this is the path in A_i
             new_path = rel.src_path  # this is the path in A_(i-1)
             final_node = _get_node_chain(root, current_path)[-1]
             if final_node is None:
@@ -64,6 +60,16 @@ def events_invert(fs: Path, events: List[Event]) -> List[Event]:
                 _create_node(root, current_path, (fs / current_path).is_dir())
 
             _move_node(root, current_path, new_path)  # we mutate the tree backwards in time
+
+        if is_modified_entity(rel):
+            continue
+        if rel.event_type == 'deleted':
+            # mark this entity such as we are ignore all preceding events, 'moved' included
+            _get_or_create_node(rel.src_path).is_deleted = True
+        elif rel.event_type == 'modified':
+            rel = augment(rel)
+            # mark this entity such as we are ignore all preceding events, except 'moved'
+            _get_or_create_node(rel.src_path).is_modified = True
 
         relative_events.insert(0, rel)
 
@@ -118,7 +124,8 @@ class Node:
     final_path: str
     """This is the final path of the node in the A_n state. It is a relative complete path"""
     is_directory: bool
-    to_ignore: bool = False
+    is_deleted: bool = False
+    is_modified: bool = False
     children: Dict[str, 'Node'] = field(default_factory=dict)
 
     # validate in post init
@@ -205,7 +212,7 @@ class _NodePrint(tree.NodeProtocol):
 
     @property
     def name(self) -> str:
-        msg = f' ({self.node.final_path}) is_dir={self.node.is_directory} is_deleted={self.node.to_ignore}'
+        msg = f' ({self.node.final_path}) is_dir={self.node.is_directory} is_deleted={self.node.is_deleted}'
         return self.node.str().strip('/') + msg
 
 

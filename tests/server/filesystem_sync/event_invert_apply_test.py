@@ -429,6 +429,29 @@ class TestCompression:
         # THEN
         assert target.inverted_events == [Event('modified', False, 'f.txt', content='new content2')]
 
+    def test_modify_rename_modify(self, target):
+        # GIVEN
+        with target.source_init as m:
+            m.mkdir('dir')
+
+        with target.source_mutator as m:
+            m.write('dir/f.txt', 'content')
+            m.move('dir', 'dir2')
+            m.write('dir2/f.txt', 'content2')
+
+        # WHEN
+        target.invoke("""
+        {"event_type": "modified", "is_directory": false, "src_path": "dir/f.txt"}\n
+        {"event_type": "moved", "is_directory": true, "src_path": "dir", "dest_path": "dir2"}\n
+        {"event_type": "modified", "is_directory": false, "src_path": "dir2/f.txt"}""")
+
+        # THEN
+        assert target.inverted_events == [
+            Event('moved', True, 'dir', 'dir2'),
+            Event('modified', False, 'dir2/f.txt', content='content2'),
+        ]
+        target.assert_filesystem_are_equal()
+
 
 class TestRealEvents:
     def todo_test_new_file(self, target):
