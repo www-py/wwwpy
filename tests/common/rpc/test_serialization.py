@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Tuple, Optional, Dict
 
@@ -31,6 +31,7 @@ def test_ser():
 
     assert deserialized == expected
 
+
 def test_bool():
     expected = True
 
@@ -38,6 +39,7 @@ def test_bool():
     deserialized = serialization.from_json(serialized, bool)
 
     assert deserialized == expected
+
 
 def test_dc_datetime():
     from datetime import datetime
@@ -167,9 +169,30 @@ class NodeDict:
     value: int
     node: Dict[str, 'Node'] = None
 
+
 def test_recursive_dict():
     expected = NodeDict(1, {'a': Node(2)})
     serialized = serialization.to_json(expected, NodeDict)
     deserialized = serialization.from_json(serialized, NodeDict)
 
     assert deserialized == expected
+
+
+def test_dataclass_deserialize_with_default_values():
+    @dataclass
+    class PersonDef:
+        name: str
+        fav: str = field(default='Python')
+
+    deserialized = serialization.from_json('{"name":"foo" }', PersonDef)
+    assert deserialized == PersonDef(name='foo')
+
+
+def test_dataclass_deserialize_with_static_value():
+    @dataclass
+    class PersonDef:
+        name: str
+        fav: str = ''
+
+    deserialized = serialization.from_json('{"name":"foo" }', PersonDef)
+    assert deserialized == PersonDef(name='foo')

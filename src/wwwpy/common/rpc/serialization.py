@@ -67,11 +67,12 @@ def deserialize(data: Any, cls: Type) -> Any:
             return None
         return deserialize(data, optional_type)
     if is_dataclass(cls):
+        args = {}
         field_types = typing.get_type_hints(cls)
-        return cls(**{
-            field_name: deserialize(data.get(field_name), field_type)
-            for field_name, field_type in field_types.items()
-        })
+        for name, value in data.items():
+            args[name] = deserialize(value, field_types[name])
+        instance = cls(**args)
+        return instance
     elif get_origin(cls) == list or cls == list:
         item_type = get_args(cls)[0]
         return [deserialize(item, item_type) for item in data]
