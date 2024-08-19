@@ -1,0 +1,14 @@
+{
+    "name": "Windows Container",
+    "image": "mcr.microsoft.com/windows/servercore:ltsc2022",
+    "features": {
+        "ghcr.io/devcontainers/features/python:1": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python"
+            ]
+        }
+    }
+}
