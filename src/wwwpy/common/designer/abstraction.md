@@ -8,9 +8,10 @@ A ComponentLocator class has a:
 
 
 ## Definition of Component and Element:
-- A Component is an Element (as in  html5 custom element)
-- Not all Elements are Components.
-Component1 is a Component and as such also an Element
+- A Component defines and is coupled to its Custom Element (as in  html5 custom element)
+- A Custom Element may not be tied to a Component
+
+Component1 is a Component and as such defines also a Custom Element.
 HTMLInputElement is an Element but it is not a Component
 
 
