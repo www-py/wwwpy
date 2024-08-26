@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol, Callable
 
-from js import document, MouseEvent
+from js import document, MouseEvent, console
 from pyodide.ffi import create_proxy
 
 from wwwpy.common.designer.html_edit import Position
@@ -15,20 +15,23 @@ class DropZone:
     target: HTMLElement
     position: Position
 
-
+# todo refactor to better integrate with toolbox
 class _DropZoneSelector:
     def __init__(self, ):
         self._last_zone: DropZone | None = None
         self._accept = None
         self._callback: SelectorProtocol | None = None
         self._mousemove_proxy = create_proxy(self._mousemove)
+        # todo not under test
+        self._whole = False
 
-    def start_selector(self, callback: SelectorProtocol = None, accept: Callable[[DropZone], bool] = None):
+    def start_selector(self, callback: SelectorProtocol = None, accept: Callable[[DropZone], bool] = None, whole=False):
         """It starts the process for the user to select a drop zone.
         While moving the mouse, it highlights the drop zones.
         """
         self._callback = callback
         self._accept = accept
+        self._whole = whole
         _ensure_drop_zone_style()
         document.addEventListener('mousemove', self._mousemove_proxy)
 
@@ -46,16 +49,24 @@ class _DropZoneSelector:
         position = _calc_position(event)
         element: HTMLElement = event.target
         zone_event = DropZone(element, position)
-        if self._accept and not self._accept(zone_event):
-            return
+        accept = True
+        if self._accept:
+            accept = self._accept(zone_event)
+        if not accept:
+            zone_event = None
+
         if self._last_zone != zone_event:
             self._remove_marker()
-            # console.log(f'candidate sending zone_event', zone_event.position, zone_event.target)
-            css_class = _beforebegin_css_class if position == Position.beforebegin else _afterend_css_class
-            element.classList.add(css_class)
             self._last_zone = zone_event
-            if self._callback:
-                self._callback(zone_event)
+            if zone_event is not None:
+                # console.log(f'candidate sending zone_event', zone_event.position, zone_event.target)
+                if self._whole:
+                    element.classList.add(_whole_css_class)
+                else:
+                    css_class = _beforebegin_css_class if position == Position.beforebegin else _afterend_css_class
+                    element.classList.add(css_class)
+                if self._callback:
+                    self._callback(zone_event)
         else:
             pass
             # console.log(f'candidate discarded zone_event: {zone_event}')
@@ -64,13 +75,14 @@ class _DropZoneSelector:
         if self._last_zone is not None:
             _remove_class(self._last_zone.target, _beforebegin_css_class)
             _remove_class(self._last_zone.target, _afterend_css_class)
+            _remove_class(self._last_zone.target, _whole_css_class)
 
 
 drop_zone_selector = _DropZoneSelector()
 
 _beforebegin_css_class = 'drop-zone-beforebegin'
 _afterend_css_class = 'drop-zone-afterend'
-
+_whole_css_class = 'drop-zone-whole'
 
 class SelectorProtocol(Protocol):
     def __call__(self, event: DropZone) -> None: ...
@@ -92,6 +104,11 @@ def _ensure_drop_zone_style():
     }}
     .{_afterend_css_class} {{
         box-shadow: 2px 2px 2px 2px green;
+        position: relative;
+        z-index: 10;
+    }}
+    .{_whole_css_class} {{
+        box-shadow: 0 0 0 2px green;
         position: relative;
         z-index: 10;
     }}

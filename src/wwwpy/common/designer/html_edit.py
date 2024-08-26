@@ -6,10 +6,10 @@ from enum import Enum
 from wwwpy.common.designer.html_locator import NodePath, locate
 
 
-class Position(Enum):
-    inside = 0
-    beforebegin = 1
-    afterend = 2
+class Position(str, Enum):
+    inside = 'inside'
+    beforebegin = 'beforebegin'
+    afterend = 'afterend'
 
 
 def html_add(html: str, add: str, node_path: NodePath, position: Position) -> str:
