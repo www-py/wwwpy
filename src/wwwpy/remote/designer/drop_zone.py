@@ -65,8 +65,8 @@ class _DropZoneSelector:
                 else:
                     css_class = _beforebegin_css_class if position == Position.beforebegin else _afterend_css_class
                     element.classList.add(css_class)
-                if self._callback:
-                    self._callback(zone_event)
+            if self._callback:
+                self._callback(zone_event)
         else:
             pass
             # console.log(f'candidate discarded zone_event: {zone_event}')
