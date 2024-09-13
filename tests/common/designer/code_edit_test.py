@@ -137,6 +137,25 @@ class MyElement1(wpc.Component):
     assert modified_source == expected_source
 
 
+def test_add_method__lf():
+    original_source = """
+import wwwpy.remote.component as wpc
+class MyElement1(wpc.Component):
+    btn1: js.Some = wpc.element()"""
+
+    expected_source = original_source + """
+    
+    def button1__click(self, event):
+        pass
+"""
+    original_source2 = original_source + '\n'
+    original_source3 = original_source + '\n\n'
+    sources = [original_source, original_source2, original_source3]
+    for original_source in sources:
+        modified_source = add_method(original_source, 'MyElement1', 'button1__click', 'event')
+        assert modified_source == expected_source
+
+
 def todo__test_add_component_should_add_attribute_type_js_import():
     """If I add a HTMLInputElement, be sure to import it from js"""
 
