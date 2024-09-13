@@ -8,7 +8,7 @@ from wwwpy.common.designer.html_locator import NodePath
 from wwwpy.common.modlib import _find_module_root
 
 
-# it could be split in ClassLocation and the NodePath
+# rename to ElementCodePath
 @dataclass()
 class ResolvedLocation:
     class_name: str
@@ -22,14 +22,14 @@ class ResolvedLocation:
     path: NodePath
     """The path from the Component (excluded) to the target."""
 
-
 @dataclass()
-class TargetLocation:
-    """This class represents the location of a target relative to a Component."""
+class ElementPath:
+    """Contains the path to an element relative to a Component."""
+
     component: Any | None
-    """The Component that contains the target."""
+    """The Component that contains the element. None if there is no parent Component"""
     path: NodePath
-    """The path from the Component (excluded) to the target."""
+    """The path from the Component (excluded) to the element."""
 
     def resolve(self) -> ResolvedLocation | None:
         clazz = self.component.__class__

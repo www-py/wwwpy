@@ -3,7 +3,7 @@ from pathlib import Path
 
 from tests.common import restore_sys_path
 from wwwpy.common.designer.html_locator import Node
-from wwwpy.common.designer.code_path import TargetLocation
+from wwwpy.common.designer.code_path import ElementPath
 
 
 def test_resolve(tmp_path, restore_sys_path):
@@ -23,7 +23,7 @@ class Component2: ...
     component2 = Component2()
 
     path = [Node("DIV", 1, {'class': 'class1'})]
-    target = TargetLocation(component2, path)
+    target = ElementPath(component2, path)
 
     # WHEN
     res = target.resolve()

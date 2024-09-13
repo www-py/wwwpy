@@ -9,9 +9,9 @@ from pyodide.ffi import create_proxy
 from wwwpy.common.designer.html_edit import Position
 from wwwpy.remote.widgets.filesystem_tree_widget import HTMLElement
 
-
 @dataclass
 class DropZone:
+    # todo rename to element
     target: HTMLElement
     position: Position
 

@@ -8,7 +8,7 @@ from wwwpy.common.designer.html_locator import Node
 from wwwpy.common.modlib import _find_module_path
 from wwwpy.common.tree import print_tree
 from wwwpy.remote.designer.target_path import path_to_target, target_location
-from wwwpy.common.designer.code_path import ResolvedLocation, TargetLocation
+from wwwpy.common.designer.code_path import ResolvedLocation, ElementPath
 
 
 def test_target_path():
@@ -56,7 +56,7 @@ class Component1(wpc.Component):
     path = [Node("DIV", 1, {'class': 'class1'}),
             Node("BUTTON", 0, {'data-name': 'btn1', 'id': 'btn1id'})]
 
-    expect = TargetLocation(component=component1, path=path)
+    expect = ElementPath(component=component1, path=path)
     # there is something wonky with the comparison of the objects; if I remove the str()
     # from the assert, it fails because the `component` seems to be different. But it is not!?
     assert str(actual) == str(expect), f'\nexpect={expect} \nactual={actual}'
@@ -81,7 +81,7 @@ def test_target_path__without_component():
     path = [Node("DIV", 1, {'class': 'class1'}),
             Node("BUTTON", 0, {'data-name': 'btn1', 'id': 'btn1id'})]
 
-    expect = TargetLocation(component=None, path=path)
+    expect = ElementPath(component=None, path=path)
     assert str(actual) == str(expect), f'\nexpect={expect} \nactual={actual}'
 
 
@@ -107,7 +107,7 @@ def test_target_path__unattached_piece_of_dom():
             Node("DIV", 1, {'class': 'class1'}),
             Node("BUTTON", 0, {'data-name': 'btn1', 'id': 'btn1id'})]
 
-    expect = TargetLocation(component=None, path=path)
+    expect = ElementPath(component=None, path=path)
     assert str(actual) == str(expect), f'\nexpect={expect} \nactual={actual}'
 
 
