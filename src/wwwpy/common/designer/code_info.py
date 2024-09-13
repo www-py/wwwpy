@@ -1,6 +1,6 @@
 import ast
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 
 
@@ -19,9 +19,18 @@ class Attribute:
 
 
 @dataclass
+class Method:
+    name: str
+    def_lineno: int
+    code_lineno: int
+    # end_lineno: int
+
+
+@dataclass
 class ClassInfo:
     name: str
     attributes: List[Attribute]
+    methods: List[Method] = field(default_factory=list)
 
     def next_attribute_name(self, base_name):
         used = set([attr.name for attr in self.attributes])
