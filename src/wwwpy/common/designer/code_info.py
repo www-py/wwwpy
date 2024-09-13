@@ -23,7 +23,6 @@ class Method:
     name: str
     def_lineno: int
     code_lineno: int
-    # end_lineno: int
 
 
 @dataclass
@@ -53,13 +52,16 @@ class _ClassInfoExtractor(ast.NodeVisitor):
     def visit_ClassDef(self, node):
         class_name = node.name
         attributes = []
+        methods = []
         for item in node.body:
             if isinstance(item, ast.AnnAssign):
                 attr_name = item.target.id
                 attr_type = self.get_annotation_type(item.annotation)
                 default = ast.unparse(item.value) if item.value else None
                 attributes.append(Attribute(attr_name, attr_type, default))
-        self.classes.append(ClassInfo(class_name, attributes))
+            elif isinstance(item, ast.FunctionDef):
+                methods.append(Method(item.name, item.lineno, item.body[0].lineno))
+        self.classes.append(ClassInfo(class_name, attributes, methods))
         self.generic_visit(node)
 
     def get_annotation_type(self, annotation):

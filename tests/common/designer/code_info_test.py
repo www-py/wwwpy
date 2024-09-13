@@ -47,5 +47,18 @@ class MyElement(wpc.Component):
     def button1__click(self, event):
         pass
 """)
-    expect = Info(classes=[ClassInfo('MyElement', [], [Method('button1__click', 3, 4)])])
+    expect = Info(classes=[ClassInfo('MyElement', [], [Method('button1__click', 5, 6)])])
+    assert target == expect
+
+
+def test_info_with_method__multi_line_elements():
+    target = info(
+        """import wwwpy.remote.component as wpc
+
+class MyElement(wpc.Component):
+    def button1__click(self,
+                       event):
+        pass
+""")
+    expect = Info(classes=[ClassInfo('MyElement', [], [Method('button1__click', 4, 6)])])
     assert target == expect
