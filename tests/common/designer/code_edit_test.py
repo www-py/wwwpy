@@ -136,13 +136,3 @@ class MyElement1(wpc.Component):
     modified_source = add_method(original_source, 'MyElement1', 'button1__click', 'event')
     assert modified_source == expected_source
 
-
-def todo__test_add_component_should_add_attribute_type_js_import():
-    """If I add a HTMLInputElement, be sure to import it from js"""
-
-    # todo so, we need to take care of wpc.element() import and js import(s)
-    # if there is already a wpc alias, we should add on it
-    # the same for js imports
-    # btw, the import just need to be
-    # import wwwpy.remote.component as wpc
-    # import js
