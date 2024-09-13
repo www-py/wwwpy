@@ -20,13 +20,9 @@ def _fqn(obj):
     return f"{obj.__class__.__module__}.{obj.__class__.__name__}"
 
 
-def target_location(target: Element) -> ElementPath:
-    """
-    Compute the [TargetLocation].
-    """
+def element_path(element: Element) -> ElementPath:
 
     path = []
-    element: Element = target
     while element:
         if hasattr(element, "_py"):
             component = element._py

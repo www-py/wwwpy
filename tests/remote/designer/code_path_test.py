@@ -7,7 +7,7 @@ from tests.common import restore_sys_path
 from wwwpy.common.designer.html_locator import Node
 from wwwpy.common.modlib import _find_module_path
 from wwwpy.common.tree import print_tree
-from wwwpy.remote.designer.target_path import path_to_target, target_location
+from wwwpy.remote.designer.element_path import path_to_target, element_path
 from wwwpy.common.designer.code_path import ElementCodePath, ElementPath
 
 
@@ -50,7 +50,7 @@ class Component1(wpc.Component):
     # WHEN
     target = document.querySelector("#btn1id")
     assert target
-    actual = target_location(target)
+    actual = element_path(target)
 
     # THEN
     path = [Node("DIV", 1, {'class': 'class1'}),
@@ -75,7 +75,7 @@ def test_target_path__without_component():
     # WHEN
     target = document.querySelector("#btn1id")
     assert target
-    actual = target_location(target)
+    actual = element_path(target)
 
     # THEN
     path = [Node("DIV", 1, {'class': 'class1'}),
@@ -100,7 +100,7 @@ def test_target_path__unattached_piece_of_dom():
     # WHEN
     target = div.querySelector("#btn1id")
     assert target
-    actual = target_location(target)
+    actual = element_path(target)
 
     # THEN
     path = [Node("DIV", -1, {'attr1': 'foo'}),
