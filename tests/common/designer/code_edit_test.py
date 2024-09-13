@@ -1,4 +1,4 @@
-from wwwpy.common.designer.code_edit import Attribute, info, add_attribute, add_component, ComponentDef, add_method
+from wwwpy.common.designer.code_edit import Attribute, info, add_attribute, add_component, ElementDef, add_method
 from wwwpy.common.designer.html_edit import Position
 from wwwpy.common.designer.html_locator import Node
 
@@ -115,7 +115,7 @@ class MyElement(wpc.Component):
         self.element.innerHTML = '''<div id='foo'><div></div><div id='target'></div><b name="btn1"></b></div>'''
     """
 
-    component_def = ComponentDef('btn', 'js.Some', '<b name="#name#"></b>')
+    component_def = ElementDef('btn', 'js.Some', '<b name="#name#"></b>')
     node_path = [Node("DIV", 0, {'id': 'foo'}), Node("DIV", 1, {'id': 'target'})]
     modified_source = add_component(original_source, 'MyElement', component_def, node_path, Position.afterend)
 

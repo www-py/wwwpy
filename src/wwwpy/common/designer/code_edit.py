@@ -18,9 +18,8 @@ def add_attribute(source_code: str, class_name: str, attr_info: Attribute):
 
     return modified_tree.code
 
-
 @dataclass
-class ComponentDef:
+class ElementDef:
     base_name: str
     attribute_type: str
     html_piece: str
@@ -37,7 +36,7 @@ class ComponentDef:
 #
 #     return source2
 
-def add_component(source_code: str, class_name: str, comp_def: ComponentDef, node_path: NodePath,
+def add_component(source_code: str, class_name: str, comp_def: ElementDef, node_path: NodePath,
                   position: Position) -> str | None:
     classes = code_info.info(source_code).classes
     filtered_classes = [clazz for clazz in classes if clazz.name == class_name]
