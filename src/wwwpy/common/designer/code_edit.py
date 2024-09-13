@@ -98,7 +98,7 @@ class _AddFieldToClassTransformer(cst.CSTTransformer):
 
 def add_method(source_code: str, class_name: str, method_name: str, method_args: str) -> str:
     module = cst.parse_module(source_code)
-    transformer = _AddMethodToClassTransformer(class_name, method_name, method_args)
+    transformer = _AddMethodToClassTransformer(class_name, method_name, 'self, ' + method_args)
     modified_tree = module.visit(transformer)
     return modified_tree.code
 
@@ -125,6 +125,8 @@ class _AddMethodToClassTransformer(cst.CSTTransformer):
         )
 
         new_body = list(updated_node.body.body)
+        new_body.append(cst.EmptyLine())
         new_body.append(new_method_node)
+        new_body.append(cst.EmptyLine())
 
         return updated_node.with_changes(body=updated_node.body.with_changes(body=new_body))
