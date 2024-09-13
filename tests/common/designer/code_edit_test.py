@@ -1,4 +1,5 @@
-from wwwpy.common.designer.code_edit import Attribute, info, add_attribute, add_component, ElementDef, add_method
+from wwwpy.common.designer.code_edit import Attribute, info, add_attribute, add_component, ElementDef, add_method, \
+    ensure_imports
 from wwwpy.common.designer.html_edit import Position
 from wwwpy.common.designer.html_locator import Node
 
@@ -37,7 +38,8 @@ class MyElement(wpc.Component): # comment2
     btn1: HTMLButtonElement = wpc.element()
     """
 
-    expected_source = """
+    expected_source = """import js
+
 import wwwpy.remote.component as wpc
 # comment1
 class MyElement(wpc.Component): # comment2
@@ -61,7 +63,8 @@ class MyElement(wpc.Component): # comment2
         pass
     """
 
-    expected_source = """
+    expected_source = """import js
+
 import wwwpy.remote.component as wpc
 # comment1
 class MyElement(wpc.Component): # comment2
@@ -85,7 +88,9 @@ class MyElement2(wpc.Component):
         pass
     """
 
-    expected_source = """
+    expected_source = """import js
+import wwwpy.remote.component as wpc
+
 class MyElement(wpc.Component):
         pass
 class MyElement2(wpc.Component):
@@ -107,7 +112,8 @@ class MyElement(wpc.Component):
         self.element.innerHTML = '''<div id='foo'><div></div><div id='target'></div></div>'''
     """
 
-    expected_source = """
+    expected_source = """import js
+
 import wwwpy.remote.component as wpc
 class MyElement(wpc.Component):
     btn1: js.Some = wpc.element()
@@ -137,12 +143,39 @@ class MyElement1(wpc.Component):
     assert modified_source == expected_source
 
 
-def todo__test_add_component_should_add_attribute_type_js_import():
-    """If I add a HTMLInputElement, be sure to import it from js"""
+_default_imports = ['import wwwpy.remote.component as wpc', 'import js']
 
-    # todo so, we need to take care of wpc.element() import and js import(s)
-    # if there is already a wpc alias, we should add on it
-    # the same for js imports
-    # btw, the import just need to be
-    # import wwwpy.remote.component as wpc
-    # import js
+
+class TestEnsureImports:
+
+    def assert_imports_ok(self, source):
+        __tracebackhide__ = True
+
+        def _remove_comment_if_present(line) -> str:
+            line = line.strip()
+            if '#' in line:
+                line = line[:line.index('#')]
+            return line.strip()
+
+        modified_source = ensure_imports(source)
+        modified_set = [_remove_comment_if_present(l) for l in ensure_imports(source).strip().split('\n')]
+        # so it's order independent
+        assert set(modified_set) == set(_default_imports)
+        return modified_source
+
+    def test_ensure_imports(self):
+        self.assert_imports_ok('')
+
+    def test_ensure_imports__should_not_duplicate_imports(self):
+        self.assert_imports_ok('\n'.join(_default_imports))
+
+    def test_ensure_imports__wpc_already_present(self):
+        self.assert_imports_ok(_default_imports[0])
+
+    def test_ensure_imports__js_already_present(self):
+        self.assert_imports_ok(_default_imports[1])
+
+    def test_ensure_imports__with_confounders(self):
+        original_source = 'import js # noqa'
+        modified_source = self.assert_imports_ok(original_source)
+        assert original_source in modified_source
