@@ -3,7 +3,7 @@ from pathlib import Path
 
 from tests.common import restore_sys_path
 from wwwpy.common.designer.html_locator import Node
-from wwwpy.common.designer.target_path import TargetLocation
+from wwwpy.common.designer.code_path import TargetLocation
 
 
 def test_resolve(tmp_path, restore_sys_path):

@@ -1,4 +1,3 @@
-"""could be called code_path ?!"""
 from __future__ import annotations
 
 import inspect

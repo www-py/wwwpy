@@ -5,7 +5,7 @@ import sys
 from js import HTMLElement, Array, Element, document
 
 from wwwpy.common.designer.html_locator import Node, NodePath
-from wwwpy.common.designer.target_path import TargetLocation
+from wwwpy.common.designer.code_path import TargetLocation
 import inspect
 
 
