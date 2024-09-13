@@ -39,7 +39,7 @@ def element_path(element: Element) -> ElementPath:
     return ElementPath(component=None, path=path)
 
 
-def path_to_target(target: HTMLElement) -> NodePath:
+def element_to_node_path(target: HTMLElement) -> NodePath:
     """
     Get the path from the root to the target.
     """

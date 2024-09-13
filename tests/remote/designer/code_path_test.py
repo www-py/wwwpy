@@ -7,7 +7,7 @@ from tests.common import restore_sys_path
 from wwwpy.common.designer.html_locator import Node
 from wwwpy.common.modlib import _find_module_path
 from wwwpy.common.tree import print_tree
-from wwwpy.remote.designer.element_path import path_to_target, element_path
+from wwwpy.remote.designer.element_path import element_to_node_path, element_path
 from wwwpy.common.designer.code_path import ElementCodePath, ElementPath
 
 
@@ -15,7 +15,7 @@ def test_target_path():
     div = document.createElement("div")
     div.innerHTML = """<div id='foo'><div></div><div id="target"></div></div>"""
     target = div.querySelector("#target")
-    actual = path_to_target(target)
+    actual = element_to_node_path(target)
     expect = [Node("DIV", -1, {}), Node("DIV", 0, {'id': 'foo'}), Node("DIV", 1, {'id': 'target'})]
     console.log(f'actual={actual}')
     assert actual == expect, f'\nexpect={expect} \nactual={actual}'
