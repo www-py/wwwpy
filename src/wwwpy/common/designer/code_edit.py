@@ -12,8 +12,7 @@ from wwwpy.common.designer.html_locator import NodePath
 
 
 def add_attribute(source_code: str, class_name: str, attr_info: Attribute):
-    source_code_imp = ensure_imports(source_code)
-    module = cst.parse_module(source_code_imp)
+    module = cst.parse_module(source_code)
     transformer = _AddFieldToClassTransformer(class_name, attr_info)
     modified_tree = module.visit(transformer)
 
@@ -40,18 +39,17 @@ class ElementDef:
 
 def add_component(source_code: str, class_name: str, comp_def: ElementDef, node_path: NodePath,
                   position: Position) -> str | None:
-    source_code_imp = ensure_imports(source_code)
-    classes = code_info.info(source_code_imp).classes
+    classes = code_info.info(source_code).classes
     filtered_classes = [clazz for clazz in classes if clazz.name == class_name]
     if len(filtered_classes) == 0:
-        print(f'Class {class_name} not found inside source ```{source_code_imp}```')
+        print(f'Class {class_name} not found inside source ```{source_code}```')
         return None
 
     class_info = filtered_classes[0]
     attr_name = class_info.next_attribute_name(comp_def.base_name)
     named_html = comp_def.html_piece.replace('#name#', attr_name)
 
-    source1 = add_attribute(source_code_imp, class_name, Attribute(attr_name, comp_def.attribute_type, 'wpc.element()'))
+    source1 = add_attribute(source_code, class_name, Attribute(attr_name, comp_def.attribute_type, 'wpc.element()'))
 
     def manipulate_html(html):
         add = html_add(html, named_html, node_path, position)
@@ -134,25 +132,3 @@ class _AddMethodToClassTransformer(cst.CSTTransformer):
         new_body.append(cst.EmptyLine())
 
         return updated_node.with_changes(body=updated_node.body.with_changes(body=new_body))
-
-
-def ensure_imports(source_code: str) -> str:
-    required_imports = [
-        'import wwwpy.remote.component as wpc',
-        'import js'
-    ]
-
-    def _remove_comment_if_present(line) -> str:
-        line = line.strip()
-        if '#' in line:
-            line = line[:line.index('#')]
-        return line.strip()
-
-    existing_imports = set(_remove_comment_if_present(line) for line in source_code.split('\n')
-                           if line.strip().startswith('import'))
-
-    for imp in required_imports:
-        if imp not in existing_imports:
-            source_code = imp + '\n' + source_code
-
-    return source_code
