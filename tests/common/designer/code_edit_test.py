@@ -130,7 +130,7 @@ class MyElement1(wpc.Component):
 
     expected_source = original_source + """
     
-    def button1__click(self, event):
+    async def button1__click(self, event):
         pass
     """
     modified_source = add_method(original_source, 'MyElement1', 'button1__click', 'event')

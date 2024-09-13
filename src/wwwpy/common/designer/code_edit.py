@@ -18,6 +18,7 @@ def add_attribute(source_code: str, class_name: str, attr_info: Attribute):
 
     return modified_tree.code
 
+
 @dataclass
 class ElementDef:
     base_name: str
@@ -97,14 +98,15 @@ class _AddFieldToClassTransformer(cst.CSTTransformer):
 
 def add_method(source_code: str, class_name: str, method_name: str, method_args: str) -> str:
     module = cst.parse_module(source_code)
-    transformer = _AddMethodToClassTransformer(class_name, method_name, 'self, ' + method_args)
+    transformer = _AddMethodToClassTransformer(True, class_name, method_name, 'self, ' + method_args)
     modified_tree = module.visit(transformer)
     return modified_tree.code
 
 
 class _AddMethodToClassTransformer(cst.CSTTransformer):
-    def __init__(self, class_name, method_name, method_args):
+    def __init__(self, async_def: bool, class_name: str, method_name: str, method_args: str):
         super().__init__()
+        self.async_def = async_def
         self.class_name = class_name
         self.method_name = method_name
         self.method_args = method_args
@@ -121,6 +123,7 @@ class _AddMethodToClassTransformer(cst.CSTTransformer):
             body=cst.IndentedBlock(
                 body=[cst.SimpleStatementLine(body=[cst.Pass()])]
             )
+            , asynchronous=cst.Asynchronous() if self.async_def else None
         )
 
         new_body = list(updated_node.body.body)
