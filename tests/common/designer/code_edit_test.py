@@ -1,4 +1,4 @@
-from wwwpy.common.designer.code_edit import Attribute, info, add_attribute, add_component, ComponentDef
+from wwwpy.common.designer.code_edit import Attribute, info, add_attribute, add_component, ComponentDef, add_method
 from wwwpy.common.designer.html_edit import Position
 from wwwpy.common.designer.html_locator import Node
 
@@ -119,6 +119,21 @@ class MyElement(wpc.Component):
     node_path = [Node("DIV", 0, {'id': 'foo'}), Node("DIV", 1, {'id': 'target'})]
     modified_source = add_component(original_source, 'MyElement', component_def, node_path, Position.afterend)
 
+    assert modified_source == expected_source
+
+
+def test_add_method():
+    original_source = """
+import wwwpy.remote.component as wpc
+class MyElement1(wpc.Component):
+    btn1: js.Some = wpc.element()"""
+
+    expected_source = original_source + """
+    
+    def button1__click(self, event):
+        pass
+"""
+    modified_source = add_method(original_source, 'MyElement1', 'button1__click', 'event')
     assert modified_source == expected_source
 
 

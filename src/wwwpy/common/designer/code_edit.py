@@ -94,3 +94,8 @@ class _AddFieldToClassTransformer(cst.CSTTransformer):
         new_body.insert(last_assign_index, new_field_node)
 
         return updated_node.with_changes(body=updated_node.body.with_changes(body=new_body))
+
+
+def add_method(source_code: str, class_name: str, method_name: str, method_args: str) -> str:
+    # todo
+    return 'todo'
