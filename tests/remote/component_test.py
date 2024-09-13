@@ -151,6 +151,7 @@ class TestElementAttribute:
         assert comp.div1.innerHTML == '789'
 
         try:
+            comp.element_not_found_raises = True
             foo1 = comp.foo1
             assert False, 'Should raise AttributeError'
         except AttributeError:

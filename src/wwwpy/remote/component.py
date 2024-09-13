@@ -67,6 +67,7 @@ class Metadata:
 class Component:
     component_metadata: Metadata = None
     element: HTMLElement = None
+    element_not_found_raises = False
 
     def __init_subclass__(cls, metadata: Metadata = None, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -114,7 +115,12 @@ class Component:
         root = self.root_element()
         selector = root.querySelector(f'[data-name="{name}"]')
         if selector is None:
-            raise ElementNotFound(f'Not found data-name: [{name}] html: [{root.outerHTML}]')
+            msg = f'Not found data-name: [{name}] html: [{root.outerHTML}]'
+            if self.element_not_found_raises:
+                raise ElementNotFound(msg)
+            else:
+                console.warn(msg)
+
         if hasattr(selector, '_py'):
             selector = selector._py
         self._check_type(name, selector)
