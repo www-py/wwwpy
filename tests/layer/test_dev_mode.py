@@ -13,6 +13,7 @@ def test_dev_mode_disabled__should_NOT_create_canonical_components(restore_sys_p
     configure.convention(tmp_path)
     assert get_all_paths_with_hashes(tmp_path) == set()
 
+
 def test_dev_mode_empty_folder__should_create_canonical_components(restore_sys_path, tmp_path: Path):
     configure.convention(tmp_path, dev_mode=True)
 
@@ -21,6 +22,12 @@ def test_dev_mode_empty_folder__should_create_canonical_components(restore_sys_p
     dir1_set = get_all_paths_with_hashes(dir1)
     dir2_set = get_all_paths_with_hashes(dir2)
     assert dir1_set == dir2_set, "Directories do not match!"
+
+
+def test_dev_mode_non_empty_folder_but_no_remote__should_not_fail(restore_sys_path, tmp_path: Path):
+    # tmp_path.mkdir('some-folder')
+    (tmp_path / 'some-folder').mkdir()
+    configure.convention(tmp_path, dev_mode=True)
 
 
 from pathlib import Path

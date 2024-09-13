@@ -28,13 +28,15 @@ def start_default(port: int, directory: Path, dev_mode=False):
 websocket_pool: WebsocketPool = None
 
 
-# todo convention(dev_mode=True) without a ./remote folder fails
 def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
     print(f'applying convention to working_dir: {directory}')
     if dev_mode:
         if not any(directory.iterdir()):
             print(f'empty directory, creating quickstart in {directory.absolute()}')
             _setup_quickstart(directory)
+        else:
+            (directory / 'remote').mkdir(exist_ok=True)
+            
     sys.path.insert(0, str(directory))
     sys.meta_path.insert(0, CustomFinder({'remote', 'remote.rpc', 'wwwpy.remote', 'wwwpy.remote.rpc'}))
     global websocket_pool
