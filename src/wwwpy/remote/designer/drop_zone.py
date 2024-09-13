@@ -11,8 +11,7 @@ from wwwpy.remote.widgets.filesystem_tree_widget import HTMLElement
 
 @dataclass
 class DropZone:
-    # todo rename to element
-    target: HTMLElement
+    element: HTMLElement
     position: Position
 
 # todo refactor to better integrate with toolbox
@@ -73,9 +72,9 @@ class _DropZoneSelector:
 
     def _remove_marker(self):
         if self._last_zone is not None:
-            _remove_class(self._last_zone.target, _beforebegin_css_class)
-            _remove_class(self._last_zone.target, _afterend_css_class)
-            _remove_class(self._last_zone.target, _whole_css_class)
+            _remove_class(self._last_zone.element, _beforebegin_css_class)
+            _remove_class(self._last_zone.element, _afterend_css_class)
+            _remove_class(self._last_zone.element, _whole_css_class)
 
 
 drop_zone_selector = _DropZoneSelector()
