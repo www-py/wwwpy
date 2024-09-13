@@ -8,7 +8,7 @@ from wwwpy.common.designer.html_locator import Node
 from wwwpy.common.modlib import _find_module_path
 from wwwpy.common.tree import print_tree
 from wwwpy.remote.designer.target_path import path_to_target, target_location
-from wwwpy.common.designer.code_path import ResolvedLocation, ElementPath
+from wwwpy.common.designer.code_path import ElementCodePath, ElementPath
 
 
 def test_target_path():
