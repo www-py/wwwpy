@@ -17,6 +17,11 @@ class ElementPath:
     path: NodePath
     """The path from the Component (excluded) to the element."""
 
+    @property
+    def tag_name(self) -> str:
+        """The tag name of the element in lowercase."""
+        return self.path[-1].tag_name
+
     class_name: str = field(init=False)
     """The class name of the Component."""
     class_module: str = field(init=False)
