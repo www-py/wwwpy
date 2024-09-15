@@ -3,7 +3,7 @@ from wwwpy.common.designer.html_locator import Node
 
 # language=html
 html = "<div id='foo'><div></div><div id='target'></div></div>"
-path = [Node("DIV", 0, {'id': 'foo'}), Node("DIV", 1, {'id': 'target'})]
+path = [Node("div", 0, {'id': 'foo'}), Node("div", 1, {'id': 'target'})]
 
 
 def test_add_beforebegin():

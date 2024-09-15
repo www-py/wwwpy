@@ -28,7 +28,7 @@ def element_path(element: Element) -> ElementPath | None:
         parent = element.parentNode
         child_index = Array.prototype.indexOf.call(parent.children, element) if parent else -1
         attributes = {attr.name: attr.value for attr in element.attributes}
-        path.insert(0, Node(element.tagName, child_index, attributes))
+        path.insert(0, Node(element.tagName.lower(), child_index, attributes))
         element = parent
 
     return None

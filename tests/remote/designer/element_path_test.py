@@ -40,8 +40,8 @@ class Component1(wpc.Component):
     actual = element_path(target)
 
     # THEN
-    path = [Node("DIV", 1, {'class': 'class1'}),
-            Node("BUTTON", 0, {'data-name': 'btn1', 'id': 'btn1id'})]
+    path = [Node("div", 1, {'class': 'class1'}),
+            Node("button", 0, {'data-name': 'btn1', 'id': 'btn1id'})]
 
     assert actual.path == path
     assert actual.component == component1

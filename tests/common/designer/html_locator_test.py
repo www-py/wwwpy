@@ -5,7 +5,7 @@ from wwwpy.common.designer.html_locator import Node
 def test_locate():
     # language=html
     html = "<div id='foo'><div></div><div id='target'></div></div>"
-    path = [Node("DIV", 0, {'id': 'foo'}), Node("DIV", 1, {'id': 'target'})]
+    path = [Node("div", 0, {'id': 'foo'}), Node("div", 1, {'id': 'target'})]
     actual = html_locator.locate(html, path)
     expect = (25, 48)
     assert actual == expect
@@ -13,7 +13,7 @@ def test_locate():
 
 
 def test_serde():
-    path = [Node("DIV", -1, {}), Node("DIV", 0, {'id': 'foo'}), Node("DIV", 1, {'id': 'target'})]
+    path = [Node("div", -1, {}), Node("div", 0, {'id': 'foo'}), Node("div", 1, {'id': 'target'})]
     serialized = html_locator.node_path_serialize(path)
     # print on stder
     print(f'\nserialized=={serialized}', )

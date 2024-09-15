@@ -22,7 +22,7 @@ class Component2: ...
     from package1.component2 import Component2
     component2 = Component2()
 
-    path = [Node("DIV", 1, {'class': 'class1'})]
+    path = [Node("div", 1, {'class': 'class1'})]
 
     # WHEN
     target = ElementPath(component2, path)

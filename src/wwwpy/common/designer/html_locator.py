@@ -7,11 +7,15 @@ from typing import Dict, List, Tuple
 @dataclass()
 class Node:
     tag_name: str
+    """The tag name in lowercase."""
     child_index: int
     """This is the index in the list of children of the parent node.
     It is -1 if the node has no parent.
     """
     attributes: Dict[str, str]
+
+    def __post_init__(self):
+        assert self.tag_name == self.tag_name.lower()
 
 
 NodePath = List[Node]
@@ -48,7 +52,6 @@ def locate(html: str, path: NodePath) -> Tuple[int, int] | None:
         if depth == len(path) - 1:
             return node
         return find_node(node.children, path, depth + 1)
-
 
     target_node = find_node(cst_tree, path, 0)
 
