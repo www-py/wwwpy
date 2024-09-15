@@ -2,15 +2,14 @@ import sys
 
 from js import document
 
-from tests.common import restore_sys_path
+from tests.common import dyn_sys_path
 from wwwpy.common.designer.html_locator import Node
 from wwwpy.remote.designer.element_path import element_path
 
 
-def test_target_path_to_component(tmp_path, restore_sys_path):
+def test_target_path_to_component(tmp_path, dyn_sys_path):
     # GIVEN
-
-    (tmp_path / 'component1.py').write_text('''import js
+    dyn_sys_path.write_module('', 'component1.py', '''import js
 
 import wwwpy.remote.component as wpc
 
@@ -26,7 +25,7 @@ class Component1(wpc.Component):
         </div>
     """
     ''')
-    sys.path.insert(0, str(tmp_path))
+
     from component1 import Component1
     component1 = Component1()
 
