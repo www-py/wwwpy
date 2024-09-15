@@ -16,6 +16,8 @@ def element_path(element: Element) -> ElementPath | None:
     path = []
     while element:
         if hasattr(element, "_py"):
+            # todo this should be moved to component.py in a function like component_from_element
+            # or get_underlying_component
             component = element._py
             if hasattr(component, "unwrap"):
                 component = component.unwrap()
