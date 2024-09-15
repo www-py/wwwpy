@@ -1,4 +1,6 @@
-from wwwpy.common.designer.code_edit import Attribute, info, add_attribute, add_component, ElementDef, add_method
+from wwwpy.common.designer.code_edit import Attribute, add_attribute, add_component, add_method
+from wwwpy.common.designer.code_info import info
+from wwwpy.common.designer.element_library import ElementDef
 from wwwpy.common.designer.html_edit import Position
 from wwwpy.common.designer.html_locator import Node
 
@@ -112,10 +114,11 @@ import wwwpy.remote.component as wpc
 class MyElement(wpc.Component):
     btn1: js.Some = wpc.element()
     def foo(self):
-        self.element.innerHTML = '''<div id='foo'><div></div><div id='target'></div><b name="btn1"></b></div>'''
+        self.element.innerHTML = '''<div id='foo'><div></div><div id='target'></div><btn data-name="btn1"></btn></div>'''
     """
 
-    component_def = ElementDef('btn', 'js.Some', '<b name="#name#"></b>')
+    # component_def = ElementDef('btn', 'js.Some', '<b name="#name#"></b>')
+    component_def = ElementDef('btn', 'js.Some')
     node_path = [Node("div", 0, {'id': 'foo'}), Node("div", 1, {'id': 'target'})]
     modified_source = add_component(original_source, 'MyElement', component_def, node_path, Position.afterend)
 
@@ -135,4 +138,3 @@ class MyElement1(wpc.Component):
     """
     modified_source = add_method(original_source, 'MyElement1', 'button1__click', 'event')
     assert modified_source == expected_source
-

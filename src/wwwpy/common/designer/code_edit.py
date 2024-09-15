@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 import libcst as cst
 
 from wwwpy.common.designer import code_info
-from wwwpy.common.designer.code_info import Attribute, info
+from wwwpy.common.designer.code_info import Attribute
 from wwwpy.common.designer.code_strings import html_string_edit
+from wwwpy.common.designer.element_library import ElementDef
 from wwwpy.common.designer.html_edit import Position, html_add
 from wwwpy.common.designer.html_locator import NodePath
 
@@ -17,13 +16,6 @@ def add_attribute(source_code: str, class_name: str, attr_info: Attribute):
     modified_tree = module.visit(transformer)
 
     return modified_tree.code
-
-
-@dataclass
-class ElementDef:
-    base_name: str
-    attribute_type: str
-    html_piece: str
 
 
 # def add_component(source_code: str, attr_name: str, attribute_type: str, html_piece: str, position: Position) -> str:
@@ -44,10 +36,10 @@ def add_component(source_code: str, class_name: str, comp_def: ElementDef, node_
         print(f'Class {class_name} not found inside source ```{source_code}```')
         return None
 
-    attr_name = class_info.next_attribute_name(comp_def.base_name)
-    named_html = comp_def.html_piece.replace('#name#', attr_name)
+    attr_name = class_info.next_attribute_name(comp_def.tag_name)
+    named_html = comp_def.new_html(attr_name)
 
-    source1 = add_attribute(source_code, class_name, Attribute(attr_name, comp_def.attribute_type, 'wpc.element()'))
+    source1 = add_attribute(source_code, class_name, Attribute(attr_name, comp_def.python_type, 'wpc.element()'))
 
     def manipulate_html(html):
         add = html_add(html, named_html, node_path, position)
