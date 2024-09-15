@@ -1,19 +1,13 @@
 from pathlib import Path
 
-from tests.common import path_unloader
+from tests.common import dyn_sys_path
 from wwwpy.common.designer.element_path import ElementPath
 from wwwpy.common.designer.html_locator import Node
 
 
-def test_calculated_attributes(path_unloader):
+def test_calculated_attributes(dyn_sys_path):
     # GIVEN
-    # it looks like the 'remote' is already importable because the 'remote' from '/tests' is imported
-    tmp_path = path_unloader.tmp_path
-    package1 = tmp_path / 'package1'
-    package1.mkdir()
-    (package1 / '__init__.py').write_text('')
-    component2_py = package1 / 'component2.py'
-    component2_py.write_text('''
+    component2_py = dyn_sys_path.write_module('package1', 'component2.py', '''
 
 class Component2: ...
     ''')
