@@ -3,10 +3,10 @@ from pathlib import Path
 
 from tests.common import restore_sys_path
 from wwwpy.common.designer.html_locator import Node
-from wwwpy.common.designer.code_path import ElementPath
+from wwwpy.common.designer.element_path import ElementPath
 
 
-def test_resolve(tmp_path, restore_sys_path):
+def test_calculated_attributes(tmp_path, restore_sys_path):
     # GIVEN
     # it looks like the 'remote' is already importable because the 'remote' from '/tests' is imported
     package1 = tmp_path / 'package1'
@@ -23,14 +23,13 @@ class Component2: ...
     component2 = Component2()
 
     path = [Node("DIV", 1, {'class': 'class1'})]
-    target = ElementPath(component2, path)
 
     # WHEN
-    res = target.resolve()
+    target = ElementPath(component2, path)
 
     # THEN
-    assert res.path is path
-    assert res.class_name == 'Component2'
-    assert res.class_module == 'package1.component2'
-    assert Path(res.relative_path) == Path('package1/component2.py')  # issue with windows path
-    assert res.concrete_path == str(component2_py)
+    assert target.path is path
+    assert target.class_name == 'Component2'
+    assert target.class_module == 'package1.component2'
+    assert Path(target.relative_path) == Path('package1/component2.py')  # issue with windows path
+    assert target.concrete_path == str(component2_py)

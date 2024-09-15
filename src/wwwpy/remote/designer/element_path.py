@@ -1,34 +1,27 @@
 from __future__ import annotations
 
-import sys
+from js import Array, Element, document
 
-from js import HTMLElement, Array, Element, document
-
-from wwwpy.common.designer.html_locator import Node, NodePath
-from wwwpy.common.designer.code_path import ElementPath
-import inspect
-
-
-def _get_source_file_path(instance):
-    cls = instance.__class__
-    module = cls.__module__
-    source_file_path = inspect.getfile(sys.modules[module])
-    return source_file_path
+from wwwpy.common.designer.element_path import ElementPath
+from wwwpy.common.designer.html_locator import Node
 
 
 def _fqn(obj):
     return f"{obj.__class__.__module__}.{obj.__class__.__name__}"
 
 
-def element_path(element: Element) -> ElementPath:
+def element_path(element: Element) -> ElementPath | None:
+    """Returns an instance of  """
 
     path = []
     while element:
         if hasattr(element, "_py"):
             component = element._py
+            if hasattr(component, "unwrap"):
+                component = component.unwrap()
             return ElementPath(component=component, path=path)
         if element == document.body:
-            return ElementPath(component=None, path=path)
+            return None
 
         parent = element.parentNode
         child_index = Array.prototype.indexOf.call(parent.children, element) if parent else -1
@@ -36,21 +29,4 @@ def element_path(element: Element) -> ElementPath:
         path.insert(0, Node(element.tagName, child_index, attributes))
         element = parent
 
-    return ElementPath(component=None, path=path)
-
-
-def element_to_node_path(target: HTMLElement) -> NodePath:
-    """
-    Get the path from the root to the target.
-    """
-
-    path = []
-    element = target
-    while element:
-        parent = element.parentNode
-        child_index = Array.prototype.indexOf.call(parent.children, element) if parent else -1
-        attributes = {attr.name: attr.value for attr in element.attributes}
-        path.append(Node(element.tagName, child_index, attributes))
-        element = parent
-    path.reverse()
-    return path
+    return None
