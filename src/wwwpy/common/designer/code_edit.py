@@ -39,13 +39,11 @@ class ElementDef:
 
 def add_component(source_code: str, class_name: str, comp_def: ElementDef, node_path: NodePath,
                   position: Position) -> str | None:
-    classes = code_info.info(source_code).classes
-    filtered_classes = [clazz for clazz in classes if clazz.name == class_name]
-    if len(filtered_classes) == 0:
+    class_info = code_info.class_info(source_code, class_name)
+    if class_info is None:
         print(f'Class {class_name} not found inside source ```{source_code}```')
         return None
 
-    class_info = filtered_classes[0]
     attr_name = class_info.next_attribute_name(comp_def.base_name)
     named_html = comp_def.html_piece.replace('#name#', attr_name)
 

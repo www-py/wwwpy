@@ -1,14 +1,9 @@
+from __future__ import annotations
+
 import ast
 import sys
 from dataclasses import dataclass, field
 from typing import List
-
-
-def info(python_source: str) -> 'Info':
-    tree = ast.parse(python_source)
-    extractor = _ClassInfoExtractor()
-    extractor.visit(tree)
-    return Info(extractor.classes)
 
 
 @dataclass
@@ -40,9 +35,24 @@ class ClassInfo:
         raise ValueError('Really?')
 
 
+def class_info(python_source: str, class_name: str) -> ClassInfo | None:
+    classes = info(python_source).classes
+    filtered_classes = [clazz for clazz in classes if clazz.name == class_name]
+    if len(filtered_classes) == 0:
+        return None
+    return filtered_classes[0]
+
+
 @dataclass
 class Info:
     classes: List[ClassInfo]
+
+
+def info(python_source: str) -> Info:
+    tree = ast.parse(python_source)
+    extractor = _ClassInfoExtractor()
+    extractor.visit(tree)
+    return Info(extractor.classes)
 
 
 class _ClassInfoExtractor(ast.NodeVisitor):
