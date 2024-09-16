@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 import sys
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Dict
 
 
 @dataclass
@@ -25,6 +25,10 @@ class ClassInfo:
     name: str
     attributes: List[Attribute]
     methods: List[Method] = field(default_factory=list)
+    methods_by_name: Dict[str, Method] = field(init=False)
+
+    def __post_init__(self):
+        self.methods_by_name = {method.name: method for method in self.methods}
 
     def next_attribute_name(self, base_name):
         used = set([attr.name for attr in self.attributes])

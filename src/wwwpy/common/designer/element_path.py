@@ -22,6 +22,11 @@ class ElementPath:
         """The tag name of the element in lowercase."""
         return self.path[-1].tag_name
 
+    @property
+    def data_name(self) -> str:
+        """The name of the element in the data dictionary."""
+        return self.path[-1].attributes.get('data-name', None)
+
     class_name: str = field(init=False)
     """The class name of the Component."""
     class_module: str = field(init=False)
