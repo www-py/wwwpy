@@ -10,7 +10,7 @@ from wwwpy.common.designer.html_edit import Position, html_add
 from wwwpy.common.designer.html_locator import NodePath
 
 
-def add_attribute(source_code: str, class_name: str, attr_info: Attribute):
+def add_property(source_code: str, class_name: str, attr_info: Attribute):
     module = cst.parse_module(source_code)
     transformer = _AddFieldToClassTransformer(class_name, attr_info)
     modified_tree = module.visit(transformer)
@@ -39,7 +39,7 @@ def add_component(source_code: str, class_name: str, comp_def: ElementDef, node_
     attr_name = class_info.next_attribute_name(comp_def.tag_name)
     named_html = comp_def.new_html(attr_name)
 
-    source1 = add_attribute(source_code, class_name, Attribute(attr_name, comp_def.python_type, 'wpc.element()'))
+    source1 = add_property(source_code, class_name, Attribute(attr_name, comp_def.python_type, 'wpc.element()'))
 
     def manipulate_html(html):
         add = html_add(html, named_html, node_path, position)
