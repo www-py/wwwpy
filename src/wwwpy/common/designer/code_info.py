@@ -18,6 +18,7 @@ class Method:
     name: str
     def_lineno: int
     code_lineno: int
+    is_async: bool = field(default=False)
 
 
 @dataclass
@@ -75,6 +76,8 @@ class _ClassInfoExtractor(ast.NodeVisitor):
                 attributes.append(Attribute(attr_name, attr_type, default))
             elif isinstance(item, ast.FunctionDef):
                 methods.append(Method(item.name, item.lineno, item.body[0].lineno))
+            elif isinstance(item, ast.AsyncFunctionDef):
+                methods.append(Method(item.name, item.lineno, item.body[0].lineno, True))
         self.classes.append(ClassInfo(class_name, attributes, methods))
         self.generic_visit(node)
 

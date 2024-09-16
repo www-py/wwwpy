@@ -1,5 +1,5 @@
 from wwwpy.common.designer.code_edit import Attribute
-from wwwpy.common.designer.code_info import Info, ClassInfo, Method, info
+from wwwpy.common.designer.code_info import Info, ClassInfo, Method, info, class_info
 
 
 def test_info():
@@ -61,4 +61,17 @@ class MyElement(wpc.Component):
         pass
 """)
     expect = Info(classes=[ClassInfo('MyElement', [], [Method('button1__click', 4, 6)])])
+    assert target == expect
+
+
+def test_info_with_async_method():
+    target = class_info(
+        """
+import wwwpy.remote.component as wpc
+        
+class MyElement(wpc.Component):
+    async def button1__click(self, event):
+        pass
+""", 'MyElement')
+    expect = ClassInfo('MyElement', [], [Method('button1__click', 5, 6, True)])
     assert target == expect

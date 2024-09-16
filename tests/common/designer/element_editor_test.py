@@ -1,7 +1,7 @@
-from dataclasses import dataclass
 from pathlib import Path
 
 from tests.common import dyn_sys_path
+from wwwpy.common.designer import code_info
 from wwwpy.common.designer.element_editor import ElementEditor
 from wwwpy.common.designer.element_library import ElementDef, EventDef
 from wwwpy.common.designer.element_path import ElementPath
@@ -42,6 +42,24 @@ class Component2:
     assert target.events[0].handled
 
 
+def test_events__add_event(dyn_sys_path):
+    # GIVEN
+    source = '''
+class Component2:
+    some_prop = 1
+'''
+
+    # WHEN
+    target_fixture = TargetFixture(dyn_sys_path, source)
+    target = target_fixture.target
+    target.events[0].do_action()
+
+    # THEN
+    ci = code_info.class_info(Path(target_fixture.element_path.concrete_path).read_text(), 'Component2')
+    actual_method = ci.methods_by_name.get('button1__click', None)
+    assert actual_method
+
+
 class TargetFixture:
     def __init__(self, dyn_sys_path, source: str):
         dyn_sys_path.write_module('', 'component2.py', source)
@@ -53,5 +71,5 @@ class TargetFixture:
         self.event_def = EventDef('click')
         element_def = ElementDef('button', 'js.HTMLButtonElement', events=[self.event_def])
 
-        self.target = ElementEditor(ElementPath(component2, path), element_def)
-
+        self.element_path = ElementPath(component2, path)
+        self.target = ElementEditor(self.element_path, element_def)
