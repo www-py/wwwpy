@@ -20,3 +20,10 @@ def html_add(html: str, add: str, node_path: NodePath, position: Position) -> st
     index = start if position == Position.beforebegin else end
 
     return html[:index] + add + html[index:]
+
+
+def html_edit(html: str, edit: str, node_path: NodePath) -> str:
+    """This function edits the HTML string at the specified path."""
+    start, end = locate(html, node_path)
+
+    return html[:start] + edit + html[end:]
