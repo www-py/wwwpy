@@ -10,10 +10,17 @@ class Help:
     description: str
 
 
+_empty_help = Help("", "")
+
+
 @dataclass
 class NameHelp:
     name: str
-    help: Help
+    help: Help = field(default=_empty_help)
+
+
+@dataclass
+class EventDef(NameHelp): ...
 
 
 @dataclass
@@ -22,13 +29,6 @@ class AttributeDef(NameHelp):
     closed_values: bool = False
     mandatory: bool = False
     default_value: str | None = None
-
-
-@dataclass
-class EventDef(NameHelp): ...
-
-
-_empty_help = Help("", "")
 
 
 @dataclass
