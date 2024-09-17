@@ -38,8 +38,12 @@ class Component2:
 
     # THEN
     assert len(target.events) == 1
-    assert target.events[0].definition == target_fixture.event_def
-    assert target.events[0].handled
+    ev = target.events[0]
+    assert ev.definition == target_fixture.event_def
+    assert ev.handled
+    assert ev.method is not None
+    assert ev.method.name == 'button1__click'
+    assert not ev.method.is_async
 
 
 def test_events__add_event(dyn_sys_path):

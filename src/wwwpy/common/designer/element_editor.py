@@ -19,22 +19,27 @@ class AttributeEditor(ABC):
 class EventEditor:
 
     @property
-    def handled(self):
+    def handled(self) -> bool:
         return self._handled
 
     @property
-    def definition(self):
+    def definition(self) -> el.EventDef:
         return self._definition
 
-    def do_action(self):
+    @property
+    def method(self) -> code_info.Method | None:
+        return self._method
+
+    def do_action(self) -> None:
         """If the class does not have the method, add it.
         In any case it should focus the IDE cursor on the method.
         """
         self._do_action(self)
 
-    def __init__(self, event_def: el.EventDef, handled: bool, method_name: str,
+    def __init__(self, event_def: el.EventDef, method: code_info.Method | None, method_name: str,
                  _do_action: Callable[[EventEditor], None]):
-        self._handled = handled
+        self._handled = method is not None
+        self._method = method
         self._definition = event_def
         self.method_name = method_name
         self._do_action = _do_action
@@ -52,7 +57,7 @@ class ElementEditor:
         for event in element_def.events:
             method_name = f'{data_name}__{event.name}'
             method = ci.methods_by_name.get(method_name, None)
-            event_editor = EventEditor(event, True if method else False, method_name, self._event_do_action)
+            event_editor = EventEditor(event, method, method_name, self._event_do_action)
             self.events.append(event_editor)
 
     def _python_source(self):
