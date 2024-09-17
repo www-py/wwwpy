@@ -8,6 +8,8 @@ from wwwpy.common.designer.element_path import ElementPath
 from wwwpy.common.designer.html_locator import Node, NodePath
 
 
+# todo refactor to use TargetFixture directly in the test parameter as a fixture
+
 class TestEvents:
 
     def test_events__no_event(self, dyn_sys_path):
@@ -96,7 +98,7 @@ class Component2:
 
 class TestAttributes:
 
-    def test_attributes__no_attribute(self, dyn_sys_path):
+    def test_no_attribute(self, dyn_sys_path):
         # GIVEN
         source = '''
 class Component2():
@@ -116,7 +118,7 @@ class Component2():
         assert not name_ae.exists
         assert name_ae.value is None
 
-    def test_attributes__attribute_present(self, dyn_sys_path):
+    def test_attribute_present(self, dyn_sys_path):
         # GIVEN
         source = '''
 class Component2():
@@ -134,6 +136,41 @@ class Component2():
         assert name_ae.definition == target_fixture.name_ad
         assert name_ae.exists
         assert name_ae.value == 'foo'
+
+    def test_attribute_correct_escaping(self, dyn_sys_path):
+        # GIVEN
+        source = '''
+class Component2():
+    def connectedCallback(self):
+        self.element.innerHTML = """<button data-name='button1' name="<'&quot;&amp;>">bar</button>"""
+    '''
+
+        # WHEN
+        target_fixture = TargetFixture(dyn_sys_path, source)
+
+        # THEN
+        name_ae = target_fixture.target.attributes.get('name')
+        assert name_ae
+        assert name_ae.value == """<'"&>"""
+
+    def test_update_existing_attribute_value(self, dyn_sys_path):
+        """"""
+        # GIVEN
+        source = '''
+'''
+        assert False, 'todo'
+
+    def test_add_attribute(self, dyn_sys_path):
+        # GIVEN
+        source = '''
+'''
+        assert False, 'todo'
+
+    def test_remove_attribute(self, dyn_sys_path):
+        # GIVEN
+        source = '''
+'''
+        assert False, 'todo'
 
 
 class TargetFixture:
