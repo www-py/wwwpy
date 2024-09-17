@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from html.parser import HTMLParser
+from .html_parser_mod import HTMLParser
 from typing import Tuple, Dict, List
 
 
