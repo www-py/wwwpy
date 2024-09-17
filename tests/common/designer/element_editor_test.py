@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from tests.common import dyn_sys_path
+import pytest
+
+from tests.common import dyn_sys_path, DynSysPath
 from wwwpy.common.designer import code_info
 from wwwpy.common.designer.element_editor import ElementEditor
 from wwwpy.common.designer.element_library import ElementDef, EventDef, AttributeDef
@@ -12,15 +14,14 @@ from wwwpy.common.designer.html_locator import Node, NodePath
 
 class TestEvents:
 
-    def test_events__no_event(self, dyn_sys_path):
+    def test_events__no_event(self, target_fixture):
         # GIVEN
-        source = '''
+        target_fixture.source = '''
 class Component2: 
     def connectedCallback(self):
         self.element.innerHTML = """<button data-name='button1'>bar</button>"""
     '''
         # WHEN
-        target_fixture = TargetFixture(dyn_sys_path, source)
         target = target_fixture.target
 
         # THEN
@@ -30,9 +31,9 @@ class Component2:
         assert not ev.handled
         assert ev.method is None
 
-    def test_events__event_present(self, dyn_sys_path):
+    def test_events__event_present(self, target_fixture):
         # GIVEN
-        source = '''
+        target_fixture.source = '''
 class Component2:     
     def connectedCallback(self):
         self.element.innerHTML = """<button data-name='button1'>bar</button>"""
@@ -42,7 +43,6 @@ class Component2:
     '''
 
         # WHEN
-        target_fixture = TargetFixture(dyn_sys_path, source)
         target = target_fixture.target
 
         # THEN
@@ -54,9 +54,9 @@ class Component2:
         assert ev.method.name == 'button1__click'
         assert not ev.method.is_async
 
-    def test_events__add_event(self, dyn_sys_path):
+    def test_events__add_event(self, target_fixture):
         # GIVEN
-        source = '''
+        target_fixture.source = '''
 class Component2:
     some_prop = 1
     def connectedCallback(self):
@@ -64,7 +64,6 @@ class Component2:
 '''
 
         # WHEN
-        target_fixture = TargetFixture(dyn_sys_path, source)
         target = target_fixture.target
         target.events[0].do_action()
 
@@ -73,9 +72,9 @@ class Component2:
         actual_method = ci.methods_by_name.get('button1__click', None)
         assert actual_method
 
-    def test_events__add_event_when_it_already_exists_should_leave_source_the_same(self, dyn_sys_path):
+    def test_events__add_event_when_it_already_exists_should_leave_source_the_same(self, target_fixture):
         # GIVEN
-        source = '''
+        target_fixture.source = '''
 class Component2:
     some_prop = 1
     
@@ -87,20 +86,19 @@ class Component2:
 '''
 
         # WHEN
-        target_fixture = TargetFixture(dyn_sys_path, source)
         target = target_fixture.target
         target.events[0].do_action()
 
         # THEN
         current_source = Path(target_fixture.element_path.concrete_path).read_text()
-        assert current_source == source
+        assert current_source == target_fixture.source
 
 
 class TestAttributes:
 
-    def test_no_attribute(self, dyn_sys_path):
+    def test_no_attribute(self, target_fixture):
         # GIVEN
-        source = '''
+        target_fixture.source = '''
 class Component2():
 
     def connectedCallback(self):
@@ -108,45 +106,44 @@ class Component2():
     '''
 
         # WHEN
-        target_fixture = TargetFixture(dyn_sys_path, source)
+        target = target_fixture.target
 
         # THEN test attribute 'name' is empty
-        assert len(target_fixture.target.attributes) >= 1
-        name_ae = target_fixture.target.attributes.get('name')
+        assert len(target.attributes) >= 1
+        name_ae = target.attributes.get('name')
         assert name_ae
         assert name_ae.definition == target_fixture.name_ad
         assert not name_ae.exists
         assert name_ae.value is None
 
-    def test_attribute_present(self, dyn_sys_path):
+    def test_attribute_present(self, target_fixture):
         # GIVEN
-        source = '''
+        target_fixture.source = '''
 class Component2():
     def connectedCallback(self):
         self.element.innerHTML = """<button data-name='button1' name='foo'>bar</button>"""
     '''
 
         # WHEN
-        target_fixture = TargetFixture(dyn_sys_path, source)
+        target = target_fixture.target
 
         # THEN
-        assert len(target_fixture.target.attributes) >= 1
-        name_ae = target_fixture.target.attributes.get('name')
+        assert len(target.attributes) >= 1
+        name_ae = target.attributes.get('name')
         assert name_ae
         assert name_ae.definition == target_fixture.name_ad
         assert name_ae.exists
         assert name_ae.value == 'foo'
 
-    def test_attribute_correct_escaping(self, dyn_sys_path):
+    def test_attribute_correct_escaping(self, target_fixture):
         # GIVEN
-        source = '''
+        target_fixture.source = '''
 class Component2():
     def connectedCallback(self):
         self.element.innerHTML = """<button data-name='button1' name="<'&quot;&amp;>">bar</button>"""
     '''
 
         # WHEN
-        target_fixture = TargetFixture(dyn_sys_path, source)
 
         # THEN
         name_ae = target_fixture.target.attributes.get('name')
@@ -173,9 +170,36 @@ class Component2():
         assert False, 'todo'
 
 
+@pytest.fixture
+def target_fixture(dyn_sys_path):
+    return TargetFixture(dyn_sys_path)
+
+
 class TargetFixture:
-    def __init__(self, dyn_sys_path, source: str):
-        dyn_sys_path.write_module('', 'component2.py', source)
+
+    def __init__(self, dyn_sys_path, source: str = None):
+        self._source = None
+        self.dyn_sys_path: DynSysPath = dyn_sys_path
+        self.click_ed = EventDef('click')
+        self.events = [self.click_ed]
+        self.name_ad = AttributeDef('name', mandatory=False, closed_values=False)
+        self.attributes = [self.name_ad]
+        self.element_def = ElementDef('button', 'js.HTMLButtonElement', events=self.events, attributes=self.attributes)
+        self.element_path: ElementPath = None
+        self.target: ElementEditor = None
+        if source:
+            self.source = source
+
+    @property
+    def source(self):
+        return self._source
+
+    @source.setter
+    def source(self, value):
+        assert self._source is None, 'source can be written only once'
+        self._source = value
+        source = value
+        self.dyn_sys_path.write_module('', 'component2.py', source)
         from component2 import Component2  # noqa - dynamically created module
         component2 = Component2()
 
@@ -183,13 +207,8 @@ class TargetFixture:
         # NodePath([Node("button", 1, {'data-name': 'button1'})])
         path: NodePath = _node_path(source, 'Component2', [0])
 
-        self.click_ed = EventDef('click')
-        self.name_ad = AttributeDef('name', mandatory=False, closed_values=False)
-        element_def = ElementDef('button', 'js.HTMLButtonElement',
-                                 events=[self.click_ed], attributes=[self.name_ad])
-
         self.element_path = ElementPath(component2, path)
-        self.target = ElementEditor(self.element_path, element_def)
+        self.target = ElementEditor(self.element_path, self.element_def)
 
 
 def _node_path(source: str, class_name, indexed_path: list[int]) -> NodePath:
