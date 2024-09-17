@@ -8,67 +8,66 @@ from wwwpy.common.designer.element_path import ElementPath
 from wwwpy.common.designer.html_locator import Node
 
 
-def test_events__no_event(dyn_sys_path):
-    # GIVEN
-    source = '''
+class TestEvents:
+
+    def test_events__no_event(self, dyn_sys_path):
+        # GIVEN
+        source = '''
 class Component2: 
     pass
     '''
-    # WHEN
-    target_fixture = TargetFixture(dyn_sys_path, source)
-    target = target_fixture.target
+        # WHEN
+        target_fixture = TargetFixture(dyn_sys_path, source)
+        target = target_fixture.target
 
-    # THEN
-    assert len(target.events) == 1
-    ev = target.events[0]
-    assert ev.definition == target_fixture.event_def
-    assert not ev.handled
-    assert ev.method is None
+        # THEN
+        assert len(target.events) == 1
+        ev = target.events[0]
+        assert ev.definition == target_fixture.event_def
+        assert not ev.handled
+        assert ev.method is None
 
-
-def test_events__event_present(dyn_sys_path):
-    # GIVEN
-    source = '''
+    def test_events__event_present(self, dyn_sys_path):
+        # GIVEN
+        source = '''
 class Component2:     
     def button1__click(self, event):
         pass
     '''
 
-    # WHEN
-    target_fixture = TargetFixture(dyn_sys_path, source)
-    target = target_fixture.target
+        # WHEN
+        target_fixture = TargetFixture(dyn_sys_path, source)
+        target = target_fixture.target
 
-    # THEN
-    assert len(target.events) == 1
-    ev = target.events[0]
-    assert ev.definition == target_fixture.event_def
-    assert ev.handled
-    assert ev.method is not None
-    assert ev.method.name == 'button1__click'
-    assert not ev.method.is_async
+        # THEN
+        assert len(target.events) == 1
+        ev = target.events[0]
+        assert ev.definition == target_fixture.event_def
+        assert ev.handled
+        assert ev.method is not None
+        assert ev.method.name == 'button1__click'
+        assert not ev.method.is_async
 
-
-def test_events__add_event(dyn_sys_path):
-    # GIVEN
-    source = '''
+    def test_events__add_event(self, dyn_sys_path):
+        # GIVEN
+        source = '''
 class Component2:
     some_prop = 1
 '''
 
-    # WHEN
-    target_fixture = TargetFixture(dyn_sys_path, source)
-    target = target_fixture.target
-    target.events[0].do_action()
+        # WHEN
+        target_fixture = TargetFixture(dyn_sys_path, source)
+        target = target_fixture.target
+        target.events[0].do_action()
 
-    # THEN
-    ci = code_info.class_info(Path(target_fixture.element_path.concrete_path).read_text(), 'Component2')
-    actual_method = ci.methods_by_name.get('button1__click', None)
-    assert actual_method
+        # THEN
+        ci = code_info.class_info(Path(target_fixture.element_path.concrete_path).read_text(), 'Component2')
+        actual_method = ci.methods_by_name.get('button1__click', None)
+        assert actual_method
 
-
-def test_events__add_event_when_it_already_exists_should_leave_source_the_same(dyn_sys_path):
-    # GIVEN
-    source = '''
+    def test_events__add_event_when_it_already_exists_should_leave_source_the_same(self, dyn_sys_path):
+        # GIVEN
+        source = '''
 class Component2:
     some_prop = 1
     
@@ -76,14 +75,14 @@ class Component2:
         pass
 '''
 
-    # WHEN
-    target_fixture = TargetFixture(dyn_sys_path, source)
-    target = target_fixture.target
-    target.events[0].do_action()
+        # WHEN
+        target_fixture = TargetFixture(dyn_sys_path, source)
+        target = target_fixture.target
+        target.events[0].do_action()
 
-    # THEN
-    current_source = Path(target_fixture.element_path.concrete_path).read_text()
-    assert current_source == source
+        # THEN
+        current_source = Path(target_fixture.element_path.concrete_path).read_text()
+        assert current_source == source
 
 
 class TargetFixture:
