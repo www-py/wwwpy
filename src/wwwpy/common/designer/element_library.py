@@ -20,11 +20,14 @@ class NameHelp:
 
 
 @dataclass
-class EventDef(NameHelp): ...
+class EventDef(NameHelp):
+    """Definition of an event of an HTML element."""
+    pass
 
 
 @dataclass
 class AttributeDef(NameHelp):
+    """Definition of an attribute of an HTML element."""
     values: list[str] = field(default_factory=list)
     closed_values: bool = False
     mandatory: bool = False
