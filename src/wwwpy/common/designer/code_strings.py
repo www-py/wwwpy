@@ -13,6 +13,17 @@ def html_string_edit(source_code: str, class_name: str, html_manipulator: Callab
     modified_tree = tree.visit(transformer)
     return modified_tree.code
 
+def html_from_source(source_code: str, class_name: str) -> str:
+    """This function extracts the HTML string from the source code."""
+    html_res = []
+
+    def html_manipulator(html):
+        html_res.append(html)
+        return html
+
+    html_string_edit(source_code, class_name, html_manipulator)  # improper use to capture html
+
+    return html_res[0]
 
 class _HTMLStringUpdater(cst.CSTTransformer):
     def __init__(self, class_name: str, html_manipulator: Callable[[str], str]):

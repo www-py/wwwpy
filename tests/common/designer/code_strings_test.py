@@ -49,3 +49,14 @@ class MyElement1(wpc.Component):
     actual_source = html_string_edit(original_source, 'MyElement1', manipulate_html)
 
     assert actual_source == exepct_source
+
+
+def test_html_from_source():
+    source = '''
+class Component1:
+      def connectedCallback(self):        
+        self.element.innerHTML = """<div>foo</div>"""
+'''
+    from wwwpy.common.designer.code_strings import html_from_source
+    html = html_from_source(source, 'Component1')
+    assert html == '<div>foo</div>'
