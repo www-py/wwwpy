@@ -17,21 +17,27 @@ class AttributeEditor(ABC):
 
 
 class EventEditor:
-    definition: el.EventDef
-    handled: bool = False
 
-    def __init__(self, event_def: el.EventDef, handled: bool, method_name: str,
-                 _do_action: Callable[[EventEditor], None]):
-        self.handled = handled
-        self.definition = event_def
-        self.method_name = method_name
-        self._do_action = _do_action
+    @property
+    def handled(self):
+        return self._handled
+
+    @property
+    def definition(self):
+        return self._definition
 
     def do_action(self):
         """If the class does not have the method, add it.
         In any case it should focus the IDE cursor on the method.
         """
         self._do_action(self)
+
+    def __init__(self, event_def: el.EventDef, handled: bool, method_name: str,
+                 _do_action: Callable[[EventEditor], None]):
+        self._handled = handled
+        self._definition = event_def
+        self.method_name = method_name
+        self._do_action = _do_action
 
 
 class ElementEditor:
@@ -53,6 +59,8 @@ class ElementEditor:
         return Path(self.element_path.concrete_path).read_text()
 
     def _event_do_action(self, event_editor: EventEditor):
+        if event_editor.handled:
+            return
         new_source = code_edit.add_method(self._python_source(), self.element_path.class_name,
                                           event_editor.method_name, 'event')
         Path(self.element_path.concrete_path).write_text(new_source)

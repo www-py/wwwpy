@@ -60,6 +60,26 @@ class Component2:
     assert actual_method
 
 
+def test_events__add_event_when_it_already_exists_should_leave_source_the_same(dyn_sys_path):
+    # GIVEN
+    source = '''
+class Component2:
+    some_prop = 1
+    
+    def button1__click(self, event): # could be async
+        pass
+'''
+
+    # WHEN
+    target_fixture = TargetFixture(dyn_sys_path, source)
+    target = target_fixture.target
+    target.events[0].do_action()
+
+    # THEN
+    current_source = Path(target_fixture.element_path.concrete_path).read_text()
+    assert current_source == source
+
+
 class TargetFixture:
     def __init__(self, dyn_sys_path, source: str):
         dyn_sys_path.write_module('', 'component2.py', source)
