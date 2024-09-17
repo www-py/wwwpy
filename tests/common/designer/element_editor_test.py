@@ -20,8 +20,10 @@ class Component2:
 
     # THEN
     assert len(target.events) == 1
-    assert target.events[0].definition == target_fixture.event_def
-    assert not target.events[0].handled
+    ev = target.events[0]
+    assert ev.definition == target_fixture.event_def
+    assert not ev.handled
+    assert ev.method is None
 
 
 def test_events__event_present(dyn_sys_path):

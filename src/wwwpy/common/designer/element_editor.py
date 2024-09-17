@@ -11,12 +11,15 @@ from . import element_path as ep
 
 
 class AttributeEditor(ABC):
+    """Allow to add/edit/remove attributes of an HTML element according to its AttributeDef."""
     definition: el.AttributeDef
     exists: bool
     value: str | None
 
 
 class EventEditor:
+    """Allow to add/edit events of an HTML element according to its EventDef.
+    The removal of events is not supported."""
 
     @property
     def handled(self) -> bool:
@@ -46,6 +49,11 @@ class EventEditor:
 
 
 class ElementEditor:
+    """Allow to edit an HTML element according to its ElementDef.
+    Notice that the changes applied by an instance of this class  are not reflected in the internal state;
+    it is expected that the hot reload will be triggered and consequently this instance will be discarded and
+    reloaded.
+    """
     attributes: list[AttributeEditor]
     events: list[EventEditor]
 
