@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 import json
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
+
+from wwwpy.common.designer.html_parser import html_to_tree, CstNode
 
 
 @dataclass()
@@ -13,6 +16,7 @@ class Node:
     It is -1 if the node has no parent.
     """
     attributes: Dict[str, str]
+    """The HTML attributes of the node."""
 
     def __post_init__(self):
         assert self.tag_name == self.tag_name.lower()
@@ -29,9 +33,6 @@ def node_path_serialize(path: NodePath) -> str:
 def node_path_deserialize(serialized: str) -> NodePath:
     node_dicts = json.loads(serialized)
     return [Node(**node_dict) for node_dict in node_dicts]
-
-
-from wwwpy.common.designer.html_parser import html_to_tree, CstNode
 
 
 def locate(html: str, path: NodePath) -> Tuple[int, int] | None:
@@ -58,3 +59,18 @@ def locate(html: str, path: NodePath) -> Tuple[int, int] | None:
     if target_node:
         return target_node.position
     return None
+
+
+def tree_to_path(tree: List[CstNode], indexed_path: list[int]) -> NodePath:
+    """This function converts a tree of CstNode objects to a NodePath."""
+
+    def _node(index: int, node: CstNode) -> Node:
+        return Node(node.tag_name, index, node.attributes)
+
+    result = []
+    children = tree
+    for index in indexed_path:
+        node = children[index]
+        result.append(_node(index, node))
+        children = node.children
+    return result

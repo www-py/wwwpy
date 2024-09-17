@@ -26,10 +26,13 @@ class ClassInfo:
     name: str
     attributes: List[Attribute]
     methods: List[Method] = field(default_factory=list)
+
     methods_by_name: Dict[str, Method] = field(init=False)
+    attributes_by_name: Dict[str, Attribute] = field(init=False)
 
     def __post_init__(self):
         self.methods_by_name = {method.name: method for method in self.methods}
+        self.attributes_by_name = {attr.name: attr for attr in self.attributes}
 
     def next_attribute_name(self, base_name):
         used = set([attr.name for attr in self.attributes])

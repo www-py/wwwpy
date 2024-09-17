@@ -8,13 +8,32 @@ from . import code_edit
 from . import code_info
 from . import element_library as el
 from . import element_path as ep
+from ..collectionlib import ListMap
 
 
 class AttributeEditor(ABC):
     """Allow to add/edit/remove attributes of an HTML element according to its AttributeDef."""
-    definition: el.AttributeDef
-    exists: bool
-    value: str | None
+
+    @property
+    def definition(self) -> el.AttributeDef:
+        return self._definition
+
+    @property
+    def exists(self) -> bool:
+        return self._exists
+
+    @property
+    def value(self) -> str | None:
+        return self._value
+
+    def __init__(self, definition: el.AttributeDef, exists: bool, value: str | None):
+        self._definition = definition  # readonly
+        self._exists = exists
+        self._value = value
+
+    # definition: el.AttributeDef
+    # exists: bool
+    # value: str | None
 
 
 class EventEditor:
@@ -54,18 +73,27 @@ class ElementEditor:
     it is expected that the hot reload will be triggered and consequently this instance will be discarded and
     reloaded.
     """
-    attributes: list[AttributeEditor]
-    events: list[EventEditor]
 
     def __init__(self, element_path: ep.ElementPath, element_def: el.ElementDef):
-        self.events = []
+        self.attributes: ListMap[AttributeEditor] = ListMap(key_func=lambda attr: attr.definition.name)
+        """One AttributeEditor for each attribute defined in the ElementDef."""
+        self.events: ListMap[EventEditor] = ListMap(key_func=lambda ev: ev.definition.name)
+        """One EventEditor for each event defined in the ElementDef."""
+
         self.element_path = element_path
+        element_node = element_path.path[-1]
         ci = code_info.class_info(self._python_source(), element_path.class_name)
+        for attribute_def in element_def.attributes:
+            exists = attribute_def.name in element_node.attributes
+            value = element_node.attributes.get(attribute_def.name, None)
+            attribute_editor = AttributeEditor(attribute_def, exists, value)
+            self.attributes.append(attribute_editor)
+
         data_name = element_path.data_name
-        for event in element_def.events:
-            method_name = f'{data_name}__{event.name}'
+        for event_def in element_def.events:
+            method_name = f'{data_name}__{event_def.name}'
             method = ci.methods_by_name.get(method_name, None)
-            event_editor = EventEditor(event, method, method_name, self._event_do_action)
+            event_editor = EventEditor(event_def, method, method_name, self._event_do_action)
             self.events.append(event_editor)
 
     def _python_source(self):

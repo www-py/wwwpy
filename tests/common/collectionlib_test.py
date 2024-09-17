@@ -34,3 +34,13 @@ def test_items_in_constructor():
     assert len(target) == 2
     assert target.get('apple').color == 'red'
     assert target.get('banana').color == 'yellow'
+
+
+def test_keyfunc_in_constructor():
+    # GIVEN
+    target = cl.ListMap(Item('apple', 'red'), Item('banana', 'yellow'), key_func=lambda x: x.color)
+
+    # THEN
+    assert len(target) == 2
+    assert target.get('red').name == 'apple'
+    assert target.get('yellow').name == 'banana'

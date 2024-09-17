@@ -15,8 +15,10 @@ T = TypeVar('T')
 #     return new_f
 
 class ListMap(list[T]):
-    def __init__(self, *args: T):
+    def __init__(self, *args: T, key_func: Callable[[T], Any] = None):
         super().__init__(args)
+        if key_func is not None:
+            self._key = key_func
         self._map = {self._key(item): item for item in self}
 
     # append = _modify_method(list.append)
@@ -33,4 +35,5 @@ class ListMap(list[T]):
         super().append(value)
 
     def get(self, key) -> T | None:
+        """Return the item with the given key or None if it does not exist."""
         return self._map.get(key)
