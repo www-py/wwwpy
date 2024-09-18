@@ -122,32 +122,30 @@ class ElementEditor:
             return
         new_source = code_edit.add_method(self._python_source(), self.element_path.class_name,
                                           event_editor.method_name, 'event')
+        self._write_source(new_source)
+
+    def _write_source(self, new_source):
         Path(self.element_path.concrete_path).write_text(new_source)
 
-    def _attribute_set_value(self, attribute_editor: AttributeEditor, value: str | None):
+    def _attribute_change(self, html_manipulator: Callable[[str], str]):
         python_source = self._python_source()
+        new_source = code_strings.html_string_edit(python_source, self.element_path.class_name, html_manipulator)
+        self._write_source(new_source)
+
+    def _attribute_set_value(self, attribute_editor: AttributeEditor, value: str | None):
 
         def _html_manipulate(html: str) -> str:
             new_html = html_edit.html_attribute_set(
-                html, self.element_path.path,
-                attribute_editor.definition.name, value
-            )
+                html, self.element_path.path, attribute_editor.definition.name, value)
             return new_html
 
-        new_source = code_strings.html_string_edit(python_source, self.element_path.class_name, _html_manipulate)
-
-        Path(self.element_path.concrete_path).write_text(new_source)
+        self._attribute_change(_html_manipulate)
 
     def _attribute_remove(self, attribute_editor: AttributeEditor):
-        python_source = self._python_source()
 
         def _html_manipulate(html: str) -> str:
             new_html = html_edit.html_attribute_remove(
-                html, self.element_path.path,
-                attribute_editor.definition.name
-            )
+                html, self.element_path.path, attribute_editor.definition.name)
             return new_html
 
-        new_source = code_strings.html_string_edit(python_source, self.element_path.class_name, _html_manipulate)
-
-        Path(self.element_path.concrete_path).write_text(new_source)
+        self._attribute_change(_html_manipulate)
