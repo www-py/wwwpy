@@ -1,4 +1,4 @@
-from wwwpy.common.designer.html_parser import html_to_tree, CstNode
+from wwwpy.common.designer.html_parser import html_to_tree, CstNode, CstAttribute
 
 
 def test_html_to_tree_empty():
@@ -20,7 +20,8 @@ def test_nested():
 def test_nested_with_attributes_and_spaces():
     actual = html_to_tree('<div   id="div1" > <p ></p> </div> ')
     children = [CstNode(tag_name='p', position=(19, 27))]
-    expect = [CstNode(tag_name='div', position=(0, 34), attributes={'id': 'div1'}, children=children)]
+    attributes_list = [CstAttribute(name='id', value='div1')]
+    expect = [CstNode(tag_name='div', position=(0, 34), attributes_list=attributes_list, children=children)]
     assert actual == expect
 
 
@@ -32,7 +33,8 @@ def test_void_tags():
 
 def test_void_tags_with_attributes_and_spaces():
     actual = html_to_tree('<div>\n<input id= "input1"  ></div>')
-    children = [CstNode(tag_name='input', position=(6, 28), attributes={'id': 'input1'})]
+    attributes_list = [CstAttribute(name='id', value='input1')]
+    children = [CstNode(tag_name='input', position=(6, 28), attributes_list=attributes_list)]
     expect = [CstNode(tag_name='div', position=(0, 34), children=children)]
     assert actual == expect
 

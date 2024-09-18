@@ -4,12 +4,31 @@ from typing import Tuple, Dict, List
 
 
 @dataclass
+class CstAttribute:
+    name: str
+    value: str
+
+
+def cst_attribute_dict(*attributes: CstAttribute) -> Dict[str, CstAttribute]:
+    return {attr.name: attr for attr in attributes}
+
+
+@dataclass
 class CstNode:
     tag_name: str
     position: Tuple[int, int]
     children: List['CstNode'] = field(default_factory=list)
-    attributes: Dict[str, str] = field(default_factory=dict)
+    attributes_list: List[CstAttribute] = field(default_factory=list)
     html: str = field(repr=False, compare=False, default='')
+
+    def __post_init__(self):
+        self._attributes_dict = None
+
+    @property
+    def attributes(self) -> Dict[str, str]:
+        if self._attributes_dict is None:
+            self._attributes_dict = {attr.name: attr.value for attr in self.attributes_list}
+        return self._attributes_dict
 
 
 def html_to_tree(html: str) -> List[CstNode]:
@@ -31,8 +50,8 @@ class _PositionalHTMLParser(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         start_pos = self.current_pos
-        attributes = dict(attrs)
-        node = CstNode(tag_name=tag, position=(start_pos, None), attributes=attributes)
+        node = CstNode(tag_name=tag, position=(start_pos, None),
+                       attributes_list=[CstAttribute(name=name, value=value) for name, value in attrs])
 
         if self.stack:
             self.stack[-1].children.append(node)
