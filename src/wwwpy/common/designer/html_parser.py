@@ -22,6 +22,9 @@ def cst_attribute_dict(*attributes: CstAttribute) -> Dict[str, CstAttribute]:
 class CstNode:
     tag_name: str
     span: Tuple[int, int]
+    attr_span: Tuple[int, int]
+    """The span of the attributes part. If there is no span the tuple will contain the same value."""
+    
     children: List['CstNode'] = field(default_factory=list)
     attributes_list: List[CstAttribute] = field(default_factory=list)
     html: str = field(repr=False, compare=False, default='')
@@ -59,19 +62,25 @@ class _PositionalHTMLParser(HTMLParser):
         self.stack = []
         self.current_pos = 0
 
-    def handle_starttag_extended(self, tag, attrs, attrs_extended):
+    def handle_starttag_extended(self, tag, attrs, attrs_extended, autoclosing):
         start_pos = self.current_pos
 
         def _cst_attr(name, v) -> CstAttribute:
             return CstAttribute(name, v['value'], v['name_span'], v['value_span'])
 
-        cst_attr = [_cst_attr(name, v) for name, v in attrs_extended.items()]
-        node = CstNode(tag_name=tag, span=(start_pos, None), attributes_list=cst_attr)
+        text = self.get_starttag_text()
+        end_displ = 2 if autoclosing else 1
+        attr_span = (start_pos + len(tag) + 1, self.current_pos + len(text) - end_displ)
+        node = CstNode(
+            tag_name=tag,
+            span=(start_pos, None),
+            attr_span=attr_span,
+            attributes_list=[_cst_attr(name, v) for name, v in attrs_extended.items()]
+        )
 
         if self.stack:
             self.stack[-1].children.append(node)
 
-        text = self.get_starttag_text()
         if tag not in self.void_tags:
             self.stack.append(node)
         else:

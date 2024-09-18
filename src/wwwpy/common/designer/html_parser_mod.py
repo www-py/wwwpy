@@ -338,7 +338,7 @@ class HTMLParser(_markupbase.ParserBase):
             self.handle_startendtag(tag, attrs, attrs_extended)
         else:
             self.handle_starttag(tag, attrs)
-            self.handle_starttag_extended(tag, attrs, attrs_extended)
+            self.handle_starttag_extended(tag, attrs, attrs_extended, False)
 
             if tag in self.CDATA_CONTENT_ELEMENTS:
                 self.set_cdata_mode(tag)
@@ -422,7 +422,7 @@ class HTMLParser(_markupbase.ParserBase):
     # Overridable -- finish processing of start+end tag: <tag.../>
     def handle_startendtag(self, tag, attrs, attrs_extended):
         self.handle_starttag(tag, attrs)
-        self.handle_starttag_extended(tag, attrs, attrs_extended)
+        self.handle_starttag_extended(tag, attrs, attrs_extended, True)
         self.handle_endtag(tag)
 
     # Overridable -- handle start tag
@@ -430,7 +430,7 @@ class HTMLParser(_markupbase.ParserBase):
         pass
 
     # CUSTOMIZED
-    def handle_starttag_extended(self, tag, attrs, attrs_extended):
+    def handle_starttag_extended(self, tag, attrs, attrs_extended, autoclosing):
         pass
 
     # Overridable -- handle end tag
