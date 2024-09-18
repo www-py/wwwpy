@@ -1,4 +1,4 @@
-from wwwpy.common.designer.html_edit import html_add, Position, html_edit, html_attribute_set
+from wwwpy.common.designer.html_edit import html_add, Position, html_edit, html_attribute_set, html_attribute_remove
 from wwwpy.common.designer.html_locator import Node
 
 # language=html
@@ -85,3 +85,27 @@ class TestAttributeSet:
         actual = html_attribute_set("<some bar='yes'></some>", path, 'foo', 'xyz')
         # language=html
         assert actual == """<some bar='yes' foo="xyz"></some>"""
+
+
+class TestAttributeRemove:
+
+    def test_valued_attr(self):
+        path = [Node("div", 0, {'id': 'foo'})]
+        # language=html
+        actual = html_attribute_remove("<div id='foo'></div>", path, 'id')
+        # language=html
+        assert actual == "<div ></div>"
+
+    def test_None_valued_attr(self):
+        path = [Node("div", 0, {'id': None})]
+        # language=html
+        actual = html_attribute_remove("<div id></div>", path, 'id')
+        # language=html
+        assert actual == "<div ></div>"
+        
+    def test_missingAttr(self):
+        path = [Node("div", 0, {'id': None})]
+        # language=html
+        actual = html_attribute_remove("<div id></div>", path, 'foo')
+        # language=html
+        assert actual == "<div id></div>"

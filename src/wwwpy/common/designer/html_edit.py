@@ -54,3 +54,21 @@ def html_attribute_set(html: str, node_path: NodePath, attr_name: str, attr_valu
 
     return left + spacer + attr_name + value_part + right
 
+
+def html_attribute_remove(html: str, node_path: NodePath, attr_name: str) -> str:
+    node = html_locator.locate_node(html, node_path)
+    if node is None:
+        return html
+
+    cst_attr = node.cst_attribute(attr_name)
+    if cst_attr is None:
+        return html
+
+    value_present = cst_attr.value_span is not None
+
+    x = cst_attr.name_span[0]
+    y = cst_attr.value_span[1] if value_present else cst_attr.name_span[1]
+    left = html[:x]
+    right = html[y:]
+
+    return left + right
