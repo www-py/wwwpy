@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from enum import Enum
-
+from html import escape
 from wwwpy.common.designer.html_locator import NodePath
 from wwwpy.common.designer import html_locator
 
@@ -45,5 +45,5 @@ def html_attribute_set(html: str, node_path: NodePath, attr_name: str, attr_valu
     left = html[:vs[0]]
     right = html[vs[1]:]
 
-    result = left + sep + attr_value + sep + right
+    result = left + sep + escape(attr_value) + sep + right
     return result

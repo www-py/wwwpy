@@ -38,3 +38,9 @@ class TestAttributeSet:
         actual = html_attribute_set(html, path, 'id', 'bar')
         # language=html
         assert actual == """<div id="foo"><div></div><div id="bar"></div></div>"""
+
+    def test_attribute_correct_escaping(self):
+        # language=html
+        actual = html_attribute_set(html, path, 'id', '<div1>')
+        # language=html
+        assert actual == "<div id='foo'><div></div><div id='&lt;div1&gt;'></div></div>"
