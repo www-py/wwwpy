@@ -35,11 +35,7 @@ def node_path_deserialize(serialized: str) -> NodePath:
     return [Node(**node_dict) for node_dict in node_dicts]
 
 
-def locate(html: str, path: NodePath) -> Tuple[int, int] | None:
-    """This function locates the position of the node specified by the path in the HTML string.
-    The position is represented by the start and end indices of the node in the HTML string.
-    """
-    # Parse the HTML to get the tree of CstNode objects
+def locate_node(html: str, path: NodePath) -> CstNode | None:
     cst_tree = html_to_tree(html)
 
     def find_node(nodes: List[CstNode], path: NodePath, depth: int) -> CstNode | None:
@@ -56,6 +52,15 @@ def locate(html: str, path: NodePath) -> Tuple[int, int] | None:
 
     target_node = find_node(cst_tree, path, 0)
 
+    return target_node
+
+
+def locate(html: str, path: NodePath) -> Tuple[int, int] | None:
+    """This function locates the position of the node specified by the path in the HTML string.
+    The position is represented by the start and end indices of the node in the HTML string.
+    """
+
+    target_node = locate_node(html, path)
     if target_node:
         return target_node.span
     return None
