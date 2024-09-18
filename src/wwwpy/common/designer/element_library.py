@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Callable
+from typing import Callable, Optional
 
 
 @dataclass(frozen=True)
@@ -31,7 +31,7 @@ class AttributeDef(NameHelp):
     values: list[str] = field(default_factory=list)
     closed_values: bool = False
     mandatory: bool = False
-    default_value: str | None = None
+    default_value: Optional[str] = None
 
 
 @dataclass
@@ -39,7 +39,7 @@ class ElementDef:
     tag_name: str
     python_type: str
     help: Help = field(default=_empty_help)
-    gen_html: Callable[[str], str] | None = None
+    gen_html: Optional[Callable[[str], str]] = None
     """A function that generates the HTML for the element. It takes the data-name of the element as argument."""
 
     attributes: list[AttributeDef] = field(default_factory=list)
