@@ -72,9 +72,16 @@ class TestAttributeSet:
         # language=html
         assert actual == '<some foo></some>'
 
-    def todo_test_pre_existing_add_None_valued(self):
+    def test_pre_existing_add_None_valued(self):
         path = [Node("some", 0, {})]
         # language=html
         actual = html_attribute_set("<some bar='yes'></some>", path, 'foo', None)
         # language=html
-        assert actual == '<some foo></some>'
+        assert actual == "<some bar='yes' foo></some>"
+
+    def test_pre_existing_add_valued(self):
+        path = [Node("some", 0, {})]
+        # language=html
+        actual = html_attribute_set("<some bar='yes'></some>", path, 'foo', 'xyz')
+        # language=html
+        assert actual == """<some bar='yes' foo="xyz"></some>"""
