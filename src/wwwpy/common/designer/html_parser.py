@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from .html_parser_mod import HTMLParser
 from typing import Tuple, Dict, List
@@ -9,6 +11,7 @@ class CstAttribute:
     value: str
     name_span: Tuple[int, int]
     value_span: Tuple[int, int]
+    """The span of the attribute value in the HTML string including the quotes char."""
 
 
 def cst_attribute_dict(*attributes: CstAttribute) -> Dict[str, CstAttribute]:
@@ -31,6 +34,12 @@ class CstNode:
         if self._attributes_dict is None:
             self._attributes_dict = {attr.name: attr.value for attr in self.attributes_list}
         return self._attributes_dict
+
+    def cst_attribute(self, name: str) -> CstAttribute | None:
+        for attr in self.attributes_list:
+            if attr.name == name:
+                return attr
+        return None
 
 
 def html_to_tree(html: str) -> List[CstNode]:
