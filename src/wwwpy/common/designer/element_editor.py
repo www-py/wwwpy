@@ -4,7 +4,7 @@ from abc import ABC
 from pathlib import Path
 from typing import Callable
 
-from . import code_edit
+from . import code_edit, code_strings, html_edit
 from . import code_info
 from . import element_library as el
 from . import element_path as ep
@@ -22,14 +22,26 @@ class AttributeEditor(ABC):
     def exists(self) -> bool:
         return self._exists
 
+    def remove(self):
+        self._remove(self)
+
     @property
     def value(self) -> str | None:
         return self._value
 
-    def __init__(self, definition: el.AttributeDef, exists: bool, value: str | None):
+    @value.setter
+    def value(self, value: str | None):
+        self._set_value(self, value)
+
+    def __init__(self, definition: el.AttributeDef, exists: bool, value: str | None,
+                 set_value: Callable[[AttributeEditor, str | None], None],
+                 remove: Callable[[AttributeEditor], None]
+                 ):
         self._definition = definition  # readonly
         self._exists = exists
         self._value = value
+        self._set_value = set_value
+        self._remove = remove
 
     # definition: el.AttributeDef
     # exists: bool
@@ -86,7 +98,8 @@ class ElementEditor:
         for attribute_def in element_def.attributes:
             exists = attribute_def.name in element_node.attributes
             value = element_node.attributes.get(attribute_def.name, None)
-            attribute_editor = AttributeEditor(attribute_def, exists, value)
+            attribute_editor = AttributeEditor(attribute_def, exists, value,
+                                               self._attribute_set_value, self._attribute_remove)
             self.attributes.append(attribute_editor)
 
         data_name = element_path.data_name
@@ -99,9 +112,42 @@ class ElementEditor:
     def _python_source(self):
         return Path(self.element_path.concrete_path).read_text()
 
+    def _html_source(self):
+        ps = self._python_source()
+        html = code_strings.html_from_source(ps, self.element_path.class_name)
+        return html
+
     def _event_do_action(self, event_editor: EventEditor):
         if event_editor.handled:
             return
         new_source = code_edit.add_method(self._python_source(), self.element_path.class_name,
                                           event_editor.method_name, 'event')
+        Path(self.element_path.concrete_path).write_text(new_source)
+
+    def _attribute_set_value(self, attribute_editor: AttributeEditor, value: str | None):
+        python_source = self._python_source()
+
+        def _html_manipulate(html: str) -> str:
+            new_html = html_edit.html_attribute_set(
+                html, self.element_path.path,
+                attribute_editor.definition.name, value
+            )
+            return new_html
+
+        new_source = code_strings.html_string_edit(python_source, self.element_path.class_name, _html_manipulate)
+
+        Path(self.element_path.concrete_path).write_text(new_source)
+
+    def _attribute_remove(self, attribute_editor: AttributeEditor):
+        python_source = self._python_source()
+
+        def _html_manipulate(html: str) -> str:
+            new_html = html_edit.html_attribute_remove(
+                html, self.element_path.path,
+                attribute_editor.definition.name
+            )
+            return new_html
+
+        new_source = code_strings.html_string_edit(python_source, self.element_path.class_name, _html_manipulate)
+
         Path(self.element_path.concrete_path).write_text(new_source)

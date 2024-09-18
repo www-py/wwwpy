@@ -10,8 +10,6 @@ from wwwpy.common.designer.element_path import ElementPath
 from wwwpy.common.designer.html_locator import Node, NodePath
 
 
-# todo refactor to use TargetFixture directly in the test parameter as a fixture
-
 class TestEvents:
 
     def test_events__no_event(self, target_fixture):
@@ -150,24 +148,50 @@ class Component2():
         assert name_ae
         assert name_ae.value == """<'"&>"""
 
-    def test_update_existing_attribute_value(self, dyn_sys_path):
-        """"""
+    def test_update_existing_attribute_value(self, target_fixture):
         # GIVEN
-        source = '''
-'''
-        assert False, 'todo'
+        target_fixture.source = '''
+class Component2():
+    def connectedCallback(self):
+        self.element.innerHTML = """<button data-name='button1' name='foo'>bar</button>"""
+    '''
+        # WHEN
+        target = target_fixture.target
+        target.attributes.get('name').value = 'btn1'
 
-    def test_add_attribute(self, dyn_sys_path):
-        # GIVEN
-        source = '''
-'''
-        assert False, 'todo'
+        # THEN
+        # language=html
+        assert "<button data-name='button1' name='btn1'>bar</button>" == target_fixture.current_html
 
-    def test_remove_attribute(self, dyn_sys_path):
+    def test_add_attribute(self, target_fixture):
         # GIVEN
-        source = '''
-'''
-        assert False, 'todo'
+        target_fixture.source = '''
+class Component2():
+    def connectedCallback(self):
+        self.element.innerHTML = """<button id='foo'>bar</button>"""
+    '''
+        # WHEN
+        target = target_fixture.target
+        target.attributes.get('name').value = 'btn1'
+
+        # THEN
+        # language=html
+        assert """<button id='foo' name="btn1">bar</button>""" == target_fixture.current_html
+
+    def test_remove_attribute(self, target_fixture):
+        # GIVEN
+        target_fixture.source = '''
+class Component2():
+    def connectedCallback(self):
+        self.element.innerHTML = """<button id='foo' name="btn1">bar</button>"""
+    '''
+        # WHEN
+        target = target_fixture.target
+        target.attributes.get('name').remove()
+
+        # THEN
+        # language=html
+        assert """<button id='foo' >bar</button>""" == target_fixture.current_html
 
 
 @pytest.fixture
@@ -209,6 +233,17 @@ class TargetFixture:
 
         self.element_path = ElementPath(component2, path)
         self.target = ElementEditor(self.element_path, self.element_def)
+
+    @property
+    def current_source(self) -> str:
+        comp_path = self.dyn_sys_path.path / 'component2.py'
+        return comp_path.read_text()
+
+    @property
+    def current_html(self) -> str:
+        from wwwpy.common.designer import code_strings as cs
+        html = cs.html_from_source(self.current_source, self.element_path.class_name)
+        return html
 
 
 def _node_path(source: str, class_name, indexed_path: list[int]) -> NodePath:
