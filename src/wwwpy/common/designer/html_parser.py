@@ -7,6 +7,8 @@ from typing import Tuple, Dict, List
 class CstAttribute:
     name: str
     value: str
+    name_span: Tuple[int, int]
+    value_span: Tuple[int, int]
 
 
 def cst_attribute_dict(*attributes: CstAttribute) -> Dict[str, CstAttribute]:
@@ -16,7 +18,7 @@ def cst_attribute_dict(*attributes: CstAttribute) -> Dict[str, CstAttribute]:
 @dataclass
 class CstNode:
     tag_name: str
-    position: Tuple[int, int]
+    span: Tuple[int, int]
     children: List['CstNode'] = field(default_factory=list)
     attributes_list: List[CstAttribute] = field(default_factory=list)
     html: str = field(repr=False, compare=False, default='')
@@ -48,10 +50,14 @@ class _PositionalHTMLParser(HTMLParser):
         self.stack = []
         self.current_pos = 0
 
-    def handle_starttag(self, tag, attrs):
+    def handle_starttag_extended(self, tag, attrs, attrs_extended):
         start_pos = self.current_pos
-        node = CstNode(tag_name=tag, position=(start_pos, None),
-                       attributes_list=[CstAttribute(name=name, value=value) for name, value in attrs])
+
+        def _cst_attr(name, v) -> CstAttribute:
+            return CstAttribute(name, v['value'], v['name_span'], v['value_span'])
+
+        cst_attr = [_cst_attr(name, v) for name, v in attrs_extended.items()]
+        node = CstNode(tag_name=tag, span=(start_pos, None), attributes_list=cst_attr)
 
         if self.stack:
             self.stack[-1].children.append(node)
@@ -60,7 +66,7 @@ class _PositionalHTMLParser(HTMLParser):
         if tag not in self.void_tags:
             self.stack.append(node)
         else:
-            node.position = (start_pos, self.current_pos + len(text))
+            node.span = (start_pos, self.current_pos + len(text))
             if not self.stack:
                 self.nodes.append(node)
 
@@ -73,7 +79,7 @@ class _PositionalHTMLParser(HTMLParser):
             return
 
         node = self.stack.pop()
-        node.position = (node.position[0], self.current_pos + len(tag) + 3)  # +3 for </ and >
+        node.span = (node.span[0], self.current_pos + len(tag) + 3)  # +3 for </ and >
         if not self.stack:
             self.nodes.append(node)
 
@@ -89,6 +95,6 @@ class _PositionalHTMLParser(HTMLParser):
 
 def _compile_html(html: str, tree: List[CstNode]):
     for node in tree:
-        start, end = node.position
+        start, end = node.span
         node.html = html[start:end]
         _compile_html(node.html, node.children)

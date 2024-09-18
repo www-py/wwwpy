@@ -57,7 +57,7 @@ def locate(html: str, path: NodePath) -> Tuple[int, int] | None:
     target_node = find_node(cst_tree, path, 0)
 
     if target_node:
-        return target_node.position
+        return target_node.span
     return None
 
 
