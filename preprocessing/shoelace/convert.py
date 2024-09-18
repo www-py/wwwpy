@@ -16,7 +16,10 @@ def main():
         element = create_element(jet, vsc)
         elements.append(element)
 
-    print(serialization.to_json(elements, List[el.ElementDef]))
+    element_defs = serialization.to_json(elements, List[el.ElementDef])
+    print(element_defs)
+    restored = serialization.from_json(element_defs, List[el.ElementDef])
+    (parent() / 'shoelace.json').write_text(element_defs)
 
 
 def create_element(jet, vsc):
@@ -51,12 +54,16 @@ def create_element(jet, vsc):
 
 
 def load_jsons():
-    parent = Path(__file__).parent
-    jetbrains_file = parent / 'web-types.json'
-    vscode_file = parent / 'vscode.html-custom-data.json'
+    par = parent()
+    jetbrains_file = par / 'web-types.json'
+    vscode_file = par / 'vscode.html-custom-data.json'
     jet_json = load(jetbrains_file)['contributions']['html']['elements']
     vsc_json = load(vscode_file)['tags']
     return jet_json, vsc_json
+
+
+def parent():
+    return Path(__file__).parent
 
 
 def load(file):
