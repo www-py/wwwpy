@@ -8,9 +8,9 @@ from typing import Tuple, Dict, List
 @dataclass
 class CstAttribute:
     name: str
-    value: str
+    value: str | None
     name_span: Tuple[int, int]
-    value_span: Tuple[int, int]
+    value_span: Tuple[int, int] | None
     """The span of the attribute value in the HTML string including the quotes char."""
 
 

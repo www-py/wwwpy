@@ -24,6 +24,11 @@ def test_nested_with_attributes_and_spaces():
     expect = [CstNode(tag_name='div', span=(0, 34), attributes_list=attributes_list, children=children)]
     assert actual == expect
 
+def test_attribute_without_value():
+    actual = html_to_tree('<div foo></div>')
+    attributes_list = [CstAttribute('foo', None, (5, 8), None)]
+    expect = [CstNode(tag_name='div', span=(0, 15), attributes_list=attributes_list)]
+    assert actual == expect
 
 def test_void_tags():
     actual = html_to_tree('<div><input></div>')

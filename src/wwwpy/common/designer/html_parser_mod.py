@@ -326,7 +326,7 @@ class HTMLParser(_markupbase.ParserBase):
             attrs.append((attrname.lower(), attrvalue))
             attrs_extended[attrname.lower()] = {'value': attrvalue,
                                                 'name_span': (k, k + len(attrname)),
-                                                'value_span': m.regs[3]}
+                                                'value_span': None if attrvalue is None else m.regs[3]}
             k = m.end()
 
         end = rawdata[k:endpos].strip()
