@@ -40,10 +40,17 @@ def html_attribute_set(html: str, node_path: NodePath, attr_name: str, attr_valu
         return html
 
     cst_attr = node.cst_attribute(attr_name)
-    vs = cst_attr.value_span
-    sep = html[vs[0]]
-    left = html[:vs[0]]
-    right = html[vs[1]:]
+    attr_present = cst_attr is not None
+    value_present = attr_present and cst_attr.value_span is not None
+    spacer = ' ' if not attr_present else ''
+    sep = '"' if not value_present else html[cst_attr.value_span[0]]
 
-    result = left + sep + escape(attr_value) + sep + right
-    return result
+    value_part = '' if attr_value is None else '=' + sep + escape(attr_value) + sep
+
+    x = cst_attr.name_span[0] if attr_present else node.attr_span[1]
+    y = cst_attr.value_span[1] if value_present else (x if not attr_present else cst_attr.name_span[1])
+    left = html[:x]
+    right = html[y:]
+
+    return left + spacer + attr_name + value_part + right
+

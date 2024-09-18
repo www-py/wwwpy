@@ -15,7 +15,7 @@ class Node:
     """This is the index in the list of children of the parent node.
     It is -1 if the node has no parent.
     """
-    attributes: Dict[str, str]
+    attributes: Dict[str, str | None]
     """The HTML attributes of the node."""
 
     def __post_init__(self):

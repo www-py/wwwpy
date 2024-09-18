@@ -40,7 +40,41 @@ class TestAttributeSet:
         assert actual == """<div id="foo"><div></div><div id="bar"></div></div>"""
 
     def test_attribute_correct_escaping(self):
-        # language=html
         actual = html_attribute_set(html, path, 'id', '<div1>')
         # language=html
         assert actual == "<div id='foo'><div></div><div id='&lt;div1&gt;'></div></div>"
+
+    def test_attribute_set_None_value(self):
+        path = [Node("button", 0, {'foo': '1'})]
+        # language=html
+        actual = html_attribute_set("<some foo='1'></some>", path, 'foo', None)
+        # language=html
+        assert actual == "<some foo></some>"
+
+    def test_from_None_attribute_to_valued(self):
+        path = [Node("some", 0, {'foo': None})]
+        # language=html
+        actual = html_attribute_set("<some foo></some>", path, 'foo', '123')
+        # language=html
+        assert actual == '<some foo="123"></some>'
+
+    def test_from_missing_to_valued(self):
+        path = [Node("some", 0, {})]
+        # language=html
+        actual = html_attribute_set("<some></some>", path, 'foo', '123')
+        # language=html
+        assert actual == '<some foo="123"></some>'
+
+    def test_from_missing_to_None_valued(self):
+        path = [Node("some", 0, {})]
+        # language=html
+        actual = html_attribute_set("<some></some>", path, 'foo', None)
+        # language=html
+        assert actual == '<some foo></some>'
+
+    def todo_test_pre_existing_add_None_valued(self):
+        path = [Node("some", 0, {})]
+        # language=html
+        actual = html_attribute_set("<some bar='yes'></some>", path, 'foo', None)
+        # language=html
+        assert actual == '<some foo></some>'
