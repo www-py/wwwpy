@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Callable, Optional
+from pathlib import Path
+from typing import Callable, Optional, List
+
+from wwwpy.common.rpc import serialization
 
 
 @dataclass(frozen=True)
@@ -52,10 +55,17 @@ class ElementDef:
 
 class ElementLibrary:
     def __init__(self):
-        self.elements: dict[str, ElementDef] = {}
+        self.elements: List[ElementDef] = []
 
-    def add_element(self, element_def: ElementDef):
-        self.elements[element_def.tag_name] = element_def
 
-    def get_element(self, tag_name: str) -> ElementDef | None:
-        return self.elements.get(tag_name, None)
+_element_library: ElementLibrary = None
+
+
+def element_library() -> ElementLibrary:
+    global _element_library
+    if _element_library is None:
+        _element_library = ElementLibrary()
+        shoelace_json = (Path(__file__).parent / 'shoelace.json').read_text()
+        elements = serialization.from_json(shoelace_json, List[ElementDef])
+        _element_library.elements.extend(elements)
+    return _element_library
