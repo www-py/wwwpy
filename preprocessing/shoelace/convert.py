@@ -1,8 +1,10 @@
+import inspect
 import json
 from pathlib import Path
 from typing import List
 
 from wwwpy.common.designer import element_library as el
+from wwwpy.common.designer.element_library import element_library
 from wwwpy.common.rpc import serialization
 
 
@@ -19,14 +21,15 @@ def main():
     element_defs = serialization.to_json(elements, List[el.ElementDef])
     print(element_defs)
     restored = serialization.from_json(element_defs, List[el.ElementDef])
-    (parent() / 'shoelace.json').write_text(element_defs)
+    json_file_root = Path(inspect.getfile(element_library)).parent
+    (json_file_root / 'shoelace.json').write_text(element_defs)
 
 
 def create_element(jet, vsc):
     tag_name = jet['name']
     assert tag_name == vsc['name']
-
-    help = el.Help(jet['description'], jet['doc-url'])
+    help_url = vsc['references'][0]['url']
+    help = el.Help(jet['description'], help_url)
     attributes: list[el.AttributeDef] = []
     for jet_attr, vsc_attr in zip(jet['attributes'], vsc['attributes']):
         attr_name = jet_attr['name']
