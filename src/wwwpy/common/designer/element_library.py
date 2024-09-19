@@ -6,8 +6,8 @@ from typing import Callable, Optional
 
 @dataclass(frozen=True)
 class Help:
-    url: str
     description: str
+    url: str
 
 
 _empty_help = Help("", "")
