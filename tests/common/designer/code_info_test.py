@@ -1,5 +1,5 @@
 from wwwpy.common.designer.code_edit import Attribute
-from wwwpy.common.designer.code_info import Info, ClassInfo, Method, info, class_info
+from wwwpy.common.designer.code_info import Info, ClassInfo, Method, info, class_info, _kebab_to_camel
 
 
 def test_info():
@@ -38,6 +38,14 @@ def test_next_attribute_name():
     assert actual == expect
 
 
+def test_next_attribute_name__disallowedChars():
+    target = ClassInfo('MyElement', [Attribute('slButton1', 'js.HTMLButtonElement', 'wpc.element()')])
+    actual = target.next_attribute_name('sl-button')
+    expect = 'slButton2'
+
+    assert actual == expect
+
+
 def test_info_with_method():
     target = info(
         """
@@ -49,6 +57,18 @@ class MyElement(wpc.Component):
 """)
     expect = Info(classes=[ClassInfo('MyElement', [], [Method('button1__click', 5, 6)])])
     assert target == expect
+
+
+def test_kebab_to_camel_case():
+    target = 'sl-button'
+    actual = _kebab_to_camel(target)
+    assert actual == 'slButton'
+
+
+def test_kebab_to_camel_case_no_dash():
+    target = 'button'
+    actual = _kebab_to_camel(target)
+    assert actual == 'button'
 
 
 def test_info_with_method__multi_line_elements():

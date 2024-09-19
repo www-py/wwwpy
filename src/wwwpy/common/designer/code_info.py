@@ -35,12 +35,17 @@ class ClassInfo:
         self.attributes_by_name = {attr.name: attr for attr in self.attributes}
 
     def next_attribute_name(self, base_name):
+        fixed = _kebab_to_camel(base_name)
         used = set([attr.name for attr in self.attributes])
         for i in range(1, sys.maxsize):
-            name = f'{base_name}{i}'
+            name = f'{fixed}{i}'
             if name not in used:
                 return name
         raise ValueError('Really?')
+
+def _kebab_to_camel(s: str) -> str:
+    parts = s.split('-')
+    return parts[0] + ''.join(word.capitalize() for word in parts[1:])
 
 
 def class_info(python_source: str, class_name: str) -> ClassInfo | None:
