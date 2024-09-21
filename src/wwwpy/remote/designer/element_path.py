@@ -22,7 +22,8 @@ def element_path(element: Element) -> ElementPath | None:
             component = element._py
             if hasattr(component, "unwrap"):
                 component = component.unwrap()
-            return ElementPath(component=component, path=path)
+            clazz = component.__class__
+            return ElementPath(clazz.__module__, clazz.__name__, path)
         if element == document.body:
             return None
 
@@ -51,4 +52,3 @@ def element_to_node_path(element: HTMLElement) -> NodePath:
         element = parent
 
     return path
-

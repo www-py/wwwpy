@@ -42,8 +42,9 @@ class Component1(wpc.Component):
     path = [Node("div", 1, {'class': 'class1'}),
             Node("button", 0, {'data-name': 'btn1', 'id': 'btn1id'})]
 
+    assert actual.class_module == 'component1'
+    assert actual.class_name == 'Component1'
     assert actual.path == path
-    assert actual.component == component1
 
 
 def test_target_path__without_component():
@@ -86,6 +87,7 @@ def test_target_path__unattached_piece_of_dom():
 
     # THEN
     assert actual is None
+
 
 def test_element_to_node_path():
     # GIVEN

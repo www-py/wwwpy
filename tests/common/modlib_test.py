@@ -1,7 +1,7 @@
 import sys
 
 from tests.common import restore_sys_path
-from wwwpy.common.modlib import _get_package_path, _find_module_path
+from wwwpy.common.modlib import _find_module_path
 
 
 def test_package_path(tmp_path, restore_sys_path):

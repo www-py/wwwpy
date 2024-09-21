@@ -23,15 +23,6 @@ def pytest_configure(config):
     playwright_patch_timeout()
 
 
-def _get_package_path(package_name: str) -> Path:
-    spec = importlib.util.find_spec(package_name)
-    if spec:
-        package = importlib.import_module(package_name)
-        package_path = inspect.getfile(package)
-        return Path(package_path)
-    return None
-
-
 @pytest.hookimpl
 def pytest_xvirt_setup(config):
     headful = config.getoption("--headful")

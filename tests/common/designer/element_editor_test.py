@@ -66,7 +66,7 @@ class Component2:
         target.events[0].do_action()
 
         # THEN
-        ci = code_info.class_info(Path(target_fixture.element_path.concrete_path).read_text(), 'Component2')
+        ci = code_info.class_info(target_fixture.current_source, 'Component2')
         actual_method = ci.methods_by_name.get('button1__click', None)
         assert actual_method
 
@@ -88,8 +88,7 @@ class Component2:
         target.events[0].do_action()
 
         # THEN
-        current_source = Path(target_fixture.element_path.concrete_path).read_text()
-        assert current_source == target_fixture.source
+        assert target_fixture.current_source == target_fixture.source
 
 
 class TestAttributes:
@@ -231,7 +230,7 @@ class TargetFixture:
         # NodePath([Node("button", 1, {'data-name': 'button1'})])
         path: NodePath = _node_path(source, 'Component2', [0])
 
-        self.element_path = ElementPath(component2, path)
+        self.element_path = ElementPath('component2', 'Component2', path)
         self.target = ElementEditor(self.element_path, self.element_def)
 
     @property

@@ -8,6 +8,7 @@ from . import code_edit, code_strings, html_edit
 from . import code_info
 from . import element_library as el
 from . import element_path as ep
+from .. import modlib
 from ..collectionlib import ListMap
 
 
@@ -110,7 +111,13 @@ class ElementEditor:
             self.events.append(event_editor)
 
     def _python_source(self):
-        return Path(self.element_path.concrete_path).read_text()
+        return self._python_source_path().read_text()
+
+    def _python_source_path(self):
+        path = modlib._find_module_path(self.element_path.class_module)
+        if not path:
+            raise ValueError(f'Cannot find module {self.element_path.class_module}')
+        return path
 
     def _html_source(self):
         ps = self._python_source()
@@ -125,7 +132,7 @@ class ElementEditor:
         self._write_source(new_source)
 
     def _write_source(self, new_source):
-        Path(self.element_path.concrete_path).write_text(new_source)
+        self._python_source_path().write_text(new_source)
 
     def _attribute_change(self, html_manipulator: Callable[[str], str]):
         python_source = self._python_source()

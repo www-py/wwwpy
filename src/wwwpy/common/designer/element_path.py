@@ -1,19 +1,23 @@
 from __future__ import annotations
 
+import importlib
 import inspect
 from dataclasses import dataclass, field
 from typing import Any
 
 from wwwpy.common.designer.html_locator import NodePath
 from wwwpy.common.modlib import _find_module_root
+from wwwpy.common import modlib
 
-# could be called ElementLocation
 @dataclass()
 class ElementPath:
-    """Contains the path to an element relative to a Component."""
+    """Contains the path to an element relative to a Component.
+    This is intended to be serialized"""
 
-    component: Any
-    """The Component that contains the element"""
+    class_module: str
+    """The module name of the Component."""
+    class_name: str
+    """The class name of the Component."""
     path: NodePath
     """The path from the Component (excluded) to the element."""
 
@@ -26,24 +30,3 @@ class ElementPath:
     def data_name(self) -> str:
         """The name of the element in the data dictionary."""
         return self.path[-1].attributes.get('data-name', None)
-
-    class_name: str = field(init=False)
-    """The class name of the Component."""
-    class_module: str = field(init=False)
-    """The module name of the Component."""
-    relative_path: str = field(init=False)
-    """The file path of the .py containing the class, starting from the root of the module path"""
-    concrete_path: str = field(init=False)
-    """The file path of the .py containing the class, as it was discovered"""
-
-    def __post_init__(self):
-        clazz = self.component.__class__
-        full_path = inspect.getfile(clazz)
-        cn = clazz.__name__
-        cm = clazz.__module__
-        fqn = f"{cm}.{cn}"
-        source_file = _find_module_root(fqn, full_path)
-        self.class_name = cn
-        self.class_module = cm
-        self.relative_path = source_file
-        self.concrete_path = full_path
