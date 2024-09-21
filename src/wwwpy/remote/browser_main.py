@@ -7,6 +7,7 @@ from js import console
 
 import wwwpy.common.reloader as reloader
 from wwwpy.common import _no_remote_infrastructure_found_text
+from wwwpy.common.tree import print_tree
 from wwwpy.remote import set_timeout
 from wwwpy.remote.designer.dev_mode import _setup_browser_dev_mode
 from wwwpy.remote.root_path import _get_dir
@@ -15,7 +16,7 @@ from wwwpy.remote.websocket import setup_websocket
 
 async def entry_point(dev_mode: bool = False):
     # from wwwpy.common.tree import print_tree
-    # print_tree('/wwwpy_bundle')
+    print_tree('/wwwpy_bundle')
 
     await setup_websocket()
     if dev_mode:
