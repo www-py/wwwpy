@@ -114,7 +114,8 @@ import wwwpy.remote.component as wpc
 class MyElement(wpc.Component):
     btn1: js.Some = wpc.element()
     def foo(self):
-        self.element.innerHTML = '''<div id='foo'><div></div><div id='target'></div><btn data-name="btn1"></btn></div>'''
+        self.element.innerHTML = '''<div id='foo'><div></div><div id='target'></div>
+<btn data-name="btn1"></btn></div>'''
     """
 
     # component_def = ElementDef('btn', 'js.Some', '<b name="#name#"></b>')
