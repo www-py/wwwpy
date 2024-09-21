@@ -27,6 +27,6 @@ class ElementPath:
         return self.path[-1].tag_name
 
     @property
-    def data_name(self) -> str:
+    def data_name(self) -> Optional[str]:
         """The name of the element in the data dictionary."""
         return self.path[-1].attributes.get('data-name', None)
