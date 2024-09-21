@@ -38,3 +38,14 @@ def test_save_and_restore():
     assert restore.present
     assert restore.instance == instance
     assert restore.instance is not instance
+
+
+def test_broken_restore():
+    storage = state.DictStorage()
+    storage.storage['state1'] = 'broken'
+
+    restore = state.State(storage, 'state1').restore(State1)
+
+    assert restore.present
+    assert restore.exception is not None
+    assert restore.instance is None

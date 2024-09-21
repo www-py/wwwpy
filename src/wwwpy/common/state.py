@@ -25,6 +25,7 @@ class Storage(Protocol):
 class Restore:
     present: bool
     instance: any
+    exception: Exception | None = None
 
 
 class State:
@@ -36,8 +37,13 @@ class State:
         j = self.storage.getItem(self.key)
         if not j:
             return Restore(False, None)
-
-        obj = serialization.from_json(j, clazz)
+        try:
+            obj = serialization.from_json(j, clazz)
+        except Exception as e:
+            print(f'failed restore of type {clazz} with json ```{j}```')
+            import traceback
+            traceback.print_exc()
+            return Restore(True, None, e)
         return Restore(True, obj)
 
     def save(self, obj):
