@@ -4,30 +4,33 @@ from typing import Callable
 
 @dataclass
 class PropertyChange:
+    instance: any
     name: str
     old_value: object
     new_value: object
 
 
 def monitor_property_changes(instance, on_change: Callable[[PropertyChange], None]):
-    """Monitor the changes of the properties of an instance of a class.
-    When a property is changed, the on_change callback is called with the name of the property, the old value and the new value.
+    """Monitor the changes of the properties of an instance of a class."""
+    if hasattr(instance, "__attr_change_monitor_on_change"):
+        raise Exception("The instance is already being monitored for property changes")
 
-    :param instance: The instance of the class to monitor
-    :param on_change: The callback to call when a property is changed
-    """
-    if not hasattr(instance, "__attr_change_monitor"):
-        setattr(instance, "__attr_change_monitor", True)
+    clazz = instance.__class__
+    if not hasattr(clazz, "__attr_change_monitor"):
+        setattr(clazz, "__attr_change_monitor", True)
 
-        original_setattr = instance.__class__.__setattr__  # Keep a reference to the original method
+        original_setattr = clazz.__setattr__  # Keep a reference to the original method
 
         def new_setattr(self, name, value):
-            if hasattr(self, name):
-                change = PropertyChange(name, getattr(self, name), value)
-                on_change(change)
+            if hasattr(self, name) and name != "__attr_change_monitor_on_change" and \
+                    hasattr(self, "__attr_change_monitor_on_change"):
+                change = PropertyChange(self, name, getattr(self, name), value)
+                self.__attr_change_monitor_on_change(change)
             original_setattr(self, name, value)
 
-        instance.__class__.__setattr__ = new_setattr.__get__(instance, instance.__class__)
+        clazz.__setattr__ = new_setattr
+
+    instance.__attr_change_monitor_on_change = on_change
 
 
 import pytest
