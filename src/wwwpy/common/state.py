@@ -68,3 +68,31 @@ class DictStorage(Storage):
 
     def removeItem(self, key: str):
         del self.storage[key]
+
+
+class JsStorage(Storage):
+    def __init__(self, js_storage=None):
+        if js_storage is None:
+            import js
+            js_storage = js.window.localStorage
+        self.storage = js_storage
+
+    def keys(self) -> Iterator[str]:
+        for i in range(self.storage.length):
+            yield self.storage.key(i)
+
+    @property
+    def length(self) -> int:
+        return self.storage.length
+
+    def items(self) -> Iterator[tuple[str, str]]:
+        return self.storage.items()
+
+    def getItem(self, key: str) -> str | None:
+        return self.storage.getItem(key)
+
+    def setItem(self, key: str, value: str):
+        self.storage.setItem(key, value)
+
+    def removeItem(self, key: str):
+        self.storage.removeItem(key)
