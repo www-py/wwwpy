@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List
 
 from wwwpy.common import property_monitor as pm
-from wwwpy.common.property_monitor import PropertyChange, monitor_property_changes
+from wwwpy.common.property_monitor import PropertyChange, monitor_changes
 import pytest
 
 
@@ -19,7 +19,7 @@ def test_monitor_existing_property_change():
         events.append(changes)
 
     obj = TestClass("bob", 10)
-    monitor_property_changes(obj, on_change)
+    monitor_changes(obj, on_change)
 
     obj.value = 20
 
@@ -37,9 +37,9 @@ def test_monitor_on_second_instance():
         events2.append(change2)
 
     obj1 = TestClass("alice", 10)
-    monitor_property_changes(obj1, on_change1)
+    monitor_changes(obj1, on_change1)
     obj2 = TestClass("bob", 20)
-    monitor_property_changes(obj2, on_change2)
+    monitor_changes(obj2, on_change2)
 
     obj1.value = 1
 
@@ -54,9 +54,9 @@ def test_monitor_on_second_instance():
 
 def test_double_monitor__should_raise_exception():
     obj = TestClass("alice", 10)
-    monitor_property_changes(obj, lambda change: None)
+    monitor_changes(obj, lambda change: None)
     with pytest.raises(Exception):
-        monitor_property_changes(obj, lambda change: None)
+        monitor_changes(obj, lambda change: None)
 
 
 def test_group_changes():
@@ -66,7 +66,7 @@ def test_group_changes():
         events.append(changes)
 
     obj = TestClass("alice", 10)
-    monitor_property_changes(obj, on_change)
+    monitor_changes(obj, on_change)
 
     with pm.group_changes(obj):
         obj.value = 1
@@ -80,20 +80,3 @@ def test_group_changes():
     # verify immediate delivery of changes
     obj.value = 123
     assert events == [[PropertyChange(obj, "value", 1, 123)]]
-
-
-def main():
-    obj = TestClass(value=10)
-
-    def on_change(change: pm.PropertyChange):
-        print(f"Change detected: {change.name} from {change.old_value} to {change.new_value}")
-
-    pm.monitor_property_changes(obj, on_change=on_change)
-    obj.value = 20
-    obj.name = "John"
-    obj.new_prop = "new"
-    obj.new_prop = "new2"
-
-
-if __name__ == '__main__':
-    main()

@@ -10,7 +10,7 @@ class PropertyChange:
     new_value: object
 
 
-def monitor_property_changes(instance, on_change: Callable[[List[PropertyChange]], None]):
+def monitor_changes(instance, on_change: Callable[[List[PropertyChange]], None]):
     """Monitor the changes of the properties of an instance of a class."""
     if hasattr(instance, "__attr_change_monitor_on_change"):
         raise Exception("The instance is already being monitored for property changes")
