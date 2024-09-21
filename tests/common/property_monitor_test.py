@@ -13,28 +13,28 @@ class TestClass:
 
 
 def test_monitor_existing_property_change():
-    changes: List[PropertyChange] = []
+    events: List[List[PropertyChange]] = []
 
-    def on_change(change: PropertyChange):
-        changes.append(change)
+    def on_change(changes: List[PropertyChange]):
+        events.append(changes)
 
     obj = TestClass("bob", 10)
     monitor_property_changes(obj, on_change)
 
     obj.value = 20
 
-    assert changes == [PropertyChange(obj, "value", 10, 20)]
+    assert events == [[PropertyChange(obj, "value", 10, 20)]]
 
 
 def test_monitor_on_second_instance():
-    changes1: List[PropertyChange] = []
-    changes2: List[PropertyChange] = []
+    events1: List[List[PropertyChange]] = []
+    events2:  List[List[PropertyChange]] = []
 
-    def on_change1(change: PropertyChange):
-        changes1.append(change)
+    def on_change1(changes: List[PropertyChange]):
+        events1.append(changes)
 
-    def on_change2(change: PropertyChange):
-        changes2.append(change)
+    def on_change2(change2: List[PropertyChange]):
+        events2.append(change2)
 
     obj1 = TestClass("alice", 10)
     monitor_property_changes(obj1, on_change1)
@@ -43,13 +43,13 @@ def test_monitor_on_second_instance():
 
     obj1.value = 1
 
-    assert changes1 == [PropertyChange(obj1, "value", 10, 1)]
-    assert changes2 == []
+    assert events1 == [[PropertyChange(obj1, "value", 10, 1)]]
+    assert events2 == []
 
     obj2.value = 2
 
-    assert changes1 == [PropertyChange(obj1, "value", 10, 1)]
-    assert changes2 == [PropertyChange(obj2, "value", 20, 2)]
+    assert events1 == [[PropertyChange(obj1, "value", 10, 1)]]
+    assert events2 == [[PropertyChange(obj2, "value", 20, 2)]]
 
 
 def test_double_monitor__should_raise_exception():

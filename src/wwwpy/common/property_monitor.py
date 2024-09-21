@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable
+from typing import Callable, List
 
 
 @dataclass
@@ -10,7 +10,7 @@ class PropertyChange:
     new_value: object
 
 
-def monitor_property_changes(instance, on_change: Callable[[PropertyChange], None]):
+def monitor_property_changes(instance, on_change: Callable[[List[PropertyChange]], None]):
     """Monitor the changes of the properties of an instance of a class."""
     if hasattr(instance, "__attr_change_monitor_on_change"):
         raise Exception("The instance is already being monitored for property changes")
@@ -25,7 +25,7 @@ def monitor_property_changes(instance, on_change: Callable[[PropertyChange], Non
             if hasattr(self, name) and name != "__attr_change_monitor_on_change" and \
                     hasattr(self, "__attr_change_monitor_on_change"):
                 change = PropertyChange(self, name, getattr(self, name), value)
-                self.__attr_change_monitor_on_change(change)
+                self.__attr_change_monitor_on_change([change])
             original_setattr(self, name, value)
 
         clazz.__setattr__ = new_setattr
