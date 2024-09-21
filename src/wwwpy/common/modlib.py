@@ -7,9 +7,10 @@ from pathlib import Path
 
 
 def _find_module_path(module_name) -> Path | None:
-
+    """Finds the path of a module without loading it."""
     spec = importlib.util.find_spec(module_name)
     return Path(spec.origin) if spec else None
+
 
 def _find_module_root(fqn, full_path):
     parts = fqn.split('.')
@@ -19,3 +20,4 @@ def _find_module_root(fqn, full_path):
     if index == -1:
         return None
     return full_path[index:]
+
