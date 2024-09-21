@@ -1,5 +1,8 @@
 from dataclasses import dataclass
+from typing import List
+
 from wwwpy.common import property_monitor as pm
+from wwwpy.common.property_monitor import PropertyChange, monitor_property_changes
 
 
 @dataclass
@@ -7,10 +10,40 @@ class TestClass:
     value: int = 0
     name: str = ""
 
-    def __setattr__(self, key, value):
-        # if hasattr(self, key):
-        #     print(f"Change detected: {key} from {getattr(self, key)} to {value}")
-        super().__setattr__(key, value)
+
+def test_monitor_existing_property_change():
+    changes: List[PropertyChange] = []
+
+    def on_change(change: PropertyChange):
+        changes.append(change)
+
+    obj = TestClass(value=10)
+    monitor_property_changes(obj, on_change)
+
+    obj.value = 20
+
+    assert len(changes) == 1
+    assert changes[0] == PropertyChange("value", 10, 20)
+
+
+def test_monitor_on_second_instance():
+    changes: List[PropertyChange] = []
+
+    def on_change(change: PropertyChange):
+        pass
+
+    def on_change2(change: PropertyChange):
+        changes.append(change)
+
+    obj1 = TestClass(value=10)
+    monitor_property_changes(obj1, on_change)
+    obj = TestClass(value=10)
+    monitor_property_changes(obj, on_change2)
+
+    obj.value = 20
+
+    assert len(changes) == 1
+    assert changes[0] == PropertyChange("value", 10, 20)
 
 
 def main():
