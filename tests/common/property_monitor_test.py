@@ -5,6 +5,8 @@ from wwwpy.common import property_monitor as pm
 from wwwpy.common.property_monitor import PropertyChange, monitor_changes
 import pytest
 
+from wwwpy.common.rpc import serialization
+
 
 @dataclass
 class TestClass:
@@ -80,3 +82,16 @@ def test_group_changes():
     # verify immediate delivery of changes
     obj.value = 123
     assert events == [[PropertyChange(obj, "value", 1, 123)]]
+
+
+def test_deserialize():
+    def on_change(changes: List[PropertyChange]):
+        raise Exception("Should not be called")
+
+    obj = TestClass("alice", 10)
+    monitor_changes(obj, on_change)
+
+    serialized = serialization.serialize(obj, TestClass)
+    deserialized = serialization.deserialize(serialized, TestClass)
+
+    assert deserialized == obj
