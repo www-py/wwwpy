@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 from wwwpy.common.designer.html_parser import html_to_tree, CstNode
 
@@ -15,7 +15,7 @@ class Node:
     """This is the index in the list of children of the parent node.
     It is -1 if the node has no parent.
     """
-    attributes: Dict[str, str | None]
+    attributes: Dict[str, Optional[str]]
     """The HTML attributes of the node."""
 
     def __post_init__(self):
