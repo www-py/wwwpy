@@ -28,7 +28,7 @@ def test_monitor_existing_property_change():
 
 def test_monitor_on_second_instance():
     events1: List[List[PropertyChange]] = []
-    events2:  List[List[PropertyChange]] = []
+    events2: List[List[PropertyChange]] = []
 
     def on_change1(changes: List[PropertyChange]):
         events1.append(changes)
@@ -57,6 +57,29 @@ def test_double_monitor__should_raise_exception():
     monitor_property_changes(obj, lambda change: None)
     with pytest.raises(Exception):
         monitor_property_changes(obj, lambda change: None)
+
+
+def test_group_changes():
+    events: List[List[PropertyChange]] = []
+
+    def on_change(changes: List[PropertyChange]):
+        events.append(changes)
+
+    obj = TestClass("alice", 10)
+    monitor_property_changes(obj, on_change)
+
+    with pm.group_changes(obj):
+        obj.value = 1
+        assert events == []
+        obj.name = "bob"
+        assert events == []
+
+    assert events == [[PropertyChange(obj, "value", 10, 1), PropertyChange(obj, "name", "alice", "bob")]]
+    events.clear()
+
+    # verify immediate delivery of changes
+    obj.value = 123
+    assert events == [[PropertyChange(obj, "value", 1, 123)]]
 
 
 def main():
