@@ -16,7 +16,7 @@ from wwwpy.remote.websocket import setup_websocket
 
 async def entry_point(dev_mode: bool = False):
     # from wwwpy.common.tree import print_tree
-    print_tree('/wwwpy_bundle')
+    # print_tree('/wwwpy_bundle')
 
     await setup_websocket()
     if dev_mode:
