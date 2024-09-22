@@ -18,6 +18,10 @@ class NameHelp:
     name: str
     help: Help = field(default=_empty_help)
 
+    @property
+    def python_name(self) -> str:
+        return self.name.replace('-', '_')
+
 
 @dataclass
 class EventDef(NameHelp):

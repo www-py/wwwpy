@@ -94,6 +94,7 @@ class ElementEditor:
         """One EventEditor for each event defined in the ElementDef."""
 
         self.element_path = element_path
+        self.element_def = element_def
         element_node = element_path.path[-1]
         ci = code_info.class_info(self.current_python_source(), element_path.class_name)
         for attribute_def in element_def.attributes:
@@ -105,7 +106,7 @@ class ElementEditor:
 
         data_name = element_path.data_name
         for event_def in element_def.events:
-            method_name = f'{data_name}__{event_def.name}'
+            method_name = f'{data_name}__{event_def.python_name}'
             method = ci.methods_by_name.get(method_name, None)
             event_editor = EventEditor(event_def, method, method_name, self._event_do_action)
             self.events.append(event_editor)
