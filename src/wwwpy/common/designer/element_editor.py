@@ -95,7 +95,7 @@ class ElementEditor:
 
         self.element_path = element_path
         element_node = element_path.path[-1]
-        ci = code_info.class_info(self._python_source(), element_path.class_name)
+        ci = code_info.class_info(self.current_python_source(), element_path.class_name)
         for attribute_def in element_def.attributes:
             exists = attribute_def.name in element_node.attributes
             value = element_node.attributes.get(attribute_def.name, None)
@@ -110,7 +110,7 @@ class ElementEditor:
             event_editor = EventEditor(event_def, method, method_name, self._event_do_action)
             self.events.append(event_editor)
 
-    def _python_source(self):
+    def current_python_source(self):
         return self._python_source_path().read_text()
 
     def _python_source_path(self):
@@ -120,14 +120,14 @@ class ElementEditor:
         return path
 
     def _html_source(self):
-        ps = self._python_source()
+        ps = self.current_python_source()
         html = code_strings.html_from_source(ps, self.element_path.class_name)
         return html
 
     def _event_do_action(self, event_editor: EventEditor):
         if event_editor.handled:
             return
-        new_source = code_edit.add_method(self._python_source(), self.element_path.class_name,
+        new_source = code_edit.add_method(self.current_python_source(), self.element_path.class_name,
                                           event_editor.method_name, 'event')
         self._write_source(new_source)
 
@@ -135,7 +135,7 @@ class ElementEditor:
         self._python_source_path().write_text(new_source)
 
     def _attribute_change(self, html_manipulator: Callable[[str], str]):
-        python_source = self._python_source()
+        python_source = self.current_python_source()
         new_source = code_strings.html_string_edit(python_source, self.element_path.class_name, html_manipulator)
         self._write_source(new_source)
 

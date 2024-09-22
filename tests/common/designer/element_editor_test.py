@@ -66,7 +66,7 @@ class Component2:
         target.events[0].do_action()
 
         # THEN
-        ci = code_info.class_info(target_fixture.current_source, 'Component2')
+        ci = code_info.class_info(target.current_python_source(), 'Component2')
         actual_method = ci.methods_by_name.get('button1__click', None)
         assert actual_method
 
@@ -88,7 +88,7 @@ class Component2:
         target.events[0].do_action()
 
         # THEN
-        assert target_fixture.current_source == target_fixture.source
+        assert target.current_python_source() == target_fixture.source
 
 
 class TestAttributes:
@@ -223,8 +223,6 @@ class TargetFixture:
         self._source = value
         source = value
         self.dyn_sys_path.write_module('', 'component2.py', source)
-        from component2 import Component2  # noqa - dynamically created module
-        component2 = Component2()
 
         # artificially create a NodePath; in production it is created by the element_path that uses the browser DOM
         # NodePath([Node("button", 1, {'data-name': 'button1'})])
@@ -234,14 +232,9 @@ class TargetFixture:
         self.target = ElementEditor(self.element_path, self.element_def)
 
     @property
-    def current_source(self) -> str:
-        comp_path = self.dyn_sys_path.path / 'component2.py'
-        return comp_path.read_text()
-
-    @property
     def current_html(self) -> str:
         from wwwpy.common.designer import code_strings as cs
-        html = cs.html_from_source(self.current_source, self.element_path.class_name)
+        html = cs.html_from_source(self.target.current_python_source(), self.element_path.class_name)
         return html
 
 
