@@ -5,6 +5,20 @@ from wwwpy.common.designer.element_library import ElementDef, EventDef, Help
 from wwwpy.common.rpc import serialization
 
 
+def _reorder(elements: List[ElementDef]):
+    order = ['sl-button', 'sl-input', 'sl-textarea', 'sl-select',
+             'sl-checkbox', 'sl-dropdown', 'sl-switch', 'sl-progress-bar',
+             'sl-alert', 'sl-drawer']
+    order.reverse()
+    by_tag_name = {element.tag_name: element for element in elements}
+    for o in order:
+        ed = by_tag_name.get(o)
+        if not ed:
+            raise ValueError(f"Element {o} not found")
+        elements.remove(ed)
+        elements.insert(0, ed)
+
+
 def _shoelace_elements_def() -> List[ElementDef]:
     shoelace_json = (Path(__file__).parent / 'shoelace.json').read_text()
     elements: List[ElementDef] = serialization.from_json(shoelace_json, List[ElementDef])
@@ -15,6 +29,8 @@ def _shoelace_elements_def() -> List[ElementDef]:
     if sl_button:
         url = "https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event"
         sl_button.events.insert(0, EventDef('click', Help('', url)))
+
+    _reorder(elements)
     return elements
 
 
