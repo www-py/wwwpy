@@ -121,9 +121,9 @@ class MyElement(wpc.Component):
     # component_def = ElementDef('btn', 'js.Some', '<b name="#name#"></b>')
     component_def = ElementDef('btn', 'js.Some')
     node_path = [Node("div", 0, {'id': 'foo'}), Node("div", 1, {'id': 'target'})]
-    modified_source = add_component(original_source, 'MyElement', component_def, node_path, Position.afterend)
+    add_result = add_component(original_source, 'MyElement', component_def, node_path, Position.afterend)
 
-    assert modified_source == expected_source
+    assert add_result.html == expected_source
 
 
 def test_add_method():

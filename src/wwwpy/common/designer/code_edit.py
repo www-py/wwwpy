@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 import libcst as cst
 
 from wwwpy.common.designer import code_info
@@ -17,20 +19,12 @@ def add_property(source_code: str, class_name: str, attr_info: Attribute):
 
     return modified_tree.code
 
-
-# def add_component(source_code: str, attr_name: str, attribute_type: str, html_piece: str, position: Position) -> str:
-#     named_html = html_piece.replace('#name#', attr_name)
-#
-#     def manipulate_html(html):
-#         return html + named_html
-#
-#     source1 = add_attribute(source_code, Attribute(attr_name, attribute_type, 'wpc.element()'))
-#     source2 = html_string_edit(source1, manipulate_html)
-#
-#     return source2
+@dataclass
+class AddResult:
+    html: str
 
 def add_component(source_code: str, class_name: str, comp_def: ElementDef, node_path: NodePath,
-                  position: Position) -> str | None:
+                  position: Position) -> AddResult | None:
     class_info = code_info.class_info(source_code, class_name)
     if class_info is None:
         print(f'Class {class_name} not found inside source ```{source_code}```')
@@ -47,7 +41,7 @@ def add_component(source_code: str, class_name: str, comp_def: ElementDef, node_
 
     source2 = html_string_edit(source1, class_name, manipulate_html)
 
-    return source2
+    return AddResult(source2)
 
 
 class _AddFieldToClassTransformer(cst.CSTTransformer):
