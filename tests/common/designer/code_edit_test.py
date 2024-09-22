@@ -118,12 +118,76 @@ class MyElement(wpc.Component):
 <btn data-name="btn1"></btn></div>'''
     """
 
-    # component_def = ElementDef('btn', 'js.Some', '<b name="#name#"></b>')
     component_def = ElementDef('btn', 'js.Some')
     node_path = [Node("div", 0, {'id': 'foo'}), Node("div", 1, {'id': 'target'})]
     add_result = add_component(original_source, 'MyElement', component_def, node_path, Position.afterend)
 
     assert add_result.html == expected_source
+
+
+def test_add_component_gen_html():
+    original_source = """
+import wwwpy.remote.component as wpc
+class MyElement(wpc.Component):
+    def foo(self):
+        self.element.innerHTML = '''<div id='foo'><div></div><div id='target'></div></div>'''
+    """
+
+    expected_source = """
+import wwwpy.remote.component as wpc
+class MyElement(wpc.Component):
+    btn1: js.Some = wpc.element()
+    def foo(self):
+        self.element.innerHTML = '''<div id='foo'><div></div><div id='target'></div>
+<btn data-name="btn1" attr1="bar"></btn></div>'''
+    """
+
+    def gen_html(element_def, data_name):
+        return f'\n<btn data-name="{data_name}" attr1="bar"></btn>'
+
+    component_def = ElementDef('btn', 'js.Some', gen_html=gen_html)
+    node_path = [Node("div", 0, {'id': 'foo'}), Node("div", 1, {'id': 'target'})]
+    add_result = add_component(original_source, 'MyElement', component_def, node_path, Position.afterend)
+
+    assert add_result.html == expected_source
+
+
+def test_add_component_node_path__afterend():
+    original_source = """
+import wwwpy.remote.component as wpc
+class MyElement(wpc.Component):
+    def foo(self):
+        self.element.innerHTML = '''<div id='foo'><div></div><div id='target'></div></div>'''
+    """
+
+    def gen_html(element_def, data_name):
+        return f'\n<btn data-name="{data_name}" attr1="bar"></btn>'
+
+    component_def = ElementDef('btn', 'js.Some', gen_html=gen_html)
+    node_path = [Node("div", 0, {'id': 'foo'}), Node("div", 1, {'id': 'target'})]
+    add_result = add_component(original_source, 'MyElement', component_def, node_path, Position.afterend)
+
+    expected_node_path = [node_path[0], Node('btn', 2, {'data-name': 'btn1', 'attr1': 'bar'})]
+    assert add_result.node_path == expected_node_path
+
+
+def test_add_component_node_path__beforebegin():
+    original_source = """
+import wwwpy.remote.component as wpc
+class MyElement(wpc.Component):
+    def foo(self):
+        self.element.innerHTML = '''<div id='foo'><div></div><div id='target'></div></div>'''
+    """
+
+    def gen_html(element_def, data_name):
+        return f'\n<btn data-name="{data_name}" attr1="bar"></btn>'
+
+    component_def = ElementDef('btn', 'js.Some', gen_html=gen_html)
+    node_path = [Node("div", 0, {'id': 'foo'}), Node("div", 1, {'id': 'target'})]
+    add_result = add_component(original_source, 'MyElement', component_def, node_path, Position.beforebegin)
+
+    expected_node_path = [node_path[0], Node('btn', 1, {'data-name': 'btn1', 'attr1': 'bar'})]
+    assert add_result.node_path == expected_node_path
 
 
 def test_add_method():

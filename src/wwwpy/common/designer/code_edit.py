@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import libcst as cst
 
-from wwwpy.common.designer import code_info
+from wwwpy.common.designer import code_info, html_parser, html_locator
 from wwwpy.common.designer.code_info import Attribute
 from wwwpy.common.designer.code_strings import html_string_edit
 from wwwpy.common.designer.element_library import ElementDef
@@ -19,9 +19,12 @@ def add_property(source_code: str, class_name: str, attr_info: Attribute):
 
     return modified_tree.code
 
+
 @dataclass
 class AddResult:
     html: str
+    node_path: NodePath
+
 
 def add_component(source_code: str, class_name: str, comp_def: ElementDef, node_path: NodePath,
                   position: Position) -> AddResult | None:
@@ -40,8 +43,11 @@ def add_component(source_code: str, class_name: str, comp_def: ElementDef, node_
         return add
 
     source2 = html_string_edit(source1, class_name, manipulate_html)
-
-    return AddResult(source2)
+    new_tree = html_parser.html_to_tree(source2)
+    displacement = 0 if position == Position.beforebegin else 1
+    indexes = [n.child_index for n in node_path[0:-1]] + [node_path[-1].child_index + displacement]
+    new_node_path = html_locator.tree_to_path(new_tree, indexes)
+    return AddResult(source2, new_node_path)
 
 
 class _AddFieldToClassTransformer(cst.CSTTransformer):
