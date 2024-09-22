@@ -24,9 +24,13 @@ class ElementPath:
     @property
     def tag_name(self) -> str:
         """The tag name of the element in lowercase."""
+        if len(self.path) == 0:
+            return ''
         return self.path[-1].tag_name
 
     @property
     def data_name(self) -> Optional[str]:
         """The name of the element in the data dictionary."""
+        if len(self.path) == 0:
+            return None
         return self.path[-1].attributes.get('data-name', None)
