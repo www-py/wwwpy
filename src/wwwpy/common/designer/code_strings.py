@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 from typing import Callable
 
 import libcst as cst
+
+from wwwpy.common import modlib
 
 
 def html_string_edit(source_code: str, class_name: str, html_manipulator: Callable[[str], str]) -> str:
@@ -13,6 +17,15 @@ def html_string_edit(source_code: str, class_name: str, html_manipulator: Callab
     modified_tree = tree.visit(transformer)
     return modified_tree.code
 
+
+def html_from(module: str, class_name: str) -> str | None:
+    path = modlib._find_module_path(module)
+    if not path:
+        return None
+    source_code = path.read_text()
+    return html_from_source(source_code, class_name)
+
+
 def html_from_source(source_code: str, class_name: str) -> str:
     """This function extracts the HTML string from the source code."""
     html_res = []
@@ -24,6 +37,7 @@ def html_from_source(source_code: str, class_name: str) -> str:
     html_string_edit(source_code, class_name, html_manipulator)  # improper use to capture html
 
     return html_res[0]
+
 
 class _HTMLStringUpdater(cst.CSTTransformer):
     def __init__(self, class_name: str, html_manipulator: Callable[[str], str]):
