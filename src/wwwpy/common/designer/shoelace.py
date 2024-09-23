@@ -4,6 +4,8 @@ from typing import List
 from wwwpy.common.designer.element_library import ElementDef, EventDef, Help
 from wwwpy.common.rpc import serialization
 
+parent = Path(__file__).parent
+
 
 def _reorder(elements: List[ElementDef]):
     order = ['sl-button', 'sl-input', 'sl-textarea', 'sl-select',
@@ -20,7 +22,7 @@ def _reorder(elements: List[ElementDef]):
 
 
 def _shoelace_elements_def() -> List[ElementDef]:
-    shoelace_json = (Path(__file__).parent / 'shoelace.json').read_text()
+    shoelace_json = (parent / 'shoelace.json').read_text()
     elements: List[ElementDef] = serialization.from_json(shoelace_json, List[ElementDef])
     for element in elements:
         element.gen_html = _shoelaceGenerateHtml
@@ -29,6 +31,11 @@ def _shoelace_elements_def() -> List[ElementDef]:
     if sl_button:
         url = "https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event"
         sl_button.events.insert(0, EventDef('click', Help('', url)))
+    sl_icon = by_tag_name['sl-icon']
+    if sl_icon:
+        for attr in sl_icon.attributes:
+            if attr.name == 'name':
+                attr.values = (parent / 'sl_icons.txt').read_text().split('\n')
 
     _reorder(elements)
     return elements

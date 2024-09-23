@@ -14,9 +14,12 @@ def _standard_elements_def() -> List[ElementDef]:
         ElementDef(
             'input', 'js.HTMLInputElement',
             help=Help('A field for entering text.', 'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input'),
-            events=[EventDef('input', Help('The input event fires when the value of the element has been changed '
-                                           'as a direct result of a user action',
-                                           'https://developer.mozilla.org/en-US/docs/Web/API/Element/input_event'))],
+            events=[
+                EventDef('input', Help('The input event fires when the value of the element has been changed '
+                                       'as a direct result of a user action',
+                                       'https://developer.mozilla.org/en-US/docs/Web/API/Element/input_event')),
+                EventDef('change')
+            ]
         ),
         ElementDef(
             'div', 'js.HTMLDivElement',

@@ -31,7 +31,8 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"wwwpy" = ["**/*.json"]
+"wwwpy" = ["**/*.json", "**/*.txt"]
+
 
 [project.optional-dependencies]
 # libcst==1.3.1 is the version available in pyodide 0.26.1
