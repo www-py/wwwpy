@@ -1,5 +1,6 @@
 import base64
 import builtins
+import enum
 import importlib
 import json
 import re
@@ -54,6 +55,8 @@ def serialize(obj: Any, cls: Type) -> Any:
         return base64.b64encode(obj).decode('utf-8')
     elif isinstance(obj, (int, float, str, bool)):
         return obj
+    elif isinstance(obj, enum.Enum):
+        return serialize(obj.value, type(obj.value))
     elif obj is None:
         return None
     else:
@@ -110,6 +113,9 @@ def deserialize(data: Any, cls: Type) -> Any:
         return base64.b64decode(data.encode('utf-8'))
     elif cls in (int, float, str, bool):
         return cls(data)
+    elif issubclass(cls, enum.Enum):
+        first_member = next(iter(cls))
+        return cls(deserialize(data, type(first_member.value)))
     elif cls is type(None):
         return None
     else:

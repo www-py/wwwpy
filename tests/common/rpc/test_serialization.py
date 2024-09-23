@@ -198,6 +198,33 @@ def test_dataclass_deserialize_with_static_value():
     assert deserialized == PersonDef(name='foo')
 
 
+def test_enum_class():
+    from enum import Enum
+
+    class Color(Enum):
+        RED = 1
+        GREEN = 2
+        BLUE = 3
+
+    serialized = serialization.to_json(Color.GREEN, Color)
+    deserialized = serialization.from_json(serialized, Color)
+
+    assert deserialized == Color.GREEN
+
+
+def test_enum_class_custom_type():
+    from enum import Enum
+
+    class Color(str, Enum):
+        RED = 'red'
+        GREEN = 'green'
+
+    serialized = serialization.to_json(Color.GREEN, Color)
+    deserialized = serialization.from_json(serialized, Color)
+
+    assert deserialized == Color.GREEN
+
+
 class TestUnion:
     birth: Union[datetime, str]
 
