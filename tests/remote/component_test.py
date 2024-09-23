@@ -238,6 +238,53 @@ class TestElementEventBinding:
         foo.dispatchEvent(Event.new('custom-1'))
         assert [1] == actual
 
+    def test_on_sub_component__issue20240923(self):
+
+        events = []
+
+        class CChild(Component):
+            def init_component(self):
+                self.element.innerHTML = "<div>hello</div>"
+
+        tag_name = CChild.component_metadata.tag_name
+
+        class CParent(Component):
+            def init_component(self):
+                self.element.innerHTML = f"<{tag_name} data-name='foo'></{tag_name}>"
+
+            def foo__click(self, event):
+                events.append(1)
+
+        target = CParent()
+        foo = target.element.querySelector(f'[data-name="foo"]')
+        foo.click()
+
+        assert [1] == events
+
+    def test_on_sub_component_with_ComponentDeclaration__issue20240923(self):
+        events = []
+
+        class CChild(Component):
+            def init_component(self):
+                self.element.innerHTML = "<div>hello</div>"
+
+        tag_name = CChild.component_metadata.tag_name
+
+        class CParent(Component):
+            foo: CChild = element()  # component declaration
+
+            def init_component(self):
+                self.element.innerHTML = f"<{tag_name} data-name='foo'></{tag_name}>"
+
+            def foo__click(self, event):
+                events.append(1)
+
+        target = CParent()
+        foo = target.element.querySelector(f'[data-name="foo"]')
+        foo.click()
+
+        assert [1] == events
+
 
 def to_js(o):
     import js

@@ -64,6 +64,16 @@ class Metadata:
         self.registered = True
 
 
+def get_component(element: HTMLElement) -> Component | None:
+    if not hasattr(element, '_py'):
+        return None
+    component = element._py
+    if hasattr(component, "unwrap"):
+        component = component.unwrap()
+
+    return component
+
+
 class Component:
     component_metadata: Metadata = None
     element: HTMLElement = None
@@ -111,7 +121,7 @@ class Component:
     def root_element(self):
         return self.element
 
-    def find_element_field(self, name: str):
+    def _find_element(self, name: str):
         root = self.root_element()
         selector = root.querySelector(f'[data-name="{name}"]')
         if selector is None:
@@ -121,8 +131,16 @@ class Component:
             else:
                 console.warn(msg)
 
-        if hasattr(selector, '_py'):
-            selector = selector._py
+        return selector
+
+    def _find_python_attribute(self, name: str):
+        selector = self._find_element(name)
+
+        if selector:
+            comp = get_component(selector)
+            if comp:
+                selector = comp
+
         self._check_type(name, selector)
         return selector
 
@@ -160,7 +178,7 @@ class Component:
             if element_name == '' or event_name == '':
                 continue
 
-            element = self.find_element_field(element_name)
+            element = self._find_element(element_name)
             if element is None:
                 console.warn(f'Event bind failed, element `{element_name}` was not found for method `{name}`')
                 continue
@@ -226,4 +244,4 @@ class element:
         self.name = name
 
     def __get__(self, obj: Component, objtype=None):
-        return obj.find_element_field(self.name)
+        return obj._find_python_attribute(self.name)
