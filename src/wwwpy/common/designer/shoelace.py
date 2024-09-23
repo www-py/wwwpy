@@ -7,8 +7,8 @@ from wwwpy.common.rpc import serialization
 
 def _reorder(elements: List[ElementDef]):
     order = ['sl-button', 'sl-input', 'sl-textarea', 'sl-select',
-             'sl-checkbox', 'sl-dropdown', 'sl-switch', 'sl-progress-bar',
-             'sl-alert', 'sl-drawer']
+             'sl-checkbox', 'sl-dropdown', 'sl-switch', 'sl-progress-bar', 'sl-split-panel',
+             'sl-textarea', 'sl-alert', 'sl-drawer']
     order.reverse()
     by_tag_name = {element.tag_name: element for element in elements}
     for o in order:
