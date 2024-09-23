@@ -4,7 +4,7 @@ from abc import ABC
 from pathlib import Path
 from typing import Callable
 
-from . import code_edit, code_strings, html_edit
+from . import code_edit, code_strings, html_edit, html_parser, html_locator
 from . import code_info
 from . import element_library as el
 from . import element_path as ep
@@ -95,21 +95,38 @@ class ElementEditor:
 
         self.element_path = element_path
         self.element_def = element_def
-        element_node = element_path.path[-1]
-        ci = code_info.class_info(self.current_python_source(), element_path.class_name)
-        for attribute_def in element_def.attributes:
-            exists = attribute_def.name in element_node.attributes
-            value = element_node.attributes.get(attribute_def.name, None)
-            attribute_editor = AttributeEditor(attribute_def, exists, value,
-                                               self._attribute_set_value, self._attribute_remove)
-            self.attributes.append(attribute_editor)
+        self._fill_attrs()
+        self._fill_events()
 
+    def _fill_events(self):
+        element_def = self.element_def
+        element_path = self.element_path
+        ci = code_info.class_info(self.current_python_source(), element_path.class_name)
         data_name = element_path.data_name
         for event_def in element_def.events:
             method_name = f'{data_name}__{event_def.python_name}'
             method = ci.methods_by_name.get(method_name, None)
             event_editor = EventEditor(event_def, method, method_name, self._event_do_action)
             self.events.append(event_editor)
+
+    def _fill_attrs(self):
+        element_def = self.element_def
+        element_path = self.element_path
+        attributes = self._get_attributes_for(element_path)
+        for attribute_def in element_def.attributes:
+            exists = attribute_def.name in attributes
+            value = attributes.get(attribute_def.name, None)
+            attribute_editor = AttributeEditor(attribute_def, exists, value,
+                                               self._attribute_set_value, self._attribute_remove)
+            self.attributes.append(attribute_editor)
+
+    def _get_attributes_for(self, element_path):
+        html = self._html_source()
+        new_tree = html_parser.html_to_tree(html)
+        indexes = [n.child_index for n in element_path.path]
+        new_node_path = html_locator.tree_to_path(new_tree, indexes)
+        attributes = new_node_path[-1].attributes
+        return attributes
 
     def current_python_source(self):
         return self._python_source_path().read_text()

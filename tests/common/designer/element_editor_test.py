@@ -162,6 +162,22 @@ class Component2():
         # language=html
         assert "<button data-name='button1' name='btn1'>bar</button>" == target_fixture.current_html
 
+    def test_should_not_rely_on_attributes_from_node_path__but_on_source_code(self, target_fixture):
+        # GIVEN
+        target_fixture.source = '''
+class Component2():
+    def connectedCallback(self):
+        self.element.innerHTML = """<button name='foo'></button>"""
+    '''
+        # WHEN
+        altered_node_path = [Node(tag_name='button', child_index=0, attributes={'name': '123'})]
+        target_fixture.set_node_path(altered_node_path)
+
+        target = target_fixture.target
+
+        # THEN
+        assert target.attributes.get('name').value == 'foo'
+
     def test_add_attribute(self, target_fixture):
         # GIVEN
         target_fixture.source = '''
@@ -208,10 +224,19 @@ class TargetFixture:
         self.name_ad = AttributeDef('name', mandatory=False, closed_values=False)
         self.attributes = [self.name_ad]
         self.element_def = ElementDef('button', 'js.HTMLButtonElement', events=self.events, attributes=self.attributes)
-        self.element_path: ElementPath = None
+        self._element_path: ElementPath = None
         self.target: ElementEditor = None
         if source:
             self.source = source
+
+    @property
+    def element_path(self) -> ElementPath:
+        return self._element_path
+
+    @element_path.setter
+    def element_path(self, value: ElementPath):
+        self._element_path = value
+        self.target = ElementEditor(self.element_path, self.element_def)
 
     @property
     def source(self):
@@ -227,9 +252,10 @@ class TargetFixture:
         # artificially create a NodePath; in production it is created by the element_path that uses the browser DOM
         # NodePath([Node("button", 1, {'data-name': 'button1'})])
         path: NodePath = _node_path(source, 'Component2', [0])
+        self.set_node_path(path)
 
+    def set_node_path(self, path: NodePath):
         self.element_path = ElementPath('component2', 'Component2', path)
-        self.target = ElementEditor(self.element_path, self.element_def)
 
     @property
     def current_html(self) -> str:
