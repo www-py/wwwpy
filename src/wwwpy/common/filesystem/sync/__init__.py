@@ -10,9 +10,16 @@ def new_tmp_path() -> Path:
 
 
 def filesystemevents_print(events: List[Event]):
-    for e in events:
-        print(f'  {e}')
-    print(f'FileSystemEvent received: {len(events)}')
+    # for e in events:
+    #     print(f'  {e}')
+    def accept(e: Event) -> bool:
+        bad = e.is_directory and e.event_type == 'modified'
+        return not bad
+    def to_str(e: Event) -> str:
+        return e.src_path if e.dest_path == '' else f'{e.src_path} -> {e.dest_path}'
+    joined = set(to_str(e) for e in events if accept(e))
+    summary = ', '.join(joined)
+    print(f'FileSystemEvent received: {len(events)}. Summary: {summary}')
 
 
 class Sync(Protocol):
