@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from abc import ABC
-from pathlib import Path
 from typing import Callable
 
-from . import code_edit, code_strings, html_edit, html_parser, html_locator
+from . import code_edit, code_strings, html_edit, html_locator
 from . import code_info
 from . import element_library as el
 from . import element_path as ep
@@ -112,21 +111,13 @@ class ElementEditor:
     def _fill_attrs(self):
         element_def = self.element_def
         element_path = self.element_path
-        attributes = self._get_attributes_for(element_path)
+        attributes = html_locator.locate_node(self._html_source(), element_path.path).attributes
         for attribute_def in element_def.attributes:
             exists = attribute_def.name in attributes
             value = attributes.get(attribute_def.name, None)
             attribute_editor = AttributeEditor(attribute_def, exists, value,
                                                self._attribute_set_value, self._attribute_remove)
             self.attributes.append(attribute_editor)
-
-    def _get_attributes_for(self, element_path):
-        html = self._html_source()
-        new_tree = html_parser.html_to_tree(html)
-        indexes = [n.child_index for n in element_path.path]
-        new_node_path = html_locator.tree_to_path(new_tree, indexes)
-        attributes = new_node_path[-1].attributes
-        return attributes
 
     def current_python_source(self):
         return self._python_source_path().read_text()
