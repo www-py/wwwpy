@@ -49,3 +49,27 @@ def test_broken_restore():
     assert restore.present
     assert restore.exception is not None
     assert restore.instance is None
+
+
+def test_broken_with_default():
+    storage = state.DictStorage()
+    storage.storage['state1'] = 'broken'
+
+    restore = state.State(storage, 'state1').restore(State1)
+
+    assert restore.present
+    assert restore.instance is None
+    assert restore.exception is not None
+    assert restore.instance_or_default() == State1()
+
+
+def test_not_broken_with_default():
+    storage = state.DictStorage()
+
+    instance = State1(length=1, name='test')
+    state.State(storage, 'state1').save(instance)
+
+    restore = state.State(storage, 'state1').restore(State1)
+
+    default = restore.instance_or_default()
+    assert default is restore.instance

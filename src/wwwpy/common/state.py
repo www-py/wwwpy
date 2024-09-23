@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol, Iterator
+from typing import Protocol, Iterator, TypeVar, Generic, Type
 
 from wwwpy.common.rpc import serialization
 
@@ -21,11 +21,18 @@ class Storage(Protocol):
     def removeItem(self, key: str): ...
 
 
+T = TypeVar('T')
+
+
 @dataclass
-class Restore:
+class Restore(Generic[T]):
+    clazz: Type[T]
     present: bool
-    instance: any
+    instance: T | None
     exception: Exception | None = None
+
+    def instance_or_default(self) -> T:
+        return self.instance if self.instance else self.clazz()
 
 
 class State:
@@ -33,18 +40,18 @@ class State:
         self.key = key
         self.storage = storage
 
-    def restore(self, clazz) -> Restore:
+    def restore(self, clazz: Type[T]) -> Restore[T]:
         j = self.storage.getItem(self.key)
         if not j:
-            return Restore(False, None)
+            return Restore(clazz, False, None)
         try:
             obj = serialization.from_json(j, clazz)
         except Exception as e:
             print(f'failed restore of type {clazz} with json ```{j}```')
             import traceback
             traceback.print_exc()
-            return Restore(True, None, e)
-        return Restore(True, obj)
+            return Restore(clazz, True, None, e)
+        return Restore(clazz, True, obj)
 
     def save(self, obj):
         j = serialization.to_json(obj, type(obj))
