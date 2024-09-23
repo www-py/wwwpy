@@ -78,4 +78,6 @@ def element_library() -> ElementLibrary:
         _element_library = ElementLibrary()
         from wwwpy.common.designer.shoelace import _shoelace_elements_def
         _element_library.elements.extend(_shoelace_elements_def())
+        from .el_standard import _standard_elements_def
+        _element_library.elements.extend(_standard_elements_def())
     return _element_library
