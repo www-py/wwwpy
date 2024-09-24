@@ -27,8 +27,12 @@ async def entry_point(dev_mode: bool = False):
 
 def _reload():
     async def reload():
+        import wwwpy.common.modlib as modlib
         console.log('reloading')
-        reloader.unload_path(str(_get_dir().remote))
+        for package in ['remote', 'common']:
+            directory = modlib._find_package_directory(package)
+            if directory:
+                reloader.unload_path(str(directory))
         await _invoke_browser_main(True)
 
     set_timeout(reload)
@@ -53,5 +57,3 @@ async def _invoke_browser_main(reload=False):
             await remote.main()
         else:
             remote.main()
-
-
