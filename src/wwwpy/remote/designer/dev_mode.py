@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import List, Any
 
+from wwwpy.common import modlib
 from wwwpy.remote import rpc as rpc
 from js import console
 
@@ -17,10 +18,9 @@ async def _setup_browser_dev_mode():
     for package in designer.pypi_packages:
         await micropip_install(package)
 
-    def file_changed(events: List[Any]):
-        from wwwpy.remote.root_path import _get_dir
-        wd = _get_dir()
-        sync_impl.sync_target(wd.root, events)
+    def file_changed(package_name: str, events: List[Any]):
+        directory = modlib._find_package_directory(package_name)
+        sync_impl.sync_target(directory, events)
 
         from wwwpy.remote.browser_main import _reload
         _reload()
