@@ -1,12 +1,8 @@
 from pathlib import Path
 
-from playwright.sync_api import Page, expect
-
-from tests import for_all_webservers
 from tests.common import restore_sys_path
 from wwwpy.common.modlib import _find_module_path
 from wwwpy.server import configure
-from wwwpy.webserver import Webserver
 
 
 def test_dev_mode_disabled__should_NOT_create_canonical_components(restore_sys_path, tmp_path: Path):
@@ -32,7 +28,6 @@ def test_dev_mode_non_empty_folder_but_no_remote__should_not_fail(restore_sys_pa
 
 from pathlib import Path
 import hashlib
-import pytest
 
 
 def get_all_paths_with_hashes(root):
