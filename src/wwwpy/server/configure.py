@@ -11,7 +11,6 @@ from wwwpy.common.quickstart import _setup_quickstart
 from wwwpy.common.rpc.custom_loader import CustomFinder
 from wwwpy.resources import library_resources, from_directory, from_file
 from wwwpy.server.filesystem_sync.watchdog_debouncer import WatchdogDebouncer
-from wwwpy.server.rpc import configure_services
 from wwwpy.webserver import Webserver
 from wwwpy.webservers.available_webservers import available_webservers
 from wwwpy.websocket import WebsocketPool
@@ -41,7 +40,7 @@ def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
     sys.meta_path.insert(0, CustomFinder({'remote', 'remote.rpc', 'wwwpy.remote', 'wwwpy.remote.rpc'}))
     global websocket_pool
     websocket_pool = WebsocketPool('/wwwpy/ws')
-    services = configure_services('/wwwpy/rpc')
+    services = _configure_services('/wwwpy/rpc')
     routes = [services.route, websocket_pool.http_route, *bootstrap_routes(
         resources=[
             library_resources(),
@@ -80,3 +79,16 @@ def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
 
     if webserver is not None:
         webserver.set_http_route(*routes)
+
+
+from wwwpy.rpc import RpcRoute, Module
+
+
+def _configure_services(route_path: str) -> RpcRoute:
+    services = RpcRoute(route_path)
+    try:
+        import server.rpc
+        services.add_module(Module(server.rpc))
+    except Exception as e:
+        print(f'could not load rpc module: {e}')
+    return services
