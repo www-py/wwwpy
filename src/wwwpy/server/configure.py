@@ -35,7 +35,7 @@ def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
             _setup_quickstart(directory)
         else:
             (directory / 'remote').mkdir(exist_ok=True)
-            
+
     sys.path.insert(0, str(directory))
     sys.meta_path.insert(0, CustomFinder({'remote', 'remote.rpc', 'wwwpy.remote', 'wwwpy.remote.rpc'}))
     global websocket_pool
@@ -86,9 +86,16 @@ from wwwpy.rpc import RpcRoute, Module
 
 def _configure_services(route_path: str) -> RpcRoute:
     services = RpcRoute(route_path)
-    try:
-        import server.rpc
-        services.add_module(Module(server.rpc))
-    except Exception as e:
-        print(f'could not load rpc module: {e}')
+
+    def _import_by_name(module_name: str):
+        try:
+            import importlib
+            mod = Module(importlib.import_module(module_name))
+            services.add_module(mod)
+        except Exception as e:
+            print(f'could not load rpc module `{module_name}`: {e}')
+            return None
+
+    _import_by_name('wwwpy.server.rpc')
+    _import_by_name('server.rpc')
     return services
