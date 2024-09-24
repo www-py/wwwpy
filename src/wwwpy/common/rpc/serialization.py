@@ -7,12 +7,13 @@ import re
 import typing
 from dataclasses import is_dataclass
 from datetime import datetime
-from typing import Any, Type, get_origin, get_args
+from typing import Any, Type, get_origin, get_args, TypeVar
 
+T = TypeVar('T')
 
 # todo this should also receive the expected cls Type.
 # this way we can check that the instance is of the expected type
-def serialize(obj: Any, cls: Type) -> Any:
+def serialize(obj: T, cls: Type[T]) -> Any:
     optional_type = _get_optional_type(cls)
     if optional_type:
         if obj is None:
@@ -75,7 +76,7 @@ def _get_optional_type(cls):
     return None
 
 
-def deserialize(data: Any, cls: Type) -> Any:
+def deserialize(data: Any, cls: Type[T]) -> T:
     optional_type = _get_optional_type(cls)
     if optional_type:
         if data is None:
@@ -107,6 +108,9 @@ def deserialize(data: Any, cls: Type) -> Any:
             deserialize(key, key_type): deserialize(value, value_type)
             for key, value in data.items()
         }
+    elif issubclass(cls, list):  # for subclasses of list
+        item_type = get_args(cls)[0]
+        return cls([deserialize(item, item_type) for item in data])
     elif cls == datetime:
         return datetime.fromisoformat(data)
     elif cls == bytes:
@@ -122,11 +126,11 @@ def deserialize(data: Any, cls: Type) -> Any:
         raise ValueError(f"Unsupported type: {cls}")
 
 
-def to_json(obj: Any, cls: Type) -> str:
+def to_json(obj: Any, cls: Type[T]) -> str:
     return json.dumps(serialize(obj, cls))
 
 
-def from_json(json_str: str, cls: Type) -> Any:
+def from_json(json_str: str, cls: Type[T]) -> T:
     data = json.loads(json_str)
     return deserialize(data, cls)
 

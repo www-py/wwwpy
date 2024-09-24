@@ -79,6 +79,19 @@ def test_list():
     assert deserialized == expected
 
 
+def test_customized_list():
+    class CustomList(list): ...
+
+    expected = CustomList([1, 2])
+
+    serialized = serialization.to_json(expected, CustomList[int])
+    deserialized = serialization.from_json(serialized, CustomList[int])
+
+    assert deserialized == expected
+    assert isinstance(deserialized, CustomList)
+    assert list(deserialized) == [1, 2]
+
+
 def test_tuple():
     expected = (1, 2.0, 'a')
 
