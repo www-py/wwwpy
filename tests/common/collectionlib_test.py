@@ -44,3 +44,11 @@ def test_keyfunc_in_constructor():
     assert len(target) == 2
     assert target.get('red').name == 'apple'
     assert target.get('yellow').name == 'banana'
+
+
+def test_equality_with_list():
+    # GIVEN
+    target = cl.ListMap('a', 'b', 'c')
+
+    # THEN
+    assert target == ['a', 'b', 'c']

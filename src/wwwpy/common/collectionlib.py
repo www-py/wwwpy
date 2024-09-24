@@ -28,7 +28,7 @@ class ListMap(list[T]):
     # __iadd__ = _modify_method(list.__iadd__, takes_list=True)
     # __setitem__ = _modify_method(list.__setitem__, 1)
     def _key(self, item: T) -> Any:
-        raise NotImplementedError
+        return item
 
     def append(self, value: T):
         self._map[self._key(value)] = value
