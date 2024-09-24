@@ -28,7 +28,7 @@ def test_add_item():
 
 def test_items_in_constructor():
     # GIVEN
-    target = MyListMap(Item('apple', 'red'), Item('banana', 'yellow'))
+    target = MyListMap([Item('apple', 'red'), Item('banana', 'yellow')])
 
     # THEN
     assert len(target) == 2
@@ -38,7 +38,7 @@ def test_items_in_constructor():
 
 def test_keyfunc_in_constructor():
     # GIVEN
-    target = cl.ListMap(Item('apple', 'red'), Item('banana', 'yellow'), key_func=lambda x: x.color)
+    target = cl.ListMap([Item('apple', 'red'), Item('banana', 'yellow')], key_func=lambda x: x.color)
 
     # THEN
     assert len(target) == 2
@@ -48,7 +48,7 @@ def test_keyfunc_in_constructor():
 
 def test_equality_with_list():
     # GIVEN
-    target = cl.ListMap('a', 'b', 'c')
+    target = cl.ListMap(['a', 'b', 'c'])
 
     # THEN
     assert target == ['a', 'b', 'c']
