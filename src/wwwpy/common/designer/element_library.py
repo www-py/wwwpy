@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Callable, Optional, List
+from typing import Callable, Optional, List, Any
+
+from wwwpy.common.collectionlib import ListMap
 
 
 @dataclass(frozen=True)
@@ -38,6 +40,11 @@ class AttributeDef(NameHelp):
     default_value: Optional[str] = None
 
 
+class NamedListMap(ListMap):
+    def __init__(self, args):
+        super().__init__(args, key_func=lambda x: x.name)
+
+
 @dataclass
 class ElementDef:
     tag_name: str
@@ -46,8 +53,14 @@ class ElementDef:
     gen_html: Optional[Callable[[ElementDef, str], str]] = None
     """A function that generates the HTML for the element. It takes the data-name of the element as argument."""
 
-    attributes: list[AttributeDef] = field(default_factory=list)
-    events: list[EventDef] = field(default_factory=list)
+    attributes: NamedListMap[AttributeDef] = field(default_factory=list)
+    events: NamedListMap[EventDef] = field(default_factory=list)
+
+    def __post_init__(self):
+        if not isinstance(self.attributes, ListMap):
+            self.attributes = NamedListMap(self.attributes)
+        if not isinstance(self.events, ListMap):
+            self.events = NamedListMap(self.events)
 
     def new_html(self, data_name: str) -> str:
         gen_html = self.gen_html or ElementDef.default_gen_html

@@ -1,7 +1,8 @@
 from pathlib import Path
 from typing import List
 
-from wwwpy.common.designer.element_library import ElementDef, EventDef, Help
+from wwwpy.common.collectionlib import ListMap
+from wwwpy.common.designer.element_library import ElementDef, EventDef, Help, NamedListMap
 from wwwpy.common.rpc import serialization
 
 parent = Path(__file__).parent
@@ -20,22 +21,18 @@ def _reorder(elements: List[ElementDef]):
         elements.remove(ed)
         elements.insert(0, ed)
 
-
 def _shoelace_elements_def() -> List[ElementDef]:
+
     shoelace_json = (parent / 'shoelace.json').read_text()
-    elements: List[ElementDef] = serialization.from_json(shoelace_json, List[ElementDef])
+    elements = serialization.from_json(shoelace_json, List[ElementDef])
+    elements = ListMap(elements, key_func=lambda x: x.tag_name)
     for element in elements:
         element.gen_html = _shoelaceGenerateHtml
-    by_tag_name = {element.tag_name: element for element in elements}
-    sl_button = by_tag_name['sl-button']
-    if sl_button:
-        url = "https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event"
-        sl_button.events.insert(0, EventDef('click', Help('', url)))
-    sl_icon = by_tag_name['sl-icon']
-    if sl_icon:
-        for attr in sl_icon.attributes:
-            if attr.name == 'name':
-                attr.values = (parent / 'sl_icons.txt').read_text().split('\n')
+    sl_button = elements.get('sl-button')
+    url = "https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event"
+    sl_button.events.insert(0, EventDef('click', Help('', url)))
+    sl_icon = elements.get('sl-icon')
+    sl_icon.attributes.get('name').values = (parent / 'sl_icons.txt').read_text().split('\n')
 
     _reorder(elements)
     return elements
