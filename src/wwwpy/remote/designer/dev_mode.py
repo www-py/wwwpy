@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+import sys
 from typing import List, Any
 
 from wwwpy.common import modlib
 from wwwpy.remote import rpc as rpc
 from js import console
 
+_wwwpy_dev_mode = 'wwwpy_dev_mode'
 
-async def _setup_browser_dev_mode():
+
+async def activate():
+    setattr(sys, _wwwpy_dev_mode, True)
     from wwwpy.remote import micropip_install
     from wwwpy.common import designer
 
@@ -26,3 +30,7 @@ async def _setup_browser_dev_mode():
         _reload()
 
     rpc.file_changed_listeners_add(file_changed)
+
+
+def is_active() -> bool:
+    return hasattr(sys, _wwwpy_dev_mode)
