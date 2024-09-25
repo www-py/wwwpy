@@ -76,13 +76,13 @@ class ToolboxComponent(wpc.Component, metadata=wpc.Metadata('wwwpy-toolbox')):
 .two-column-layout p:nth-child(even) {
   margin-right: 0; /* Removes right margin for every even child */
 }</style>        
-<draggable-component data-name='dragComp1' style="height: 300px">
+<wwwpy-draggable-component data-name='dragComp1' style="height: 300px">
     <span slot='title'>wwwpy</span>        
         <wwwpy-property-editor data-name="property_editor"></wwwpy-property-editor>        
         <p><input data-name='inputSearch' type='search' placeholder='type to filter...'></p>
     <div data-name='body' class='two-column-layout'>
     </div>   
-</draggable-component>         
+</wwwpy-draggable-component>         
 """
         self._manage_toolbox_state()
 

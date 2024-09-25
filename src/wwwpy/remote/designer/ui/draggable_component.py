@@ -2,15 +2,16 @@ from __future__ import annotations
 
 from typing import Tuple, List, Callable
 
-import wwwpy.remote.component as wpc
 import js
-from js import document, console, Event, MouseEvent, ResizeObserver
-from pyodide.ffi.wrappers import add_event_listener, remove_event_listener
+from js import document, console, ResizeObserver
 from pyodide.ffi import create_proxy
+from pyodide.ffi.wrappers import add_event_listener, remove_event_listener
+
+import wwwpy.remote.component as wpc
 from wwwpy.remote import dict_to_js
 
 
-class DraggableComponent(wpc.Component, metadata=wpc.Metadata('draggable-component')):
+class DraggableComponent(wpc.Component, metadata=wpc.Metadata('wwwpy-draggable-component')):
     container_div: wpc.HTMLElement = wpc.element()
     toolbar_header_div: wpc.HTMLElement = wpc.element()
     resize_handle: wpc.HTMLElement = wpc.element()
