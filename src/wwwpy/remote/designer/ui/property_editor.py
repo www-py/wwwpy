@@ -28,7 +28,7 @@ class PropertyEditorState:
     mode: PropertyEditorMode = PropertyEditorMode.events
 
 
-class PropertyEditor(wpc.Component, metadata=wpc.Metadata('wwwpy-property-editor')):
+class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
     row_container: js.HTMLElement = wpc.element()
     message1div: js.HTMLElement = wpc.element()
 
@@ -195,7 +195,7 @@ class PropertyEditor(wpc.Component, metadata=wpc.Metadata('wwwpy-property-editor
             row1.double_click_handler = lambda ev=event_editor: dblclick(ev)
 
 
-class PropertyEditorRow(wpc.Component, metadata=wpc.Metadata('wwwpy-property-editor-row')):
+class PropertyEditorRow(wpc.Component, tag_name='wwwpy-property-editor-row'):
     label: js.HTMLElement = wpc.element()
     value: js.HTMLElement = wpc.element()
 

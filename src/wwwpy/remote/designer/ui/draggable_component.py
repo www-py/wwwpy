@@ -11,7 +11,7 @@ import wwwpy.remote.component as wpc
 from wwwpy.remote import dict_to_js
 
 
-class DraggableComponent(wpc.Component, metadata=wpc.Metadata('wwwpy-draggable-component')):
+class DraggableComponent(wpc.Component, tag_name='wwwpy-draggable-component'):
     container_div: wpc.HTMLElement = wpc.element()
     toolbar_header_div: wpc.HTMLElement = wpc.element()
     resize_handle: wpc.HTMLElement = wpc.element()

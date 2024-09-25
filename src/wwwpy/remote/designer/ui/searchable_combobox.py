@@ -7,7 +7,7 @@ from wwwpy.remote import dict_to_js
 from wwwpy.remote.designer.global_interceptor import global_interceptor_start, InterceptorEvent
 
 
-class SearchableComboBox(wpc.Component, metadata=wpc.Metadata('wwwpy-searchable-combobox')):
+class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox'):
     input: js.HTMLInputElement = wpc.element()
     dropdown: js.HTMLElement = wpc.element()
 

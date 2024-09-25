@@ -1,11 +1,10 @@
 from js import document, HTMLElement, Event
 
 from wwwpy.remote.component import Component, Metadata, attribute, element
-import wwwpy.remote.component as wpc
 
 
 def test_component_metadata():
-    class Comp1(Component, metadata=Metadata('comp-1')): ...
+    class Comp1(Component, tag_name='comp-1'): ...
 
     assert Comp1.component_metadata.clazz == Comp1
     assert 'comp' in Comp1.component_metadata.tag_name
@@ -22,7 +21,7 @@ def test_simple_html():
 
 
 def test_define_custom_metadata():
-    class Comp1(Component, metadata=Metadata('tag-1')): ...
+    class Comp1(Component, tag_name='tag-1'): ...
 
     assert Comp1.component_metadata.clazz == Comp1
     assert Comp1.component_metadata.tag_name == 'tag-1'
@@ -30,7 +29,7 @@ def test_define_custom_metadata():
 
 
 def test_define_custom_metadata__auto_define_False():
-    class Comp1(Component, metadata=Metadata('tag-1', auto_define=False)): ...
+    class Comp1(Component, tag_name='tag-1', auto_define=False): ...
 
     assert not Comp1.component_metadata.registered
 
@@ -91,7 +90,7 @@ def test_observed_attributes__with_default_metadata():
 def test_observed_attributes__with_custom_metadata():
     calls = []
 
-    class Comp4(Component, metadata=Metadata('comp-4')):
+    class Comp4(Component, tag_name='comp-4'):
         text = attribute()
 
         def attributeChangedCallback(self, name, oldValue, newValue):
@@ -108,15 +107,15 @@ def test_observed_attributes__with_custom_metadata():
 
 
 def test_redefining_an_element_should_be_ok():
-    class Comp10a(Component, metadata=Metadata('comp-10')):
+    class Comp10a(Component, tag_name='comp-10'):
         pass
 
-    class Comp10b(Component, metadata=Metadata('comp-10')):
+    class Comp10b(Component, tag_name='comp-10'):
         pass
 
 
 def test_redefined_element_should_be_ok():
-    class Comp9a(Component, metadata=Metadata('comp-9')):
+    class Comp9a(Component, tag_name='comp-9'):
         attr1 = attribute()
 
         def attributeChangedCallback(self, name: str, oldValue: str, newValue: str):
@@ -126,7 +125,7 @@ def test_redefined_element_should_be_ok():
     comp.setAttribute('attr1', 'x')
     assert 'Comp9a' == comp.innerHTML
 
-    class Comp9b(Component, metadata=Metadata('comp-9')):
+    class Comp9b(Component, tag_name='comp-9'):
         attr1 = attribute()
 
         def attributeChangedCallback(self, name: str, oldValue: str, newValue: str):
@@ -158,7 +157,7 @@ class TestElementAttribute:
             pass
 
     def test_Component_attribute(self):
-        class Comp6(Component, metadata=Metadata('comp-6')):
+        class Comp6(Component, tag_name='comp-6'):
             div1: HTMLElement = element()
 
             def init_component(self):

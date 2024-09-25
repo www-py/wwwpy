@@ -10,7 +10,7 @@ namespace = "window.python_custom_elements"
 
 
 class Metadata:
-    def __init__(self, tag_name: str | None = None, clazz=None, auto_define=True):
+    def __init__(self, tag_name: str | None = None, clazz=None):
         if clazz is not None:
             if not issubclass(clazz, Component):
                 raise Exception(f'clazz must be a subclass of {Component.__name__}')
@@ -27,7 +27,6 @@ class Metadata:
         self.observed_attributes = set()
         self.registered = False
         self.clazz = clazz
-        self.auto_define = auto_define
         self._custom_element_class_template = None
 
     def __set_name__(self, owner, name):
@@ -79,10 +78,9 @@ class Component:
     element: HTMLElement = None
     element_not_found_raises = False
 
-    def __init_subclass__(cls, metadata: Metadata = None, **kwargs):
+    def __init_subclass__(cls, tag_name: str | None = None, auto_define=True, **kwargs):
         super().__init_subclass__(**kwargs)
-        if metadata is None:
-            metadata = Metadata(clazz=cls)
+        metadata = Metadata(tag_name=tag_name, clazz=cls)
         cls.component_metadata = metadata
         if metadata.clazz is None:
             metadata.clazz = cls
@@ -91,7 +89,7 @@ class Component:
             if isinstance(value, attribute):
                 cls.component_metadata.observed_attributes.add(name)
 
-        if cls.component_metadata.auto_define:
+        if auto_define:
             cls.component_metadata.define_element()
 
     def __init__(self, element_from_js=None):

@@ -48,7 +48,7 @@ def menu(label, always_visible=False):
     return wrapped
 
 
-class ToolboxComponent(wpc.Component, metadata=wpc.Metadata('wwwpy-toolbox')):
+class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
     body: HTMLElement = wpc.element()
     inputSearch: js.HTMLInputElement = wpc.element()
     dragComp1: DraggableComponent = wpc.element()
