@@ -11,7 +11,7 @@ from wwwpy.remote import dict_to_js
 
 
 class DraggableComponent(wpc.Component, metadata=wpc.Metadata('draggable-component')):
-    toolbar_div: wpc.HTMLElement = wpc.element()
+    container_div: wpc.HTMLElement = wpc.element()
     toolbar_header_div: wpc.HTMLElement = wpc.element()
     resize_handle: wpc.HTMLElement = wpc.element()
     client_x = 0
@@ -27,7 +27,7 @@ class DraggableComponent(wpc.Component, metadata=wpc.Metadata('draggable-compone
         # language=html
         self.shadow.innerHTML = """
 <style>
-.wwwpy-toolbar_div {
+.wwwpy-container_div {
   position: absolute;
   z-index: 1000;
   background-color: black;
@@ -46,7 +46,7 @@ class DraggableComponent(wpc.Component, metadata=wpc.Metadata('draggable-compone
 }
 
 </style>        
-<div data-name="toolbar_div" class='wwwpy-toolbar_div'>
+<div data-name="container_div" class='wwwpy-container_div'>
     <div  data-name="toolbar_header_div" class='wwwpy-toolbar_header_div' >
         <slot name='title' >slot=title</slot>
     </div>
@@ -55,10 +55,10 @@ class DraggableComponent(wpc.Component, metadata=wpc.Metadata('draggable-compone
 """
         self.client_x = 0
         self.client_y = 0
-        tb = self.toolbar_div
+        tb = self.container_div
 
         def tb_print(*args):
-            console.log(f'offsets of toolbar_div: {self.toolbar_geometry()}')
+            console.log(f'offsets of container_div: {self.toolbar_geometry()}')
 
         tb.print = tb_print
 
@@ -67,14 +67,14 @@ class DraggableComponent(wpc.Component, metadata=wpc.Metadata('draggable-compone
             self._on_geometry_change()
 
         resize_observer = ResizeObserver.new(create_proxy(on_resize))
-        resize_observer.observe(self.toolbar_div)
+        resize_observer.observe(self.container_div)
 
     def _on_geometry_change(self):
         for listener in self.geometry_change_listeners:
             listener()
 
     def toolbar_geometry(self) -> Tuple[int, int, int, int]:
-        t = self.toolbar_div
+        t = self.container_div
         return t.offsetTop, t.offsetLeft, (t.offsetWidth - self.css_border), (t.offsetHeight - self.css_border)
 
     def toolbar_header_div__touchstart(self, e: js.TouchEvent):
@@ -101,10 +101,10 @@ class DraggableComponent(wpc.Component, metadata=wpc.Metadata('draggable-compone
         self.client_x = x
         self.client_y = y
 
-        new_left = self.toolbar_div.offsetLeft - delta_x
-        new_top = self.toolbar_div.offsetTop - delta_y
+        new_left = self.container_div.offsetLeft - delta_x
+        new_top = self.container_div.offsetTop - delta_y
 
-        self.set_toolbar_position(new_left, new_top)
+        self.set_position(new_left, new_top)
         self._on_geometry_change()
 
     def _move_stop(self, event):
@@ -113,19 +113,19 @@ class DraggableComponent(wpc.Component, metadata=wpc.Metadata('draggable-compone
         remove_event_listener(document, 'touchmove', self._move)
         remove_event_listener(document, 'touchend', self._move_stop)
 
-    def set_toolbar_geometry(self, geometry_tuple):
+    def set_geometry(self, geometry_tuple):
         top, left, width, height = geometry_tuple
-        self.set_toolbar_position(left, top)
-        self.set_toolbar_size(f"{height}px", f"{width}px")
+        self.set_position(left, top)
+        self.set_size(f"{height}px", f"{width}px")
 
-    def set_toolbar_position(self, left, top):
-        self.toolbar_div.style.top = f"{top}px"
-        self.toolbar_div.style.left = f"{left}px"
+    def set_position(self, left, top):
+        self.container_div.style.top = f"{top}px"
+        self.container_div.style.left = f"{left}px"
 
-    def set_toolbar_size(self, h, w):
+    def set_size(self, h, w):
         console.log('set_toolbar_size', h, w)
-        self.toolbar_div.style.width = w
-        self.toolbar_div.style.height = h
+        self.container_div.style.width = w
+        self.container_div.style.height = h
 
 
 def clientX(event: js.MouseEvent | js.TouchEvent):
