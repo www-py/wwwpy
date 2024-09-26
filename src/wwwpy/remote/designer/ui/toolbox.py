@@ -228,7 +228,7 @@ def is_inside_toolbar(element: HTMLElement | None):
     # loop until the root element and see if it is the toolbar
     res = False
     while element:
-        if element.tagName == 'WWWPY-TOOLBAR':
+        if element.tagName.lower() == ToolboxComponent.component_metadata.tag_name:
             res = True
             break
         element = element.parentElement
@@ -237,8 +237,8 @@ def is_inside_toolbar(element: HTMLElement | None):
 
 
 def _default_drop_zone_accept(drop_zone: DropZone):
-    name = drop_zone.element.tagName
-    accept = not (name == 'BODY' or name == 'HTML' or name == 'WWWPY-TOOLBAR')
+    name = drop_zone.element.tagName.lower()
+    accept = not (name == 'body' or name == 'html' or name == ToolboxComponent.component_metadata.tag_name)
     return accept
 
 
