@@ -13,7 +13,7 @@ from wwwpy.remote import dict_to_js
 
 class DraggableComponent(wpc.Component, tag_name='wwwpy-draggable-component'):
     container_div: wpc.HTMLElement = wpc.element()
-    toolbar_header_div: wpc.HTMLElement = wpc.element()
+    draggable_component_div: wpc.HTMLElement = wpc.element()
     resize_handle: wpc.HTMLElement = wpc.element()
     client_x = 0
     client_y = 0
@@ -38,7 +38,7 @@ class DraggableComponent(wpc.Component, tag_name='wwwpy-draggable-component'):
   overflow: auto;
 }
 
-.wwwpy-toolbar_header_div {
+.wwwpy-draggable_component_div {
   padding: 10px;
   cursor: move;
   z-index: 1001;
@@ -48,7 +48,7 @@ class DraggableComponent(wpc.Component, tag_name='wwwpy-draggable-component'):
 
 </style>        
 <div data-name="container_div" class='wwwpy-container_div'>
-    <div  data-name="toolbar_header_div" class='wwwpy-toolbar_header_div' >
+    <div  data-name="draggable_component_div" class='wwwpy-draggable_component_div' >
         <slot name='title' >slot=title</slot>
     </div>
     <slot>slot=default</div>    
@@ -78,10 +78,10 @@ class DraggableComponent(wpc.Component, tag_name='wwwpy-draggable-component'):
         t = self.container_div
         return t.offsetTop, t.offsetLeft, (t.offsetWidth - self.css_border), (t.offsetHeight - self.css_border)
 
-    def toolbar_header_div__touchstart(self, e: js.TouchEvent):
+    def draggable_component_div__touchstart(self, e: js.TouchEvent):
         self._move_start(e)
 
-    def toolbar_header_div__mousedown(self, e: js.MouseEvent):
+    def draggable_component_div__mousedown(self, e: js.MouseEvent):
         self._move_start(e)
 
     def _move_start(self, e: js.MouseEvent | js.TouchEvent):
