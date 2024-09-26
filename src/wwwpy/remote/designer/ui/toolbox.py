@@ -35,6 +35,7 @@ class ToolboxState:
 @dataclass
 class MenuMeta:
     label: str
+    html: str
     always_visible: bool = False
     p_element: js.HTMLElement = None
 
@@ -42,7 +43,7 @@ class MenuMeta:
 def menu(label, always_visible=False):
     def wrapped(fn):
         fn.label = label
-        fn.meta = MenuMeta(label, always_visible)
+        fn.meta = MenuMeta(label, label, always_visible)
         return fn
 
     return wrapped
@@ -106,7 +107,7 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
             self._all_items.append(menu_meta)
             p = document.createElement('p')
             menu_meta.p_element = p
-            p.innerHTML = menu_meta.label
+            p.innerHTML = menu_meta.html
             p.addEventListener('click', create_proxy(callback))
             # p.menu_meta = menu_meta
 
@@ -131,8 +132,8 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
                 else:
                     self.property_editor.message1div.innerHTML = 'canceled'
 
-            element_label = f'{element_def.tag_name} {_help_button(element_def)}'
-            add_p(MenuMeta(element_label), _start_drop_for_comp)
+            element_html = f'{element_def.tag_name} {_help_button(element_def)}'
+            add_p(MenuMeta(element_def.tag_name, element_html), _start_drop_for_comp)
 
         for member in attrs:
             if member.meta.label == self.components_marker:
@@ -187,7 +188,7 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
         self.body.innerHTML = ''
         for meta in self._all_items:
             p = meta.p_element
-            if meta.always_visible or self.inputSearch.value.lower() in p.innerHTML.lower():
+            if meta.always_visible or self.inputSearch.value.lower() in meta.label.lower():
                 self.body.appendChild(p)
 
     # @menu('Reload')
@@ -232,6 +233,7 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
 
     def _restore_selected_element_path(self):
         self.property_editor.selected_element_path = self._toolbox_state.selected_element_path
+
 
 def is_inside_toolbar(element: HTMLElement | None):
     if not element:
@@ -283,5 +285,3 @@ async def _drop_zone_start_selection_async(on_pointed, whole=False) -> Optional[
         return None
 
     return result[0]
-
-
