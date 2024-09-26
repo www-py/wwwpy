@@ -14,7 +14,7 @@ import js
 from pyodide.ffi import create_proxy
 
 from wwwpy.remote.designer.helpers import _element_path_lbl, _rpc_save, _log_event, _help_button
-from .searchable_combobox import SearchableComboBox
+from .searchable_combobox import SearchableComboBox, Option
 
 
 # write enum class with [events, attributes] and use it in the button click event
@@ -152,21 +152,48 @@ class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
             # )
             values = attr_editor.definition.values
             row1.value.input.placeholder = 'Click for options...' if len(values) > 0 else ''
-            row1.value.set_options(values)
+
+            class AttrOption(Option):
+
+                def new_element(self) -> js.HTMLElement:
+                    self.actions.set_input_value = False
+                    self.actions.hide_dropdown = False
+                    self.actions.dispatch_change_event = False
+                    element = super().new_element()
+                    element.style.fontStyle = 'italic'
+                    return element
+
+            additional = []
+            remove_available = attr_editor.exists and not attr_editor.definition.mandatory
+            if remove_available:
+                remove = AttrOption('remove attribute')
+
+                def remove_selected(ae=attr_editor):
+                    js.console.log(f'remove_selected {ae.definition.name}')
+                    ae.remove()
+                    self._save(element_editor)
+
+                remove.on_selected = remove_selected  # lambda ae=attr_editor: ae.remove()
+                additional.append(remove)
+
+            row1.value.set_options(additional + values)
             row1.value.input.value = '' if attr_editor.value is None else attr_editor.value
 
             def attr_changed(event, ae=attr_editor, row=row1):
                 js.console.log(f'attr_changed {ae.definition.name} {row.value.input.value}')
                 ae.value = row.value.input.value
-                source = element_editor.current_python_source()
-
-                async def start_save():
-                    await _rpc_save(ep, source)
-
-                set_timeout(start_save)
+                self._save(element_editor)
 
             row1.value.element.addEventListener('change', create_proxy(attr_changed))
             # row1.double_click_handler = lambda ev=attr_editor: dblclick(ev)
+
+    def _save(self, element_editor):
+        source = element_editor.current_python_source()
+
+        async def start_save():
+            await _rpc_save(self._selected_element_path, source)
+
+        set_timeout(start_save)
 
     def _render_event_editor(self, element_def, ep):
         self._set_title('Event', 'Value')

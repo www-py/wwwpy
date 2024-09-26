@@ -1,11 +1,60 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+from typing import List, Union
+
 import js
 from pyodide.ffi import create_proxy
 
 import wwwpy.remote.component as wpc
 from wwwpy.remote import dict_to_js
 from wwwpy.remote.designer.global_interceptor import InterceptorEvent, GlobalInterceptor
+
+
+@dataclass
+class Actions:
+    set_input_value = True
+    hide_dropdown = True
+    dispatch_change_event = True
+
+
+class Option:
+    parent: SearchableComboBox
+
+    def __init__(self, text: str = ''):
+        self.text = text
+        self.actions = Actions()
+        self.on_selected = lambda: None
+
+    def _on_click(self, event: js.MouseEvent):
+        js.console.log('_on_click', self.text)
+        if self.actions.set_input_value:
+            self.set_input_value()
+        if self.actions.hide_dropdown:
+            self.hide_dropdown()
+        if self.actions.dispatch_change_event:
+            self.dispatch_change_event()
+
+        self.on_selected()
+
+    def set_input_value(self):
+        self.parent.input.value = self.text
+
+    def hide_dropdown(self):
+        self.parent.hide_dropdown()
+
+    def dispatch_change_event(self):
+        self.parent._dispatch_change_event()
+
+    def create_element(self) -> js.HTMLElement:
+        element = self.new_element()
+        element.addEventListener('click', create_proxy(self._on_click))
+        return element
+
+    def new_element(self) -> js.HTMLElement:
+        div: js.HTMLDivElement = js.document.createElement('div')
+        div.textContent = self.text
+        return div
 
 
 class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox'):
@@ -126,7 +175,7 @@ class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox'):
         self.popup.style.display = 'none'
         self._interceptor.uninstall()
 
-    def set_options(self, options):
+    def set_options(self, options: List[Union[str, Option]]):
         self._options = options
         self._dirty = True
 
@@ -136,11 +185,12 @@ class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox'):
         self.dropdown.innerHTML = ''
 
         for option in self._options:
-            if filter_text in option.lower():
-                div: js.HTMLDivElement = js.document.createElement('div')
-                div.textContent = option
-                div.addEventListener('click',create_proxy( lambda e, opt=option: self.select_option(opt)))
-                self.dropdown.appendChild(div)
+            if isinstance(option, str):
+                option = Option(option)
+            option.parent = self
+            option: Option
+            if filter_text in option.text.lower():
+                self.dropdown.appendChild(option.create_element())
 
         if not self.dropdown.hasChildNodes():
             div: js.HTMLDivElement = js.document.createElement('div')
@@ -159,4 +209,3 @@ class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox'):
 
     def _dispatch_change_event(self):
         self.element.dispatchEvent(js.CustomEvent.new('change', {'detail': self.input.value}))
-
