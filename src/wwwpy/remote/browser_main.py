@@ -40,6 +40,11 @@ def _reload():
 async def _invoke_browser_main(reload=False):
     try:
         console.log('invoke_browser_main')
+        if dm.is_active():
+            from wwwpy.remote.designer import helpers
+            js.window.onerror = helpers._on_error
+            js.window.onunhandledrejection = helpers._on_unhandledrejection
+
         try:
             js.document.body.innerHTML = f'Going to import remote (reload={reload})'
             import remote
@@ -65,6 +70,3 @@ async def _invoke_browser_main(reload=False):
         if dm.is_active():
             from .designer.ui import toolbox  # noqa
             js.document.body.insertAdjacentHTML('beforeend', '<wwwpy-toolbox></wwwpy-toolbox>')
-            from wwwpy.remote.designer import helpers
-            js.window.onerror = helpers._on_error
-            js.window.onunhandledrejection = helpers._on_unhandledrejection
