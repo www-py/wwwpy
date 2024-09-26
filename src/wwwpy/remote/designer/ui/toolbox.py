@@ -17,7 +17,7 @@ from wwwpy.common.designer.html_edit import Position
 from wwwpy.remote import dict_to_js
 from wwwpy.remote.designer import element_path
 from wwwpy.remote.designer.drop_zone import DropZone
-from wwwpy.remote.designer.global_interceptor import global_interceptor_start, InterceptorEvent
+from wwwpy.remote.designer.global_interceptor import GlobalInterceptor, InterceptorEvent
 from wwwpy.remote.designer.ui.draggable_component import DraggableComponent
 from wwwpy.server import rpc
 
@@ -275,7 +275,7 @@ async def _drop_zone_start_selection_async(on_pointed, whole=False) -> Optional[
             result.append(selected)
             event.set()
 
-    global_interceptor_start(intercept_ended)
+    GlobalInterceptor(intercept_ended).install()
     drop_zone_selector.start_selector(on_pointed, _default_drop_zone_accept, whole=whole)
     await event.wait()
 

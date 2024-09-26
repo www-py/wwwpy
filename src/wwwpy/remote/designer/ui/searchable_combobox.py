@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import js
 from pyodide.ffi import create_proxy
+
 import wwwpy.remote.component as wpc
 from wwwpy.remote import dict_to_js
-from wwwpy.remote.designer.global_interceptor import global_interceptor_start, InterceptorEvent
+from wwwpy.remote.designer.global_interceptor import InterceptorEvent, GlobalInterceptor
 
 
 class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox'):
@@ -82,7 +83,7 @@ class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox'):
 
     def _global_click(self, event: InterceptorEvent):
         click_inside = self.element.contains(event.target)
-        console.log(f'global click: contains={click_inside}', event.target)
+        js.console.log(f'global click: contains={click_inside}', event.target)
         if click_inside:
             return
         self.hide_dropdown()
@@ -159,50 +160,3 @@ class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox'):
     def _dispatch_change_event(self):
         self.element.dispatchEvent(js.CustomEvent.new('change', {'detail': self.input.value}))
 
-
-from dataclasses import dataclass
-from typing import Callable
-
-from js import Event, console, document, HTMLElement
-from pyodide.ffi import create_proxy
-
-
-@dataclass
-class InterceptorEvent:
-    target: HTMLElement | None
-    event: Event
-    interceptor: GlobalInterceptor
-
-    def uninstall(self):
-        self.interceptor.uninstall()
-
-    def preventAndStop(self):
-        if self.event:
-            self.event.preventDefault()
-            self.event.stopImmediatePropagation()
-            self.event.stopPropagation()
-
-
-class GlobalInterceptor:
-
-    def __init__(self, callback: Callable[[InterceptorEvent], None], event_name: str = 'click'):
-        self._callback = callback
-        self._event_name = event_name
-        self._installed = False
-        self._proxy = create_proxy(self._global_click)
-
-    def install(self):
-        if self._installed:
-            return
-        self._installed = True
-        js.document.addEventListener(self._event_name, self._proxy, True)
-
-    def uninstall(self):
-        if not self._installed:
-            return
-        self._installed = False
-        js.document.removeEventListener(self._event_name, self._proxy, True)
-
-    def _global_click(self, event: Event):
-        ev = InterceptorEvent(event.target, event, self)
-        self._callback(ev)
