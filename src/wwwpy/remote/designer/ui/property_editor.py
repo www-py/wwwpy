@@ -151,7 +151,7 @@ class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
             #     'present with no value' if attr_editor.value is None else ''
             # )
             values = attr_editor.definition.values
-            row1.value.input.placeholder = 'Search...' if len(values) > 0 else ''
+            row1.value.input.placeholder = 'Click for options...' if len(values) > 0 else ''
             row1.value.set_options(values)
             row1.value.input.value = '' if attr_editor.value is None else attr_editor.value
 
