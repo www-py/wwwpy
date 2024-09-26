@@ -15,6 +15,10 @@ async def _rpc_save(el_path: ElementPath, new_source: str):
 
 def info_link(href):
     # open in a new page
+    # <a href='https://www.google.com' target='_blank'><svg class="help-icon"><use href="#help-icon"/></svg></a>
+    #language=html
+    return (f'<a href="{href}" style="text-decoration: none" target="_blank">'
+            f'<svg class="help-icon"><use href="#help-icon"/></svg></a>')
     return f'<a href="{href}" style="text-decoration: none" target="_blank">🛈</a>'
 
 
