@@ -86,34 +86,36 @@ class _AddFieldToClassTransformer(cst.CSTTransformer):
         return updated_node.with_changes(body=updated_node.body.with_changes(body=new_body))
 
 
-def add_method(source_code: str, class_name: str, method_name: str, method_args: str) -> str:
+def add_method(source_code: str, class_name: str, method_name: str, method_args: str,
+               instructions: str = 'pass') -> str:
     module = cst.parse_module(source_code)
-    transformer = _AddMethodToClassTransformer(True, class_name, method_name, 'self, ' + method_args)
+    transformer = _AddMethodToClassTransformer(True, class_name, method_name, 'self, ' + method_args, instructions)
     modified_tree = module.visit(transformer)
     return modified_tree.code
 
 
 class _AddMethodToClassTransformer(cst.CSTTransformer):
-    def __init__(self, async_def: bool, class_name: str, method_name: str, method_args: str):
+    def __init__(self, async_def: bool, class_name: str, method_name: str, method_args: str, instructions: str):
         super().__init__()
         self.async_def = async_def
         self.class_name = class_name
         self.method_name = method_name
         self.method_args = method_args
+        self.instructions = instructions
 
     def leave_ClassDef(self, original_node, updated_node):
         if original_node.name.value != self.class_name:
             return original_node
 
+        parsed_instructions = cst.parse_module(self.instructions).body
+
         new_method_node = cst.FunctionDef(
             name=cst.Name(self.method_name),
             params=cst.Parameters(
-                params=[cst.Param(name=cst.Name(arg.strip())) for arg in self.method_args.split(',')]
+                params=[cst.Param(name=cst.Name(arg.strip())) for arg in self.method_args.split(',') if arg.strip()]
             ),
-            body=cst.IndentedBlock(
-                body=[cst.SimpleStatementLine(body=[cst.Pass()])]
-            )
-            , asynchronous=cst.Asynchronous() if self.async_def else None
+            body=cst.IndentedBlock(body=parsed_instructions),
+            asynchronous=cst.Asynchronous() if self.async_def else None
         )
 
         new_body = list(updated_node.body.body)

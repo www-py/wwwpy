@@ -203,3 +203,18 @@ class MyElement1(wpc.Component):
     """
     modified_source = add_method(original_source, 'MyElement1', 'button1__click', 'event')
     assert modified_source == expected_source
+
+
+def test_add_method_custom_code():
+    original_source = """
+import wwwpy.remote.component as wpc
+class MyElement1(wpc.Component):
+    btn1: js.Some = wpc.element()"""
+
+    expected_source = original_source + """
+    
+    async def button1__click(self, event):
+        pass # custom
+    """
+    modified_source = add_method(original_source, 'MyElement1', 'button1__click', 'event', instructions='pass # custom')
+    assert modified_source == expected_source
