@@ -7,9 +7,7 @@ async def write_module_file(module: str, content: str):
     path = modlib._find_module_path(module)
     if not path:
         raise ValueError(f'Cannot find module {module}')
-    print(f'module path={path}, content:' + '=' * 30)
-    print(content)
-    print('=' * 60)
+    print(f'writing={path.name}, content length={len(content)}')
     path.write_text(content)
 
 

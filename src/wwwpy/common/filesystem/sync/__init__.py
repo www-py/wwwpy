@@ -19,7 +19,7 @@ def filesystemevents_print(events: List[Event]):
         return e.src_path if e.dest_path == '' else f'{e.src_path} -> {e.dest_path}'
     joined = set(to_str(e) for e in events if accept(e))
     summary = ', '.join(joined)
-    print(f'FileSystemEvent received: {len(events)}. Summary: {summary}')
+    print(f'Hotreload event count: {len(events)}. Changes summary: {summary}')
 
 
 class Sync(Protocol):

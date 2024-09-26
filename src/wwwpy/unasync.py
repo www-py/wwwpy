@@ -22,7 +22,6 @@ def unasync(f):
         except Exception as ex:
             exception = ex
             exc_info = sys.exc_info()
-        print('done ')
 
     def start(*args, **kwargs):
         asyncio.run(main_safe(*args, **kwargs))
