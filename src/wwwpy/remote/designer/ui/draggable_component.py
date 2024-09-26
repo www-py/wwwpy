@@ -59,7 +59,7 @@ class DraggableComponent(wpc.Component, tag_name='wwwpy-draggable-component'):
         tb = self.container_div
 
         def tb_print(*args):
-            console.log(f'offsets of container_div: {self.toolbar_geometry()}')
+            console.log(f'offsets of container_div: {self.geometry()}')
 
         tb.print = tb_print
 
@@ -73,10 +73,6 @@ class DraggableComponent(wpc.Component, tag_name='wwwpy-draggable-component'):
     def _on_geometry_change(self):
         for listener in self.geometry_change_listeners:
             listener()
-
-    def toolbar_geometry(self) -> Tuple[int, int, int, int]:
-        t = self.container_div
-        return t.offsetTop, t.offsetLeft, (t.offsetWidth - self.css_border), (t.offsetHeight - self.css_border)
 
     def draggable_component_div__touchstart(self, e: js.TouchEvent):
         self._move_start(e)
@@ -113,6 +109,10 @@ class DraggableComponent(wpc.Component, tag_name='wwwpy-draggable-component'):
         remove_event_listener(document, 'mouseup', self._move_stop)
         remove_event_listener(document, 'touchmove', self._move)
         remove_event_listener(document, 'touchend', self._move_stop)
+
+    def geometry(self) -> Tuple[int, int, int, int]:
+        t = self.container_div
+        return t.offsetTop, t.offsetLeft, (t.offsetWidth - self.css_border), (t.offsetHeight - self.css_border)
 
     def set_geometry(self, geometry_tuple):
         top, left, width, height = geometry_tuple

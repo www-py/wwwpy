@@ -161,7 +161,7 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
         self.dragComp1.set_geometry(self._toolbox_state.geometry)
 
         def on_toolbar_geometry_change():
-            self._toolbox_state.geometry = self.dragComp1.toolbar_geometry()
+            self._toolbox_state.geometry = self.dragComp1.geometry()
 
         self.dragComp1.geometry_change_listeners.append(on_toolbar_geometry_change)
         self._restore_selected_element_path()
