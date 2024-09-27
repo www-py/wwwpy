@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from wwwpy.server.pytest.playwright import playwright_setup_page_logger
-from wwwpy.server.pytest.xvirt_impl import XVirtImpl
+from .playwrightlib import playwright_setup_page_logger
+from .xvirt_impl import XVirtImpl
 
 
 def pytest_addoption(parser):
@@ -19,7 +19,7 @@ def pytest_configure(config):
 
     # For example, you can add your conftest.py setup code here.
     # Note: You might need to adjust this code to work in this context.
-    from wwwpy.server.pytest.playwright import playwright_patch_timeout
+    from .playwrightlib import playwright_patch_timeout
     playwright_patch_timeout()
 
 

@@ -14,7 +14,7 @@ from wwwpy.common import modlib
 from wwwpy.http import HttpRoute, HttpRequest, HttpResponse
 from wwwpy.resources import library_resources, StringResource, from_directory_lazy
 from wwwpy.server import find_port
-from wwwpy.server.pytest.playwright import start_playwright_in_thread
+from .playwrightlib import start_playwright_in_thread
 from wwwpy.webservers.available_webservers import available_webservers
 
 _file_parent = Path(__file__).parent
