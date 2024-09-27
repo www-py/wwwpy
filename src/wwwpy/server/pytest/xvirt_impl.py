@@ -50,10 +50,9 @@ class XVirtImpl(XVirt):
             .replace('#xvirt_notify_path_marker#', '/xvirt_notify')
 
         def fs_iterable(package_name: str) -> Tuple[Path | None, Path | None]:
-            location = modlib._find_module_path(package_name)
-            if not location:
+            target = modlib._find_package_directory(package_name)
+            if not target:
                 return None, None
-            target = location.parent
             root = target.parent.parent
             return target, root
 
