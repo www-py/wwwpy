@@ -61,7 +61,7 @@ class OptionPopup(wpc.Component, tag_name='wwwpy-searchable-combobox2-option-pop
     def init_component(self):
         # language=html
         self.element.innerHTML = """
-        <div><input data-name="_search"></div>
+        <div><input type="search" data-name="_search"></div>
         <div data-name="_root"></div>
         """
         self._interceptor = GlobalInterceptor(self._global_click)
