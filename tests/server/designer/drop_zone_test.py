@@ -30,7 +30,7 @@ class Fixture:
                                         'import traceback; from js import console; console.log(f"exception! {traceback.format_exc()}")')
         return self.page.evaluate(f'pyodide.runPythonAsync(`{safe_python}`)')
 
-    def runPythonAsync2(self, python: str):
+    def evaluate(self, python: str):
         return self.page.evaluate(f'pyodide.runPythonAsync(`{python}`)')
 
     def start_remote(self, _test_drop_zone_init):
@@ -50,28 +50,28 @@ def test_drop_zone(fixture: Fixture):
     page = setup_initial(fixture)
 
     # THEN
-    assertTuple(fixture.runPythonAsync2("remote.assert1()"))
-    assertTuple(fixture.runPythonAsync2("remote.assert1_class_before()"))
+    assertTuple(fixture.evaluate("remote.assert1()"))
+    assertTuple(fixture.evaluate("remote.assert1_class_before()"))
 
     # WHEN
     page.mouse.move(50, 26)  # the element is the same so no change
 
     # THEN
-    assertTuple(fixture.runPythonAsync2("remote.assert1()"))
+    assertTuple(fixture.evaluate("remote.assert1()"))
     fixture.runPythonAsync("remote.clear_events()")
 
     # WHEN
     page.mouse.move(199, 99)
 
     # THEN
-    assertTuple(fixture.runPythonAsync2("remote.assert2()"))
-    assertTuple(fixture.runPythonAsync2("remote.assert1_class_after()"))
+    assertTuple(fixture.evaluate("remote.assert2()"))
+    assertTuple(fixture.evaluate("remote.assert1_class_after()"))
 
     # WHEN
     page.mouse.move(400, 400)  # it should remove the class
 
     # THEN
-    assertTuple(fixture.runPythonAsync2("remote.assert_no_class()"))
+    assertTuple(fixture.evaluate("remote.assert_no_class()"))
 
 
 def setup_initial(fixture):
@@ -94,7 +94,7 @@ def test_drop_zone_stop(fixture: Fixture):
     fixture.runPythonAsync("remote.stop()")
 
     # THEN
-    assertTuple(fixture.runPythonAsync2("remote.assert_stop()"))
+    assertTuple(fixture.evaluate("remote.assert_stop()"))
 
 
 # language=python
