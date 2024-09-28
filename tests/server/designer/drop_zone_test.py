@@ -33,6 +33,7 @@ class Fixture:
         remote_init.write_text(_test_drop_zone_init)
         configure.convention(self.tmp_path, self.webserver)
         self.webserver.start_listen()
+        self.page.goto(self.webserver.localhost_url())
 
 
 @pytest.fixture
@@ -71,12 +72,13 @@ def test_drop_zone(fixture: Fixture):
 
 
 def setup_initial(fixture):
+    # WHEN
     fixture.start_remote(_test_drop_zone_init)
     page = fixture.page
-    # WHEN
-    page.goto(fixture.webserver.localhost_url())
+
     # THEN
     expect(page.locator("button#btn1")).to_have_text("ready")
+
     # WHEN
     fixture.evaluate_catch("import remote")
     fixture.evaluate_catch("await remote.start()")
