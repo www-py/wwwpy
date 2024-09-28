@@ -105,22 +105,20 @@ def test_drop_zone(fixture: Fixture):
 
 
 @for_all_webservers()
-def test_drop_zone_stop(page: Page, webserver: Webserver, tmp_path, restore_sys_path):
+def test_drop_zone_stop(fixture: Fixture):
+
     def runPythonAsync(python: str):
-        safe_python = wrap_in_tryexcept(python,
-                                        'import traceback; from js import console; console.log(f"exception! {traceback.format_exc()}")')
-        return page.evaluate(f'pyodide.runPythonAsync(`{safe_python}`)')
+        return fixture.runPythonAsync(python)
 
     def runPythonAsync2(python: str):
-        return page.evaluate(f'pyodide.runPythonAsync(`{python}`)')
+        return fixture.runPythonAsync2(python)
 
     # GIVEN
-    _setup_remote(tmp_path, _test_drop_zone_init)
-    configure.convention(tmp_path, webserver, dev_mode=True)
-    webserver.start_listen()
+    fixture.start_remote(_test_drop_zone_init)
+    page = fixture.page
 
     # WHEN
-    page.goto(webserver.localhost_url())
+    page.goto(fixture.webserver.localhost_url())
 
     # THEN
     expect(page.locator("button#btn1")).to_have_text("ready")
