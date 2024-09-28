@@ -38,7 +38,7 @@ class Fixture:
 
     def start_remote(self, _test_drop_zone_init):
         _setup_remote(self.tmp_path, _test_drop_zone_init)
-        configure.convention(self.tmp_path, self.webserver, dev_mode=True)
+        configure.convention(self.tmp_path, self.webserver)
         self.webserver.start_listen()
 
 
