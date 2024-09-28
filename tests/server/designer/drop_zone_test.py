@@ -4,11 +4,8 @@ import pytest
 from playwright.sync_api import Page, expect
 
 from tests import for_all_webservers
-from tests.common import restore_sys_path
 from wwwpy.bootstrap import wrap_in_tryexcept
 from wwwpy.server import configure
-from wwwpy.webserver import Webserver
-from wwwpy.webservers.available_webservers import available_webservers
 
 
 def _setup_remote(tmp_path, remote_init_content):
@@ -106,13 +103,6 @@ def test_drop_zone(fixture: Fixture):
 
 @for_all_webservers()
 def test_drop_zone_stop(fixture: Fixture):
-
-    def runPythonAsync(python: str):
-        return fixture.runPythonAsync(python)
-
-    def runPythonAsync2(python: str):
-        return fixture.runPythonAsync2(python)
-
     # GIVEN
     fixture.start_remote(_test_drop_zone_init)
     page = fixture.page
@@ -124,14 +114,14 @@ def test_drop_zone_stop(fixture: Fixture):
     expect(page.locator("button#btn1")).to_have_text("ready")
 
     # WHEN
-    runPythonAsync("import remote")
-    runPythonAsync("await remote.start()")
+    fixture.runPythonAsync("import remote")
+    fixture.runPythonAsync("await remote.start()")
 
     page.mouse.move(50, 25)  # btn1 is 200x100
-    runPythonAsync("remote.stop()")
+    fixture.runPythonAsync("remote.stop()")
 
     # THEN
-    assertTuple(runPythonAsync2("remote.assert_stop()"))
+    assertTuple(fixture.runPythonAsync2("remote.assert_stop()"))
 
 
 # language=python
