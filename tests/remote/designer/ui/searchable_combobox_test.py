@@ -48,7 +48,7 @@ def test_popup_activate(target):
     popup = target.option_popup.root_element()
 
     element_state(popup).assert_not_visible()
-    target.option_popup.activate()
+    target.option_popup.show()
     element_state(popup).assert_visible()
 
     html = popup.innerHTML
@@ -72,7 +72,6 @@ def test_popup_activate__with_input_click(target):
 
 def test_popup__click_option(target):
     # GIVEN
-
     target.option_popup.options = ['foo', 'bar', 'baz']
 
     # WHEN
@@ -85,6 +84,18 @@ def test_popup__click_option(target):
     popup = target.option_popup.root_element()
     element_state(popup).assert_not_visible()
 
+
+def todo_test_search__input_click__should_focus_search(target):
+    # GIVEN
+    target.option_popup.options = ['foo', 'bar', 'baz']
+    target.option_popup.search_placeholder = 'search options...'
+
+    # WHEN
+    target._input_element().click()
+
+    # THEN
+    assert target.element.shadowRoot.activeElement
+    assert target.element.shadowRoot.activeElement.placeholder == 'search options...'
 
 @dataclass
 class ElementState:
@@ -122,25 +133,3 @@ def element_state(element) -> ElementState:
         width=rect.width,
         height=rect.height,
     )
-
-
-def is_element_visible(element):
-    if not element:
-        return False  # Element doesn't exist
-
-    # Check if element is part of the DOM
-    if not document.contains(element):
-        return False
-
-    # Check if the element or its parents have `display: none`, `visibility: hidden`, or `opacity: 0`
-    style = window.getComputedStyle(element)
-    if style.display == 'none' or style.visibility == 'hidden' or style.opacity == '0':
-        return False
-
-    # Check if the element has zero dimensions
-    rect = element.getBoundingClientRect()
-    if rect.width == 0 or rect.height == 0:
-        return False
-
-    # The element is visible
-    return True

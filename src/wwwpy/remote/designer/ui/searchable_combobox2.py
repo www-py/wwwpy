@@ -29,14 +29,9 @@ class Option:
         self.parent.option_popup.hide()
 
 
-class OptionPopup:
+class OptionPopup(wpc.Component, tag_name='wwwpy-searchable-combobox2-option-popup'):
     _options = []  # type: List[Option]
-
-    def __init__(self, parent: SearchableComboBox):
-        self.parent = parent
-
-    def root_element(self) -> js.HTMLElement:
-        return self.parent._option_popup_ele
+    parent: SearchableComboBox
 
     @property
     def options(self) -> List[Option]:
@@ -51,17 +46,20 @@ class OptionPopup:
             option.parent = self.parent
             root.append(option.root_element())
 
-    def activate(self):
-        self.parent._option_popup_ele.style.display = 'block'
+    @property
+    def search_placeholder(self) -> str:
+        pass
+
+    def show(self):
+        self.element.style.display = 'block'
 
     def hide(self):
-        self.parent._option_popup_ele.style.display = 'none'
+        self.element.style.display = 'none'
 
 
 class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox2'):
     _input: js.HTMLInputElement = wpc.element()
-    _option_popup_ele: js.HTMLElement = wpc.element()
-    option_popup: OptionPopup
+    option_popup: OptionPopup = wpc.element()
     """This represents the popoup with the options and eventually a search box at the top to filter the options"""
 
     def root_element(self):
@@ -72,9 +70,11 @@ class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox2'):
         # language=html
         self.shadow.innerHTML = """
         <input data-name="_input">
-        <div data-name="_option_popup_ele" style='display: none'></div>
+        <wwwpy-searchable-combobox2-option-popup 
+            data-name="option_popup" style='display: none'>
+        </wwwpy-searchable-combobox2-option-popup>
         """
-        self.option_popup = OptionPopup(self)
+        self.option_popup.parent = self
 
     @property
     def text_value(self) -> str:
@@ -96,4 +96,4 @@ class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox2'):
         return self._input
 
     def _input__click(self, event):
-        self.option_popup.activate()
+        self.option_popup.show()
