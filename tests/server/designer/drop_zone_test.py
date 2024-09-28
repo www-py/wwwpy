@@ -8,17 +8,6 @@ from wwwpy.bootstrap import wrap_in_tryexcept
 from wwwpy.server import configure
 
 
-def _setup_remote(tmp_path, remote_init_content):
-    remote_init = tmp_path / 'remote' / '__init__.py'
-    remote_init.parent.mkdir(parents=True)
-    remote_init.write_text(remote_init_content)
-
-
-def assertTuple(t):
-    __tracebackhide__ = True
-    assert t[0], t[1]
-
-
 class Fixture:
     def __init__(self, page: Page, tmp_path: Path, webserver):
         self.page = page
@@ -34,10 +23,14 @@ class Fixture:
         return self.page.evaluate(f'pyodide.runPythonAsync(`{python}`)')
 
     def assert_evaluate(self, python: str):
-        assertTuple(self.evaluate(python))
+        __tracebackhide__ = True
+        t = self.evaluate(python)
+        assert t[0], t[1]
 
     def start_remote(self, _test_drop_zone_init):
-        _setup_remote(self.tmp_path, _test_drop_zone_init)
+        remote_init = self.tmp_path / 'remote' / '__init__.py'
+        remote_init.parent.mkdir(parents=True)
+        remote_init.write_text(_test_drop_zone_init)
         configure.convention(self.tmp_path, self.webserver)
         self.webserver.start_listen()
 
