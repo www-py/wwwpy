@@ -33,6 +33,9 @@ class Fixture:
     def evaluate(self, python: str):
         return self.page.evaluate(f'pyodide.runPythonAsync(`{python}`)')
 
+    def assert_evaluate(self, python: str):
+        assertTuple(self.evaluate(python))
+
     def start_remote(self, _test_drop_zone_init):
         _setup_remote(self.tmp_path, _test_drop_zone_init)
         configure.convention(self.tmp_path, self.webserver, dev_mode=True)
@@ -50,28 +53,28 @@ def test_drop_zone(fixture: Fixture):
     page = setup_initial(fixture)
 
     # THEN
-    assertTuple(fixture.evaluate("remote.assert1()"))
-    assertTuple(fixture.evaluate("remote.assert1_class_before()"))
+    fixture.assert_evaluate("remote.assert1()")
+    fixture.assert_evaluate("remote.assert1_class_before()")
 
     # WHEN
     page.mouse.move(50, 26)  # the element is the same so no change
 
     # THEN
-    assertTuple(fixture.evaluate("remote.assert1()"))
+    fixture.assert_evaluate("remote.assert1()")
     fixture.evaluate_catch("remote.clear_events()")
 
     # WHEN
     page.mouse.move(199, 99)
 
     # THEN
-    assertTuple(fixture.evaluate("remote.assert2()"))
-    assertTuple(fixture.evaluate("remote.assert1_class_after()"))
+    fixture.assert_evaluate("remote.assert2()")
+    fixture.assert_evaluate("remote.assert1_class_after()")
 
     # WHEN
     page.mouse.move(400, 400)  # it should remove the class
 
     # THEN
-    assertTuple(fixture.evaluate("remote.assert_no_class()"))
+    fixture.assert_evaluate("remote.assert_no_class()")
 
 
 def setup_initial(fixture):
@@ -94,7 +97,7 @@ def test_drop_zone_stop(fixture: Fixture):
     fixture.evaluate_catch("remote.stop()")
 
     # THEN
-    assertTuple(fixture.evaluate("remote.assert_stop()"))
+    fixture.assert_evaluate("remote.assert_stop()")
 
 
 # language=python
