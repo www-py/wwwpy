@@ -1,13 +1,7 @@
-import pytest
-from playwright.sync_api import Page, expect
+from playwright.sync_api import expect
 
 from tests import for_all_webservers
-from tests.server.remote_ui.page_fixture import Fixture
-
-
-@pytest.fixture
-def fixture(page: Page, tmp_path, webserver):
-    return Fixture(page, tmp_path, webserver)
+from .page_fixture import Fixture, fixture
 
 
 @for_all_webservers()

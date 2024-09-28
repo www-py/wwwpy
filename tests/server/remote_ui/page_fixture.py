@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from playwright.sync_api import Page
 
 from wwwpy.bootstrap import wrap_in_tryexcept
@@ -32,3 +33,8 @@ class Fixture:
         configure.convention(self.tmp_path, self.webserver)
         self.webserver.start_listen()
         self.page.goto(self.webserver.localhost_url())
+
+
+@pytest.fixture
+def fixture(page: Page, tmp_path, webserver):
+    return Fixture(page, tmp_path, webserver)
