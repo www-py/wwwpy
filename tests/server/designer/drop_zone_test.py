@@ -8,6 +8,7 @@ from tests.common import restore_sys_path
 from wwwpy.bootstrap import wrap_in_tryexcept
 from wwwpy.server import configure
 from wwwpy.webserver import Webserver
+from wwwpy.webservers.available_webservers import available_webservers
 
 
 def _setup_remote(tmp_path, remote_init_content):
@@ -22,9 +23,10 @@ def assertTuple(t):
 
 
 class Fixture:
-    def __init__(self, page: Page, tmp_path: Path):
+    def __init__(self, page: Page, tmp_path: Path, webserver):
         self.page = page
         self.tmp_path = tmp_path
+        self.webserver = webserver
 
     def runPythonAsync(self, python: str):
         safe_python = wrap_in_tryexcept(python,
@@ -48,24 +50,25 @@ class Fixture:
         __tracebackhide__ = True
         assert t[0], t[1]
 
+    def start_remote(self, _test_drop_zone_init):
+        self.setup_remote(_test_drop_zone_init)
+        configure.convention(self.tmp_path, self.webserver, dev_mode=True)
+        self.webserver.start_listen()
+
 
 @pytest.fixture
-def fixture(page: Page, tmp_path):
-    return Fixture(page, tmp_path)
+def fixture(page: Page, tmp_path, webserver):
+    return Fixture(page, tmp_path, webserver)
 
 
 @for_all_webservers()
-def test_drop_zone(fixture: Fixture, webserver: Webserver, restore_sys_path):
-    page = fixture.page
-    tmp_path = fixture.tmp_path
-
+def test_drop_zone(fixture: Fixture):
     # GIVEN
-    _setup_remote(tmp_path, _test_drop_zone_init)
-    configure.convention(tmp_path, webserver, dev_mode=True)
-    webserver.start_listen()
+    fixture.start_remote(_test_drop_zone_init)
+    page = fixture.page
 
     # WHEN
-    page.goto(webserver.localhost_url())
+    page.goto(fixture.webserver.localhost_url())
 
     # THEN
     expect(page.locator("button#btn1")).to_have_text("ready")
