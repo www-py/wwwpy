@@ -11,50 +11,22 @@ from wwwpy.remote import dict_to_js
 from wwwpy.remote.designer.global_interceptor import InterceptorEvent, GlobalInterceptor
 
 
-@dataclass
-class Actions:
-    set_input_value = True
-    hide_dropdown = True
-    dispatch_change_event = True
-
-
 class Option:
     parent: SearchableComboBox
 
     def __init__(self, text: str = ''):
         self.text = text
-        self.actions = Actions()
-        self.on_selected = lambda: None
-        self._root_element: js.HTMLElement = self.new_element()
-        self._root_element.addEventListener('click', create_proxy(self._on_click))
+        div: js.HTMLDivElement = js.document.createElement('div')
+        div.textContent = self.text
+        self._root_element: js.HTMLElement = div
+        self._root_element.addEventListener('click', create_proxy(self.click))
 
     def root_element(self) -> js.HTMLElement:
         return self._root_element
 
-    def _on_click(self, event: js.MouseEvent):
-        js.console.log('_on_click', self.text)
-        if self.actions.set_input_value:
-            self.set_input_value()
-        if self.actions.hide_dropdown:
-            self.hide_dropdown()
-        if self.actions.dispatch_change_event:
-            self.dispatch_change_event()
-
-        self.on_selected()
-
-    def set_input_value(self):
+    def click(self, *event):
         self.parent._input.value = self.text
-
-    def hide_dropdown(self):
         self.parent.option_popup.hide()
-
-    def dispatch_change_event(self):
-        self.parent._dispatch_change_event()
-
-    def new_element(self) -> js.HTMLElement:
-        div: js.HTMLDivElement = js.document.createElement('div')
-        div.textContent = self.text
-        return div
 
 
 class OptionPopup:
@@ -78,8 +50,6 @@ class OptionPopup:
         for option in self._options:
             option.parent = self.parent
             root.append(option.root_element())
-        # self.option_popup = self.create_option_popup()
-        # self.option_popup.activate()
 
     def activate(self):
         self.parent._option_popup_ele.style.display = 'block'
