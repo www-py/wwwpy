@@ -12,22 +12,33 @@ from wwwpy.remote import dict_to_js
 from wwwpy.remote.designer.global_interceptor import InterceptorEvent, GlobalInterceptor
 
 
+@dataclass
+class Actions:
+    set_input_value = True
+    # hide_dropdown = True
+    # dispatch_change_event = True
+
+
 class Option:
     parent: SearchableComboBox
 
     def __init__(self, text: str = ''):
         self.text = text
+        self.actions = Actions()
+        self.on_selected = lambda: None
         div: js.HTMLDivElement = js.document.createElement('div')
         div.textContent = self.text
         self._root_element: js.HTMLElement = div
-        self._root_element.addEventListener('click', create_proxy(self.click))
+        self._root_element.addEventListener('click', create_proxy(self.do_click))
 
     def root_element(self) -> js.HTMLElement:
         return self._root_element
 
-    def click(self, *event):
-        self.parent._input.value = self.text
+    def do_click(self, *event):
+        if self.actions.set_input_value:
+            self.parent._input.value = self.text
         self.parent.option_popup.hide()
+        self.on_selected()
 
     def update_visibility(self, search: str):
         self.visible = search.lower() in self.text.lower()

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from wwwpy.remote.designer.ui.searchable_combobox2 import SearchableComboBox
+from wwwpy.remote.designer.ui.searchable_combobox2 import SearchableComboBox, Option
 from js import document, window, console
 
 import pytest
@@ -117,6 +117,7 @@ def test_search_text__should_honor_search(target):
 
     assert [o.visible for o in target.option_popup.options] == [False, True, True]
 
+
 def test_outside_click__should_close_popup(target):
     # GIVEN
     button = document.createElement('button')
@@ -132,6 +133,7 @@ def test_outside_click__should_close_popup(target):
     popup = target.option_popup.root_element()
     element_state(popup).assert_not_visible()
 
+
 def test_click_twice__should_close_popup(target):
     # GIVEN
     target.option_popup.options = ['foo', 'bar', 'baz']
@@ -142,6 +144,27 @@ def test_click_twice__should_close_popup(target):
 
     # THEN
     element_state(target.option_popup.root_element()).assert_not_visible()
+
+
+def test_custom_option(target):
+    # GIVEN
+    target.option_popup.options = ['custom option', 'foo', 'bar', 'baz']
+    option = target.option_popup.options[0]
+
+    target.text_value = '123'
+
+    # WHEN
+    on_selected = []
+    option.actions.set_input_value = False
+    option.on_selected = lambda: [on_selected.append(True)]
+
+    option.do_click()
+
+    # THEN
+    assert target.text_value == '123'
+    assert not target.option_popup.visible
+    assert on_selected == [True]
+
 
 @dataclass
 class ElementState:
