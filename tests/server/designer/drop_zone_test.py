@@ -25,7 +25,7 @@ class Fixture:
         self.tmp_path = tmp_path
         self.webserver = webserver
 
-    def runPythonAsync(self, python: str):
+    def evaluate_catch(self, python: str):
         safe_python = wrap_in_tryexcept(python,
                                         'import traceback; from js import console; console.log(f"exception! {traceback.format_exc()}")')
         return self.page.evaluate(f'pyodide.runPythonAsync(`{safe_python}`)')
@@ -58,7 +58,7 @@ def test_drop_zone(fixture: Fixture):
 
     # THEN
     assertTuple(fixture.evaluate("remote.assert1()"))
-    fixture.runPythonAsync("remote.clear_events()")
+    fixture.evaluate_catch("remote.clear_events()")
 
     # WHEN
     page.mouse.move(199, 99)
@@ -82,8 +82,8 @@ def setup_initial(fixture):
     # THEN
     expect(page.locator("button#btn1")).to_have_text("ready")
     # WHEN
-    fixture.runPythonAsync("import remote")
-    fixture.runPythonAsync("await remote.start()")
+    fixture.evaluate_catch("import remote")
+    fixture.evaluate_catch("await remote.start()")
     page.mouse.move(50, 25)  # btn1 is 200x100
     return page
 
@@ -91,7 +91,7 @@ def setup_initial(fixture):
 @for_all_webservers()
 def test_drop_zone_stop(fixture: Fixture):
     page = setup_initial(fixture)
-    fixture.runPythonAsync("remote.stop()")
+    fixture.evaluate_catch("remote.stop()")
 
     # THEN
     assertTuple(fixture.evaluate("remote.assert_stop()"))
