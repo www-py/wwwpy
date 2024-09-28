@@ -28,10 +28,30 @@ class Option:
         self.parent._input.value = self.text
         self.parent.option_popup.hide()
 
+    def update_visibility(self, search: str):
+        self.visible = search.lower() in self.text.lower()
+
+    @property
+    def visible(self) -> bool:
+        return not (self._root_element.style.display == 'none')
+
+    @visible.setter
+    def visible(self, value):
+        self._root_element.style.display = 'block' if value else 'none'
+
 
 class OptionPopup(wpc.Component, tag_name='wwwpy-searchable-combobox2-option-popup'):
     _options = []  # type: List[Option]
     parent: SearchableComboBox
+    _root: js.HTMLElement = wpc.element()
+    _search: js.HTMLInputElement = wpc.element()
+
+    def init_component(self):
+        # language=html
+        self.element.innerHTML = """
+        <div><input data-name="_search"></div>
+        <div data-name="_root"></div>
+        """
 
     @property
     def options(self) -> List[Option]:
@@ -40,7 +60,7 @@ class OptionPopup(wpc.Component, tag_name='wwwpy-searchable-combobox2-option-pop
     @options.setter
     def options(self, value: List[Union[str, Option]]):
         self._options = [v if isinstance(v, Option) else Option(v) for v in value]
-        root = self.root_element()
+        root = self._root
         root.innerHTML = ''
         for option in self._options:
             option.parent = self.parent
@@ -48,13 +68,36 @@ class OptionPopup(wpc.Component, tag_name='wwwpy-searchable-combobox2-option-pop
 
     @property
     def search_placeholder(self) -> str:
-        pass
+        return self._search.placeholder
+
+    @search_placeholder.setter
+    def search_placeholder(self, value):
+        self._search.placeholder = value
+
+    @property
+    def search_value(self):
+        return self._search.value
+
+    @search_value.setter
+    def search_value(self, value: str):
+        self._search.value = value
+        self._update_options_vis()
+
+    def _search__input(self, event):
+        self._update_options_vis()
+
+    def _update_options_vis(self):
+        for option in self._options:
+            option.update_visibility(self._search.value)
 
     def show(self):
         self.element.style.display = 'block'
 
     def hide(self):
         self.element.style.display = 'none'
+
+    def focus_search(self):
+        self._search.focus()
 
 
 class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox2'):
@@ -97,3 +140,4 @@ class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox2'):
 
     def _input__click(self, event):
         self.option_popup.show()
+        self.option_popup.focus_search()

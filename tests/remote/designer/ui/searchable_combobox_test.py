@@ -1,7 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from wwwpy.remote.designer.ui.searchable_combobox2 import SearchableComboBox
-from js import document, window
+from js import document, window, console
 
 import pytest
 
@@ -85,7 +85,7 @@ def test_popup__click_option(target):
     element_state(popup).assert_not_visible()
 
 
-def todo_test_search__input_click__should_focus_search(target):
+def test_search__input_click__should_focus_search(target):
     # GIVEN
     target.option_popup.options = ['foo', 'bar', 'baz']
     target.option_popup.search_placeholder = 'search options...'
@@ -94,8 +94,28 @@ def todo_test_search__input_click__should_focus_search(target):
     target._input_element().click()
 
     # THEN
-    assert target.element.shadowRoot.activeElement
-    assert target.element.shadowRoot.activeElement.placeholder == 'search options...'
+    search_element = target.element.shadowRoot.activeElement
+    assert search_element
+    assert search_element.placeholder
+    assert search_element.placeholder == 'search options...'
+    element_state(search_element).assert_visible()
+
+
+def test_search_text__should_honor_search(target):
+    # GIVEN
+    target.option_popup.options = ['foo', 'bar', 'baz']
+
+    # WHEN
+    target._input_element().click()
+    target.option_popup.search_value = 'ba'
+
+    # THEN
+    foo, bar, baz = [element_state(o.root_element()) for o in target.option_popup.options]
+    bar.assert_visible()
+    bar.assert_visible()
+    foo.assert_not_visible()
+
+    assert [o.visible for o in target.option_popup.options] == [False, True, True]
 
 @dataclass
 class ElementState:
@@ -105,11 +125,11 @@ class ElementState:
     opacity: str
     width: float
     height: float
+    visible: bool = field(init=False)
 
-    @property
-    def visible(self):
-        return (self.display != 'none' and self.visibility != 'hidden' and
-                self.opacity != '0' and self.width > 0 and self.height > 0)
+    def __post_init__(self):
+        self.visible = (self.display != 'none' and self.visibility != 'hidden' and
+                        self.opacity != '0' and self.width > 0 and self.height > 0)
 
     def assert_visible(self):
         __tracebackhide__ = True
@@ -121,6 +141,7 @@ class ElementState:
 
 
 def element_state(element) -> ElementState:
+    assert element
     e = element
     #  document.contains(element)
     style = window.getComputedStyle(e)
