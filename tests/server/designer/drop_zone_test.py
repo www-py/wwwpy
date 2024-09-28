@@ -61,20 +61,7 @@ def fixture(page: Page, tmp_path, webserver):
 @for_all_webservers()
 def test_drop_zone(fixture: Fixture):
     # GIVEN
-    fixture.start_remote(_test_drop_zone_init)
-    page = fixture.page
-
-    # WHEN
-    page.goto(fixture.webserver.localhost_url())
-
-    # THEN
-    expect(page.locator("button#btn1")).to_have_text("ready")
-
-    # WHEN
-    fixture.runPythonAsync("import remote")
-    fixture.runPythonAsync("await remote.start()")
-
-    page.mouse.move(50, 25)  # btn1 is 200x100
+    page = setup_initial(fixture)
 
     # THEN
     assertTuple(fixture.runPythonAsync2("remote.assert1()"))
@@ -101,23 +88,23 @@ def test_drop_zone(fixture: Fixture):
     assertTuple(fixture.runPythonAsync2("remote.assert_no_class()"))
 
 
-@for_all_webservers()
-def test_drop_zone_stop(fixture: Fixture):
-    # GIVEN
+def setup_initial(fixture):
     fixture.start_remote(_test_drop_zone_init)
     page = fixture.page
-
     # WHEN
     page.goto(fixture.webserver.localhost_url())
-
     # THEN
     expect(page.locator("button#btn1")).to_have_text("ready")
-
     # WHEN
     fixture.runPythonAsync("import remote")
     fixture.runPythonAsync("await remote.start()")
-
     page.mouse.move(50, 25)  # btn1 is 200x100
+    return page
+
+
+@for_all_webservers()
+def test_drop_zone_stop(fixture: Fixture):
+    page = setup_initial(fixture)
     fixture.runPythonAsync("remote.stop()")
 
     # THEN
