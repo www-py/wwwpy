@@ -21,15 +21,43 @@ def assertTuple(t):
     assert t[0], t[1]
 
 
-@for_all_webservers()
-def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path):
-    def runPythonAsync(python: str):
+class Fixture:
+    def __init__(self, page: Page, tmp_path: Path):
+        self.page = page
+        self.tmp_path = tmp_path
+
+    def runPythonAsync(self, python: str):
         safe_python = wrap_in_tryexcept(python,
                                         'import traceback; from js import console; console.log(f"exception! {traceback.format_exc()}")')
-        return page.evaluate(f'pyodide.runPythonAsync(`{safe_python}`)')
+        return self.page.evaluate(f'pyodide.runPythonAsync(`{safe_python}`)')
 
-    def runPythonAsync2(python: str):
-        return page.evaluate(f'pyodide.runPythonAsync(`{python}`)')
+    def runPythonAsync2(self, python: str):
+        return self.page.evaluate(f'pyodide.runPythonAsync(`{python}`)')
+
+    def assertTuple(self, t):
+        assertTuple(t)
+
+    def setup_remote(self, remote_init_content):
+        _setup_remote(self.tmp_path, remote_init_content)
+
+    def assertTuple(self, t):
+        __tracebackhide__ = True
+        assert t[0], t[1]
+
+    def assertTuple(self, t):
+        __tracebackhide__ = True
+        assert t[0], t[1]
+
+
+@pytest.fixture
+def fixture(page: Page, tmp_path):
+    return Fixture(page, tmp_path)
+
+
+@for_all_webservers()
+def test_drop_zone(fixture: Fixture, webserver: Webserver, restore_sys_path):
+    page = fixture.page
+    tmp_path = fixture.tmp_path
 
     # GIVEN
     _setup_remote(tmp_path, _test_drop_zone_init)
@@ -43,34 +71,34 @@ def test_drop_zone(page: Page, webserver: Webserver, tmp_path, restore_sys_path)
     expect(page.locator("button#btn1")).to_have_text("ready")
 
     # WHEN
-    runPythonAsync("import remote")
-    runPythonAsync("await remote.start()")
+    fixture.runPythonAsync("import remote")
+    fixture.runPythonAsync("await remote.start()")
 
     page.mouse.move(50, 25)  # btn1 is 200x100
 
     # THEN
-    assertTuple(runPythonAsync2("remote.assert1()"))
-    assertTuple(runPythonAsync2("remote.assert1_class_before()"))
+    assertTuple(fixture.runPythonAsync2("remote.assert1()"))
+    assertTuple(fixture.runPythonAsync2("remote.assert1_class_before()"))
 
     # WHEN
     page.mouse.move(50, 26)  # the element is the same so no change
 
     # THEN
-    assertTuple(runPythonAsync2("remote.assert1()"))
-    runPythonAsync("remote.clear_events()")
+    assertTuple(fixture.runPythonAsync2("remote.assert1()"))
+    fixture.runPythonAsync("remote.clear_events()")
 
     # WHEN
     page.mouse.move(199, 99)
 
     # THEN
-    assertTuple(runPythonAsync2("remote.assert2()"))
-    assertTuple(runPythonAsync2("remote.assert1_class_after()"))
+    assertTuple(fixture.runPythonAsync2("remote.assert2()"))
+    assertTuple(fixture.runPythonAsync2("remote.assert1_class_after()"))
 
     # WHEN
     page.mouse.move(400, 400)  # it should remove the class
 
     # THEN
-    assertTuple(runPythonAsync2("remote.assert_no_class()"))
+    assertTuple(fixture.runPythonAsync2("remote.assert_no_class()"))
 
 
 @for_all_webservers()
@@ -103,6 +131,7 @@ def test_drop_zone_stop(page: Page, webserver: Webserver, tmp_path, restore_sys_
 
     # THEN
     assertTuple(runPythonAsync2("remote.assert_stop()"))
+
 
 # language=python
 _test_drop_zone_init = """from js import document, console
