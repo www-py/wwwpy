@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import List, Union
 
 import js
+from js import console
 from pyodide.ffi import create_proxy
 
 import wwwpy.remote.component as wpc
@@ -52,6 +53,19 @@ class OptionPopup(wpc.Component, tag_name='wwwpy-searchable-combobox2-option-pop
         <div><input data-name="_search"></div>
         <div data-name="_root"></div>
         """
+        self._interceptor = GlobalInterceptor(self._global_click)
+
+    def _global_click(self, event: InterceptorEvent):
+        target = event.event.composedPath()[0]
+        click_inside = self.parent.root_element().contains(target)
+        js.console.log(f'global click: contains={click_inside}', target)
+        if click_inside:
+            return
+        self.hide()
+
+    @property
+    def visible(self) -> bool:
+        return self.element.style.display != 'none'
 
     @property
     def options(self) -> List[Option]:
@@ -92,9 +106,11 @@ class OptionPopup(wpc.Component, tag_name='wwwpy-searchable-combobox2-option-pop
 
     def show(self):
         self.element.style.display = 'block'
+        self._interceptor.install()
 
     def hide(self):
         self.element.style.display = 'none'
+        self._interceptor.uninstall()
 
     def focus_search(self):
         self._search.focus()
@@ -114,7 +130,7 @@ class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox2'):
         self.shadow.innerHTML = """
         <input data-name="_input">
         <wwwpy-searchable-combobox2-option-popup 
-            data-name="option_popup" style='display: none'>
+            data-name="option_popup" style="display: none">
         </wwwpy-searchable-combobox2-option-popup>
         """
         self.option_popup.parent = self
@@ -139,5 +155,10 @@ class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox2'):
         return self._input
 
     def _input__click(self, event):
-        self.option_popup.show()
-        self.option_popup.focus_search()
+        vis = self.option_popup.visible
+        console.log(f'_input__click: vis={vis}')
+        if vis:
+            self.option_popup.hide()
+        else:
+            self.option_popup.show()
+            self.option_popup.focus_search()

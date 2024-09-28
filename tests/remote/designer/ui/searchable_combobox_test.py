@@ -117,6 +117,32 @@ def test_search_text__should_honor_search(target):
 
     assert [o.visible for o in target.option_popup.options] == [False, True, True]
 
+def test_outside_click__should_close_popup(target):
+    # GIVEN
+    button = document.createElement('button')
+    document.body.append(button)
+
+    target.option_popup.options = ['foo', 'bar', 'baz']
+    target._input_element().click()
+
+    # WHEN
+    button.click()
+
+    # THEN
+    popup = target.option_popup.root_element()
+    element_state(popup).assert_not_visible()
+
+def test_click_twice__should_close_popup(target):
+    # GIVEN
+    target.option_popup.options = ['foo', 'bar', 'baz']
+    target._input_element().click()
+
+    # WHEN
+    target._input_element().click()
+
+    # THEN
+    element_state(target.option_popup.root_element()).assert_not_visible()
+
 @dataclass
 class ElementState:
     document_contains: bool
