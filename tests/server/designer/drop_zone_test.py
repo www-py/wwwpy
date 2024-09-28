@@ -33,22 +33,8 @@ class Fixture:
     def runPythonAsync2(self, python: str):
         return self.page.evaluate(f'pyodide.runPythonAsync(`{python}`)')
 
-    def assertTuple(self, t):
-        assertTuple(t)
-
-    def setup_remote(self, remote_init_content):
-        _setup_remote(self.tmp_path, remote_init_content)
-
-    def assertTuple(self, t):
-        __tracebackhide__ = True
-        assert t[0], t[1]
-
-    def assertTuple(self, t):
-        __tracebackhide__ = True
-        assert t[0], t[1]
-
     def start_remote(self, _test_drop_zone_init):
-        self.setup_remote(_test_drop_zone_init)
+        _setup_remote(self.tmp_path, _test_drop_zone_init)
         configure.convention(self.tmp_path, self.webserver, dev_mode=True)
         self.webserver.start_listen()
 
