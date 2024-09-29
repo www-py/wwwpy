@@ -31,6 +31,22 @@ class Option:
         self._root_element: js.HTMLElement = div
         self._root_element.addEventListener('click', create_proxy(self.do_click))
 
+    @property
+    def label(self) -> str:
+        return self._root_element.innerText
+
+    @label.setter
+    def label(self, value: str):
+        self._root_element.innerText = value
+
+    @property
+    def italic(self) -> bool:
+        return self._root_element.style.fontStyle == 'italic'
+
+    @italic.setter
+    def italic(self, value: bool):
+        self._root_element.style.fontStyle = 'italic' if value else ''
+
     def root_element(self) -> js.HTMLElement:
         return self._root_element
 

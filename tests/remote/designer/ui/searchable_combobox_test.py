@@ -62,6 +62,34 @@ def test_popup_activate__with_input_click(target):
     element_state(popup).assert_visible()
 
 
+def test_option_label_should_not_affect_text_value(target):
+    # GIVEN
+    target.option_popup.options = ['foo', 'bar', 'baz']
+    bar = target.option_popup.options[1]
+    bar.label = 'bar label'
+
+    # WHEN
+    target.option_popup.show()
+    bar.do_click()
+
+    # THEN
+    assert target.text_value == 'bar'
+
+
+def test_option_label_should_be_shown(target):
+    # GIVEN
+    target.option_popup.options = ['foo', 'bar', 'baz']
+    bar = target.option_popup.options[1]
+    bar.label = 'bar label'
+
+    # WHEN
+    target.option_popup.show()
+
+    # THEN
+    assert 'bar label' in bar.root_element().innerHTML
+
+
+
 def test_popup__click_option(target):
     # GIVEN
     target.option_popup.options = ['foo', 'bar', 'baz']

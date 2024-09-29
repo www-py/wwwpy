@@ -150,24 +150,30 @@ class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
             # row1.value.placeholder = f'not defined{def_val}' if not attr_editor.exists else (
             #     'present with no value' if attr_editor.value is None else ''
             # )
-            values: List[Union[str, Option]] = attr_editor.definition.values.copy()
-            row1.value.placeholder = 'Click for options...' if len(values) > 0 else ''
+            options: List[Option] = [Option(value) for value in attr_editor.definition.values]
+            for option in options:
+                if option.text == '':
+                    option.label = 'Set to empty string'
+                    option.italic = True
 
             remove_available = attr_editor.exists and not attr_editor.definition.mandatory
             if remove_available:
                 remove = Option('remove attribute')
                 remove.actions.set_input_value = False
-                remove.root_element().style.fontStyle = 'italic'
+                remove.italic = True
 
                 def remove_selected(ae=attr_editor):
                     ae.remove()
                     self._save(element_editor)
 
                 remove.on_selected = remove_selected  # lambda ae=attr_editor: ae.remove()
-                values.insert(0, remove)
+                options.insert(0, remove)
 
-            row1.value.option_popup.options = values
+            pre_placeholder = 'Set to empty string. ' if attr_editor.exists and attr_editor.value == '' else ''
+            row1.value.placeholder = pre_placeholder + ('Click for options...' if len(options) > 0 else '')
+            row1.value.option_popup.options = options
             row1.value.text_value = '' if attr_editor.value is None else attr_editor.value
+            row1.value.option_popup.search_placeholder = 'Search options...'
 
             def attr_changed(event, ae=attr_editor, row=row1):
                 js.console.log(f'attr_changed {ae.definition.name} {row.value.text_value}')
