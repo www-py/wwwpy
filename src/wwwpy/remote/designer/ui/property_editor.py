@@ -14,7 +14,7 @@ import js
 from pyodide.ffi import create_proxy
 
 from wwwpy.remote.designer.helpers import _element_path_lbl, _rpc_save, _log_event, _help_button
-from .searchable_combobox import SearchableComboBox, Option
+from .searchable_combobox2 import SearchableComboBox, Option
 
 
 # write enum class with [events, attributes] and use it in the button click event
@@ -151,7 +151,7 @@ class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
             #     'present with no value' if attr_editor.value is None else ''
             # )
             values = attr_editor.definition.values
-            row1.value.input.placeholder = 'Click for options...' if len(values) > 0 else ''
+            row1.value.placeholder = 'Click for options...' if len(values) > 0 else ''
 
             class AttrOption(Option):
 
@@ -176,15 +176,15 @@ class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
                 remove.on_selected = remove_selected  # lambda ae=attr_editor: ae.remove()
                 additional.append(remove)
 
-            row1.value.set_options(additional + values)
-            row1.value.input.value = '' if attr_editor.value is None else attr_editor.value
+            row1.value.option_popup.options = additional + values
+            row1.value.text_value = '' if attr_editor.value is None else attr_editor.value
 
             def attr_changed(event, ae=attr_editor, row=row1):
-                js.console.log(f'attr_changed {ae.definition.name} {row.value.input.value}')
-                ae.value = row.value.input.value
+                js.console.log(f'attr_changed {ae.definition.name} {row.value.text_value}')
+                ae.value = row.value.text_value
                 self._save(element_editor)
 
-            row1.value.element.addEventListener('change', create_proxy(attr_changed))
+            row1.value.element.addEventListener('wp-change', create_proxy(attr_changed))
             # row1.double_click_handler = lambda ev=attr_editor: dblclick(ev)
 
     def _save(self, element_editor):
@@ -263,7 +263,7 @@ class PropertyEditorRowAttribute(wpc.Component):
         # language=html
         self.element.innerHTML = """
         <div data-name="label">uff</div>
-        <wwwpy-searchable-combobox data-name='value' class="wwwpy-property-input"></wwwpy-searchable-combobox>
+        <wwwpy-searchable-combobox2 data-name='value' class="wwwpy-property-input"></wwwpy-searchable-combobox2>
             """
 
     def value__dblclick(self, event):

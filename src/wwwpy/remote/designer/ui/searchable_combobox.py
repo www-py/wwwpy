@@ -208,4 +208,4 @@ class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox'):
         self._dispatch_change_event()
 
     def _dispatch_change_event(self):
-        self.element.dispatchEvent(js.CustomEvent.new('change', {'detail': self.input.value}))
+        self.element.dispatchEvent(js.CustomEvent.new('wp-change', {'detail': self.input.value}))
