@@ -221,7 +221,7 @@ class TargetFixture:
         self.dyn_sys_path: DynSysPath = dyn_sys_path
         self.click_ed = EventDef('click')
         self.events = [self.click_ed]
-        self.name_ad = AttributeDef('name', mandatory=False, closed_values=False)
+        self.name_ad = AttributeDef('name', mandatory=False)
         self.attributes = [self.name_ad]
         self.element_def = ElementDef('button', 'js.HTMLButtonElement', events=self.events, attributes=self.attributes)
         self._element_path: ElementPath = None
