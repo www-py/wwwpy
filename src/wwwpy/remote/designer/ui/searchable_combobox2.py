@@ -59,8 +59,9 @@ class OptionPopup(wpc.Component, tag_name='wwwpy-searchable-combobox2-option-pop
     def init_component(self):
         # language=html
         self.element.innerHTML = """
-        <div><input type="search" data-name="_search"></div>
-        <div data-name="_root"></div>
+        <div><input type="search" data-name="_search">
+        <div data-name="_root" class="dropdown"></div>
+        </div>
         """
         self._interceptor = GlobalInterceptor(self._global_click)
 
@@ -137,9 +138,58 @@ class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox2'):
         self.shadow = self.element.attachShadow(dict_to_js({'mode': 'open'}))
         # language=html
         self.shadow.innerHTML = """
+<style>        
+:host {
+        display: inline-block;
+        position: relative;
+        font-family: Arial, sans-serif;
+    }
+    input {
+        width: 90%;
+        padding: 5px;
+        background-color: #2a2a2a;
+        color: #e0e0e0;
+        border: 1px solid #444;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    input::placeholder {
+        color: #888;
+    }
+    .dropdown {
+        position: absolute;
+        width: 100%;
+        max-height: 200px;
+        resize: both;
+        overflow-y: auto;
+        border: 1px solid #444;
+        background-color: #333;
+        color: #e0e0e0;
+        border-radius: 0 0 4px 4px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    .popup {
+        position: absolute;
+        z-index: 1000;
+        display: none;
+    }   
+    .dropdown * {
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+    .dropdown div:hover {
+        background-color: #444;
+    }
+    input:focus {
+        outline: none;
+        border-color: #666;
+        box-shadow: 0 0 0 2px rgba(100, 100, 100, 0.3);
+    }      
+</style>
         <input data-name="_input">
         <wwwpy-searchable-combobox2-option-popup 
-            data-name="option_popup" style="display: none">
+            data-name="option_popup" class="popup" style="display: none">
         </wwwpy-searchable-combobox2-option-popup>
         """
         self.option_popup.parent = self
