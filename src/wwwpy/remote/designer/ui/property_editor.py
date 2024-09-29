@@ -151,6 +151,7 @@ class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
             #     'present with no value' if attr_editor.value is None else ''
             # )
             options: List[Option] = [Option(value) for value in attr_editor.definition.values]
+            focus_search = len(options) > 0 and attr_editor.definition.closed_values
             for option in options:
                 if option.text == '':
                     option.label = 'Set to empty string'
@@ -174,6 +175,7 @@ class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
             row1.value.option_popup.options = options
             row1.value.text_value = '' if attr_editor.value is None else attr_editor.value
             row1.value.option_popup.search_placeholder = 'Search options...'
+            row1.value.focus_search_on_popup = focus_search
 
             def attr_changed(event, ae=attr_editor, row=row1):
                 js.console.log(f'attr_changed {ae.definition.name} {row.value.text_value}')

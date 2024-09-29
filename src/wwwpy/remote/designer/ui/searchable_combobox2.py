@@ -145,6 +145,7 @@ class OptionPopup(wpc.Component, tag_name='wwwpy-searchable-combobox2-option-pop
 class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox2'):
     _input: js.HTMLInputElement = wpc.element()
     option_popup: OptionPopup = wpc.element()
+    focus_search_on_popup = True
     """This represents the popoup with the options and eventually a search box at the top to filter the options"""
 
     def root_element(self):
@@ -239,7 +240,13 @@ class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox2'):
             self.option_popup.hide()
         else:
             self.option_popup.show()
-            self.option_popup.focus_search()
+            if self.focus_search_on_popup:
+                self.option_popup.focus_search()
+            else:
+                self._input.focus()
+
+    def _input__change(self, event):
+        self.element.dispatchEvent(js.CustomEvent.new('wp-change'))
 
     def _option_selected(self, option: Option):
         self.option_popup.hide()

@@ -213,6 +213,19 @@ def test_when_no_options__should_not_show_popup(target):
     active_element = target.root_element().activeElement
     assert active_element == target._input_element()
 
+def test_focus_search_on_popup(target):
+    # GIVEN
+    target.option_popup.options = ['foo', 'bar', 'baz']
+    target.focus_search_on_popup = False
+
+    # WHEN
+    target._input_element().click()
+
+    # THEN
+    element_state(target.option_popup.root_element()).assert_visible()
+    active_element = target.root_element().activeElement
+    assert active_element == target._input_element(), active_element.outerHTML
+
 
 @dataclass
 class ElementState:
