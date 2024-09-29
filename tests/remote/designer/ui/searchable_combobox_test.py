@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 from wwwpy.remote.designer.ui.searchable_combobox2 import SearchableComboBox, Option
 from js import document, window, console
+from pyodide.ffi import create_proxy
 
 import pytest
 
@@ -23,15 +24,6 @@ def test_text_value(target):
 
     # THEN
     assert 'foo123' == target.text_value
-
-
-def test_input_click__should_open_search(target):
-    # GIVEN
-
-    # WHEN
-    target._input.click()
-
-    # THEN
 
 
 def test_find_by_placeholder(target):
@@ -164,6 +156,22 @@ def test_custom_option(target):
     assert target.text_value == '123'
     assert not target.option_popup.visible
     assert on_selected == [True]
+
+
+def test_change_event(target):
+    # GIVEN
+    target.placeholder = 'search...'
+    target.option_popup.options = ['foo', 'bar', 'baz']
+
+    # WHEN
+    on_change = []
+    target.element.addEventListener('wp-change', create_proxy(lambda e: [on_change.append(e.detail.option)]))
+    target._input_element().click()
+    bar = target.option_popup.options[1]
+    bar.do_click()
+
+    # THEN
+    assert on_change == [bar]
 
 
 @dataclass

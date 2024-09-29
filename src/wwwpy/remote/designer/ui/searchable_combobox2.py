@@ -35,9 +35,7 @@ class Option:
         return self._root_element
 
     def do_click(self, *event):
-        if self.actions.set_input_value:
-            self.parent._input.value = self.text
-        self.parent.option_popup.hide()
+        self.parent._option_selected(self)
         self.on_selected()
 
     def update_visibility(self, search: str):
@@ -173,3 +171,10 @@ class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox2'):
         else:
             self.option_popup.show()
             self.option_popup.focus_search()
+
+    def _option_selected(self, option: Option):
+        self.option_popup.hide()
+        if option.actions.set_input_value:
+            print(f'option selected: {option.text}')
+            self._input.value = option.text
+            self.element.dispatchEvent(js.CustomEvent.new('wp-change', dict_to_js({'detail': {'option': option}})))
