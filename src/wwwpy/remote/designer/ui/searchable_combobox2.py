@@ -143,6 +143,7 @@ class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox2'):
         </wwwpy-searchable-combobox2-option-popup>
         """
         self.option_popup.parent = self
+        self.option_popup.search_placeholder = 'search...'
 
     @property
     def text_value(self) -> str:
