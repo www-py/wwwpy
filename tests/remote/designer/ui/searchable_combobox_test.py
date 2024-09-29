@@ -86,7 +86,7 @@ def test_search__input_click__should_focus_search(target):
     target._input_element().click()
 
     # THEN
-    search_element = target.element.shadowRoot.activeElement
+    search_element = target.root_element().activeElement
     assert search_element
     assert search_element.placeholder
     assert search_element.placeholder == 'search options...'
@@ -172,6 +172,18 @@ def test_change_event(target):
 
     # THEN
     assert on_change == [bar]
+
+
+def test_when_no_options__should_not_show_popup(target):
+    # GIVEN
+
+    # WHEN
+    target._input_element().click()
+
+    # THEN
+    element_state(target.option_popup.root_element()).assert_not_visible()
+    active_element = target.root_element().activeElement
+    assert active_element == target._input_element()
 
 
 @dataclass

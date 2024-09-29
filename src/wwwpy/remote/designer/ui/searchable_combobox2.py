@@ -164,8 +164,10 @@ class SearchableComboBox(wpc.Component, tag_name='wwwpy-searchable-combobox2'):
         return self._input
 
     def _input__click(self, event):
+        if len(self.option_popup.options) == 0:
+            self._input.focus()
+            return
         vis = self.option_popup.visible
-        console.log(f'_input__click: vis={vis}')
         if vis:
             self.option_popup.hide()
         else:
