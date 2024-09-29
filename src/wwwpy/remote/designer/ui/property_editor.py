@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import Optional, List, Union
 
 import wwwpy.remote.component as wpc
 from wwwpy.common import state, property_monitor
@@ -150,33 +150,23 @@ class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
             # row1.value.placeholder = f'not defined{def_val}' if not attr_editor.exists else (
             #     'present with no value' if attr_editor.value is None else ''
             # )
-            values = attr_editor.definition.values
+            values: List[Union[str, Option]] = attr_editor.definition.values.copy()
             row1.value.placeholder = 'Click for options...' if len(values) > 0 else ''
 
-            class AttrOption(Option):
-
-                def new_element(self) -> js.HTMLElement:
-                    self.actions.set_input_value = False
-                    self.actions.hide_dropdown = False
-                    self.actions.dispatch_change_event = False
-                    element = super().new_element()
-                    element.style.fontStyle = 'italic'
-                    return element
-
-            additional = []
             remove_available = attr_editor.exists and not attr_editor.definition.mandatory
             if remove_available:
-                remove = AttrOption('remove attribute')
+                remove = Option('remove attribute')
+                remove.actions.set_input_value = False
+                remove.root_element().style.fontStyle = 'italic'
 
                 def remove_selected(ae=attr_editor):
-                    js.console.log(f'remove_selected {ae.definition.name}')
                     ae.remove()
                     self._save(element_editor)
 
                 remove.on_selected = remove_selected  # lambda ae=attr_editor: ae.remove()
-                additional.append(remove)
+                values.insert(0, remove)
 
-            row1.value.option_popup.options = additional + values
+            row1.value.option_popup.options = values
             row1.value.text_value = '' if attr_editor.value is None else attr_editor.value
 
             def attr_changed(event, ae=attr_editor, row=row1):
