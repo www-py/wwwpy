@@ -54,6 +54,8 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
     inputSearch: js.HTMLInputElement = wpc.element()
     dragComp1: DraggableComponent = wpc.element()
     property_editor: PropertyEditor = wpc.element()
+    _select_element_btn: js.HTMLElement = wpc.element()
+    _select_clear_btn: js.HTMLElement = wpc.element()
     components_marker = '-components-'
 
     def root_element(self):
@@ -91,7 +93,9 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
     </symbol>
 </svg>   
 <wwwpy-draggable-component data-name='dragComp1' style="height: 300px">
-    <span slot='title'>wwwpy</span>        
+    <span slot='title'>wwwpy</span>     
+        <button data-name="_select_element_btn">Select element...</button>   
+        <button data-name="_select_clear_btn">Clear selection</button>   
         <wwwpy-property-editor data-name="property_editor"></wwwpy-property-editor>        
         <p><input data-name='inputSearch' type='search' placeholder='type to filter...'></p>
     <div data-name='body' class='two-column-layout'>
@@ -194,11 +198,16 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
     # @menu('Reload')
     # def _hot_reload(self, e: Event):
     #     _reload()
+    async def _select_element_btn__click(self, e: Event):
+        await self._select_component(e)
 
-    @menu('Select component...', always_visible=True)
+    async def _select_clear_btn__click(self, e: Event):
+        self._toolbox_state.selected_element_path = None
+        self._restore_selected_element_path()
+
+    # @menu('Select component...', always_visible=True)
     async def _select_component(self, e: Event):
-        console.log('select component')
-        no_comp = 'Select a component...'
+        no_comp = 'Click an element...'
         self.property_editor.message1div.innerHTML = no_comp
 
         def _on_pointed(drop_zone: DropZone | None):
@@ -232,7 +241,12 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
         document.addEventListener('click', self._global_click, True)
 
     def _restore_selected_element_path(self):
-        self.property_editor.selected_element_path = self._toolbox_state.selected_element_path
+        path = self._toolbox_state.selected_element_path
+        self.property_editor.selected_element_path = path
+        if path:
+            self._select_clear_btn.removeAttribute('disabled')
+        else:
+            self._select_clear_btn.setAttribute('disabled','')
 
 
 def is_inside_toolbar(element: HTMLElement | None):
