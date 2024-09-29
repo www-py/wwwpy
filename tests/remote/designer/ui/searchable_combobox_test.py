@@ -226,6 +226,18 @@ def test_focus_search_on_popup(target):
     active_element = target.root_element().activeElement
     assert active_element == target._input_element(), active_element.outerHTML
 
+def test_options_should_be_lazy_loaded(target):
+    """This is important for performance reasons, e.g., with sl-icon the options included
+    are thousands of icons, which would be a performance hit if they were all loaded at once."""
+    # GIVEN
+    target.option_popup.options = ['foo', 'bar', 'baz']
+
+
+    # WHEN
+    foo = target.option_popup.options[0]
+
+    # THEN
+    assert not foo.loaded
 
 @dataclass
 class ElementState:

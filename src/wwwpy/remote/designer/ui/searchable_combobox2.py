@@ -26,28 +26,34 @@ class Option:
         self.text = text
         self.actions = Actions()
         self.on_selected = lambda: None
-        div: js.HTMLDivElement = js.document.createElement('div')
-        div.textContent = self.text
-        self._root_element: js.HTMLElement = div
-        self._root_element.addEventListener('click', create_proxy(self.do_click))
+        self._root_element: js.HTMLElement = None
+
+    @property
+    def loaded(self) -> bool:
+        return self._root_element is not None
 
     @property
     def label(self) -> str:
-        return self._root_element.innerText
+        return self.root_element().innerText
 
     @label.setter
     def label(self, value: str):
-        self._root_element.innerText = value
+        self.root_element().innerText = value
 
     @property
     def italic(self) -> bool:
-        return self._root_element.style.fontStyle == 'italic'
+        return self.root_element().style.fontStyle == 'italic'
 
     @italic.setter
     def italic(self, value: bool):
-        self._root_element.style.fontStyle = 'italic' if value else ''
+        self.root_element().style.fontStyle = 'italic' if value else ''
 
     def root_element(self) -> js.HTMLElement:
+        if self._root_element is None:
+            div = js.document.createElement('div')
+            div.textContent = self.text
+            div.addEventListener('click', create_proxy(self.do_click))
+            self._root_element = div
         return self._root_element
 
     def do_click(self, *event):
@@ -63,7 +69,7 @@ class Option:
 
     @visible.setter
     def visible(self, value):
-        self._root_element.style.display = 'block' if value else 'none'
+        self.root_element().style.display = 'block' if value else 'none'
 
 
 class OptionPopup(wpc.Component, tag_name='wwwpy-searchable-combobox2-option-popup'):
@@ -71,6 +77,7 @@ class OptionPopup(wpc.Component, tag_name='wwwpy-searchable-combobox2-option-pop
     parent: SearchableComboBox
     _root: js.HTMLElement = wpc.element()
     _search: js.HTMLInputElement = wpc.element()
+    _dirty = True
 
     def init_component(self):
         # language=html
@@ -99,12 +106,14 @@ class OptionPopup(wpc.Component, tag_name='wwwpy-searchable-combobox2-option-pop
 
     @options.setter
     def options(self, value: List[Union[str, Option]]):
-        self._options = [v if isinstance(v, Option) else Option(v) for v in value]
-        root = self._root
-        root.innerHTML = ''
-        for option in self._options:
-            option.parent = self.parent
-            root.append(option.root_element())
+        def process(v):
+            if not isinstance(v, Option):
+                v = Option(v)
+            v.parent = self.parent
+            return v
+
+        self._options = [process(v) for v in value]
+        self._dirty = True
 
     @property
     def search_placeholder(self) -> str:
@@ -131,6 +140,14 @@ class OptionPopup(wpc.Component, tag_name='wwwpy-searchable-combobox2-option-pop
             option.update_visibility(self._search.value)
 
     def show(self):
+        if self._dirty:
+            self._dirty = False
+            root = self._root
+            root.innerHTML = ''
+            for option in self._options:
+                option.parent = self.parent
+                root.append(option.root_element())
+
         self.element.style.display = 'block'
         self._interceptor.install()
 
