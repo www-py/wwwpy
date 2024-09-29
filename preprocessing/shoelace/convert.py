@@ -37,11 +37,14 @@ def create_element(jet, vsc):
         jet_value = jet_attr.get('value')
         jet_default = jet_value.get('default')
         jet_type = jet_value.get('type')
-        values = ['true', 'false'] if jet_type == 'boolean' else \
-            [dic['name'] for dic in (vsc_attr['values'])]
+        is_bool = jet_type == 'boolean'
+        values = [] if is_bool else [dic['name'] for dic in (vsc_attr['values'])]
 
-        attr = el.AttributeDef(attr_name, help=el.Help('', jet_attr.get('description', ''))
-                               , values=values, default_value=jet_default)
+        attr = el.AttributeDef(
+            attr_name,
+            help=el.Help('', jet_attr.get('description', ''))
+            , values=values, boolean=is_bool, default_value=jet_default
+        )
 
         attributes.append(attr)
 

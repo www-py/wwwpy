@@ -144,34 +144,51 @@ class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
         for attr_editor in element_editor.attributes:
             row1 = PropertyEditorRowAttribute()
             self.add_row(row1)
-            row1.label.innerHTML = attr_editor.definition.name
-            def_val = attr_editor.definition.default_value
+            attr_def = attr_editor.definition
+            row1.label.innerHTML = attr_def.name
+            def_val = attr_def.default_value
             def_val = '' if def_val is None else ' - default:' + def_val
             # row1.value.placeholder = f'not defined{def_val}' if not attr_editor.exists else (
             #     'present with no value' if attr_editor.value is None else ''
             # )
-            options: List[Option] = [Option(value) for value in attr_editor.definition.values]
-            focus_search = len(options) > 0 and attr_editor.definition.closed_values
+            options: List[Option] = [Option(value) for value in attr_def.values]
+            focus_search = len(options) > 0
             for option in options:
                 if option.text == '':
                     option.label = 'Set to empty string'
                     option.italic = True
 
-            remove_available = attr_editor.exists and not attr_editor.definition.mandatory
-            if remove_available:
-                remove = Option('remove attribute')
-                remove.actions.set_input_value = False
-                remove.italic = True
+            if attr_editor.exists:
+                if not attr_def.mandatory:
+                    remove = Option('remove attribute')
+                    remove.actions.set_input_value = False
+                    remove.italic = True
 
-                def remove_selected(ae=attr_editor):
-                    ae.remove()
-                    self._save(element_editor)
+                    def remove_selected(ae=attr_editor):
+                        ae.remove()
+                        self._save(element_editor)
 
-                remove.on_selected = remove_selected  # lambda ae=attr_editor: ae.remove()
-                options.insert(0, remove)
+                    remove.on_selected = remove_selected  # lambda ae=attr_editor: ae.remove()
+                    options.insert(0, remove)
+            else:
+                if attr_def.boolean:
+                    add = Option('add attribute')
+                    add.actions.set_input_value = False
+                    add.italic = True
 
-            pre_placeholder = 'Set to empty string. ' if attr_editor.exists and attr_editor.value == '' else ''
-            row1.value.placeholder = pre_placeholder + ('Click for options...' if len(options) > 0 else '')
+                    def add_selected(ae=attr_editor):
+                        ae.value = None
+                        self._save(element_editor)
+
+                    add.on_selected = add_selected  # lambda ae=attr_editor: ae.remove()
+                    options.insert(0, add)
+
+            click_for = 'Click for options...'
+            if attr_def.boolean:
+                row1.value.placeholder = 'attribute present' if attr_editor.exists else click_for
+            else:
+                pre_placeholder = 'Set to empty string. ' if attr_editor.exists and attr_editor.value == '' else ''
+                row1.value.placeholder = pre_placeholder + (click_for if len(options) > 0 else '')
             row1.value.option_popup.options = options
             row1.value.text_value = '' if attr_editor.value is None else attr_editor.value
             row1.value.option_popup.search_placeholder = 'Search options...'

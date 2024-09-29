@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Callable, Optional, List, Any
 
 from wwwpy.common.collectionlib import ListMap
@@ -31,11 +32,13 @@ class EventDef(NameHelp):
     pass
 
 
+
+
 @dataclass
 class AttributeDef(NameHelp):
     """Definition of an attribute of an HTML element."""
     values: list[str] = field(default_factory=list)
-    closed_values: bool = False
+    boolean: bool = False
     mandatory: bool = False
     default_value: Optional[str] = None
 
