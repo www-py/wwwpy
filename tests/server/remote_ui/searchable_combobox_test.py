@@ -14,14 +14,14 @@ from js import document
 target = SearchableComboBox()
 document.body.innerHTML = ''
 document.body.append(target.element)    
-target.placeholder = 'search...'
+target.placeholder = 'target-placeholder1'
     """)
     page = fixture.page
 
     # expect(page.get_by_text("foo123")).to_be_attached()
     # await expect(page.locator('input#my-input')).toHaveValue('1');
     # expect(page.locator('input')).to_have_value('foo123')
-    locator = page.get_by_placeholder("search...")
+    locator = page.get_by_placeholder("target-placeholder1")
     expect(locator).to_have_value("")
     fixture.evaluate("import remote")
     fixture.evaluate("remote.target.text_value = 'foo123'")
