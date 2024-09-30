@@ -12,7 +12,8 @@ class Fixture:
         self.page = page
         self.tmp_path = tmp_path
         self.webserver = webserver
-        self.remote_init = self.tmp_path / 'remote' / '__init__.py'
+        self.remote = self.tmp_path / 'remote'
+        self.remote_init = self.remote / '__init__.py'
         self.dev_mode = False
 
     def evaluate_catch(self, python: str):

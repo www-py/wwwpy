@@ -22,21 +22,15 @@ def test_hot_reload__modified(fixture: Fixture):
 
 
 @for_all_webservers()
-def test_hot_reload__created(page: Page, webserver: Webserver, tmp_path, restore_sys_path):
-    remote = tmp_path / 'remote'
-    remote.mkdir()
+def test_hot_reload__created(fixture: Fixture):
+    fixture.dev_mode = True
+    fixture.start_remote(_created_python)
+    expect(fixture.page.locator('id=msg1')).to_have_value('exists=False')
 
-    (remote / '__init__.py').write_text(_created_python)
-    configure.convention(tmp_path, webserver, dev_mode=True)
-    webserver.start_listen()
-
-    page.goto(webserver.localhost_url())
-    expect(page.locator('id=msg1')).to_have_value('exists=False')
-
-    (remote / 'component1.py').write_text(
-        "from js import document, console; console.log('comp1!')\n" +
-        """document.body.innerHTML = '<input id="tag1" value="import ok">'""")
-    expect(page.locator('id=msg1')).to_have_value('exists=True')
+    (fixture.remote / 'component1.py').write_text(
+        "import js; js.console.log('comp1!')\n" +
+        """js.document.body.innerHTML = '<input id="tag1" value="import ok">'""")
+    expect(fixture.page.locator('id=msg1')).to_have_value('exists=True')
 
 
 # language=python
