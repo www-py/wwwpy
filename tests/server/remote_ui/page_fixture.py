@@ -12,6 +12,8 @@ class Fixture:
         self.page = page
         self.tmp_path = tmp_path
         self.webserver = webserver
+        self.remote_init = self.tmp_path / 'remote' / '__init__.py'
+        self.dev_mode = False
 
     def evaluate_catch(self, python: str):
         safe_python = wrap_in_tryexcept(python,
@@ -26,11 +28,11 @@ class Fixture:
         t = self.evaluate(python)
         assert t[0], t[1]
 
-    def start_remote(self, _test_drop_zone_init):
-        remote_init = self.tmp_path / 'remote' / '__init__.py'
+    def start_remote(self, remote_init_content):
+        remote_init = self.remote_init
         remote_init.parent.mkdir(parents=True)
-        remote_init.write_text(_test_drop_zone_init)
-        configure.convention(self.tmp_path, self.webserver)
+        remote_init.write_text(remote_init_content)
+        configure.convention(self.tmp_path, self.webserver, dev_mode=self.dev_mode)
         self.webserver.start_listen()
         self.page.goto(self.webserver.localhost_url())
 

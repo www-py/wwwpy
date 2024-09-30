@@ -4,24 +4,21 @@ from playwright.sync_api import Page, expect
 
 from tests import for_all_webservers
 from tests.common import restore_sys_path
+from tests.server.remote_ui.page_fixture import fixture, Fixture
 from wwwpy.server import configure
 from wwwpy.webserver import Webserver
 
 
 @for_all_webservers()
-def test_hot_reload__modified(page: Page, webserver: Webserver, tmp_path, restore_sys_path):
-    remote_init = tmp_path / 'remote' / '__init__.py'
-    remote_init.parent.mkdir(parents=True)
-    remote_init.write_text("""from js import document;document.body.innerHTML = '<input id="tag1" value="ready">'""")
-    configure.convention(tmp_path, webserver, dev_mode=True)
-    webserver.start_listen()
+def test_hot_reload__modified(fixture: Fixture):
+    fixture.dev_mode = True
+    fixture.start_remote("""from js import document;document.body.innerHTML = '<input id="tag1" value="ready">'""")
 
-    page.goto(webserver.localhost_url())
-    expect(page.locator('id=tag1')).to_have_value('ready')
-    # time.sleep(2)
+    expect(fixture.page.locator('id=tag1')).to_have_value('ready')
+
     # change server side file, should reflect on the client side
-    remote_init.write_text("""from js import document;document.body.innerHTML = '<input id="tag1" value="modified">'""")
-    expect(page.locator('id=tag1')).to_have_value('modified')
+    fixture.remote_init.write_text("""import js; js.document.body.innerHTML = '<input id="tag1" value="modified">'""")
+    expect(fixture.page.locator('id=tag1')).to_have_value('modified')
 
 
 @for_all_webservers()
