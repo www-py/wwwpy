@@ -1,12 +1,7 @@
-from pathlib import Path
-
-from playwright.sync_api import Page, expect
+from playwright.sync_api import expect
 
 from tests import for_all_webservers
-from tests.common import restore_sys_path
 from tests.server.remote_ui.page_fixture import fixture, Fixture
-from wwwpy.server import configure
-from wwwpy.webserver import Webserver
 
 
 @for_all_webservers()
@@ -50,28 +45,20 @@ except:
 
 
 @for_all_webservers()
-def test_hot_reload__deleted(page: Page, webserver: Webserver, tmp_path, restore_sys_path):
-    remote = tmp_path / 'remote'
-    remote.mkdir()
-
-    (remote / '__init__.py').write_text(_deleted_python)
-    file1 = remote / 'file1.txt'
+def test_hot_reload__deleted(fixture: Fixture):
+    fixture.dev_mode = True
+    fixture.remote.mkdir()
+    file1 = fixture.remote / 'file1.txt'
     file1.write_text('hello')
 
-    configure.convention(tmp_path, webserver, dev_mode=True)
-    webserver.start_listen()
-
-    page.goto(webserver.localhost_url())
-    expect(page.locator('id=msg1')).to_have_value('exists=True')
-
-    file1.unlink()
-    expect(page.locator('id=msg1')).to_have_value('exists=False')
-
-
-# language=python
-_deleted_python = """
-from pathlib import Path   
-from js import document
+    fixture.start_remote(
+        # language=python
+        """from pathlib import Path; from js import document
 file1_txt = Path(__file__).parent / 'file1.txt'
 document.body.innerHTML = f'<input id="msg1" value="exists={str(file1_txt.exists())}">'
-"""
+""")
+
+    expect(fixture.page.locator('id=msg1')).to_have_value('exists=True')
+
+    file1.unlink()
+    expect(fixture.page.locator('id=msg1')).to_have_value('exists=False')

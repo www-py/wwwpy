@@ -31,7 +31,7 @@ class Fixture:
 
     def start_remote(self, remote_init_content):
         remote_init = self.remote_init
-        remote_init.parent.mkdir(parents=True)
+        remote_init.parent.mkdir(parents=True, exist_ok=True)
         remote_init.write_text(remote_init_content)
         configure.convention(self.tmp_path, self.webserver, dev_mode=self.dev_mode)
         self.webserver.start_listen()
