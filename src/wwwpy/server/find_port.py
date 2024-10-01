@@ -1,7 +1,7 @@
 import errno
 import socket
 
-_start = (10000 - 1)
+_start = (10035 - 1)  # windows doesn't like the previous port range
 _end = 30000
 
 
