@@ -81,6 +81,7 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
         'sl-skeleton': _def(),
         'sl-spinner': _def(),
         'sl-icon': _def(add='name="star"'),
+        'sl-icon-button': _def(add='name="house-gear"'),
         'sl-split-panel': lambda: f'''<sl-split-panel position="25">
     <div slot="start" style="height: 200px; background: var(--sl-color-neutral-50); display: flex; align-items: center; justify-content: center; overflow: hidden;">
         <span>Start</span>
