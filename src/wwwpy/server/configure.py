@@ -49,7 +49,7 @@ def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
 
     if dev_mode:
         from wwwpy.server.designer.dev_mode import _dev_mode
-        _dev_mode(['common', 'remote'], websocket_pool)
+        _dev_mode(['common', 'remote'], [], websocket_pool)
 
     if webserver is not None:
         webserver.set_http_route(*routes)
@@ -64,8 +64,8 @@ def _configure_services(route_path: str) -> RpcRoute:
     def _import_by_name(module_name: str):
         try:
             import importlib
-            mod = Module(importlib.import_module(module_name))
-            services.add_module(mod)
+            # mod = Module(importlib.import_module(module_name))
+            services.add_module(module_name)
         except Exception as e:
             print(f'could not load rpc module `{module_name}`: {e}')
             return None

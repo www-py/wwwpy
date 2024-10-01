@@ -9,6 +9,7 @@ from wwwpy.exceptions import RemoteException
 from wwwpy.http import HttpRoute, HttpResponse, HttpRequest
 from wwwpy.resources import Resource, StringResource, ResourceIterable
 from wwwpy.unasync import unasync
+import importlib
 
 
 class Function(NamedTuple):
@@ -78,8 +79,9 @@ class RpcRoute:
         response = HttpResponse(resp, 'application/json')
         return response
 
-    def add_module(self, module: Module):
-        self._modules[module.name] = module
+    def add_module(self, module_name: str):
+        mod = Module(importlib.import_module(module_name))
+        self._modules[module_name] = mod
 
     def find_module(self, module_name: str) -> Optional[Module]:
         return self._modules.get(module_name, None)
