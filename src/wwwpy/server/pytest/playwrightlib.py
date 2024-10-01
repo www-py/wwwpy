@@ -51,6 +51,7 @@ def playwright_patch_timeout() -> None:
 
     def patch_timeout(_member_obj: FunctionType) -> Callable:
         def patch_timeout_inner(*args, **kwargs) -> Any:
+            __tracebackhide__ = True
             timeout_millis = PLAYWRIGHT_PATCH_TIMEOUT_MILLIS()
             parameters = inspect.signature(_member_obj).parameters
             timeout_arg_index = list(parameters.keys()).index("timeout")
