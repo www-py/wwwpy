@@ -62,3 +62,21 @@ document.body.innerHTML = f'<input id="msg1" value="exists={str(file1_txt.exists
 
     file1.unlink()
     expect(fixture.page.locator('id=msg1')).to_have_value('exists=False')
+
+
+class TestServerRpcHotReload:
+
+    @for_all_webservers()
+    def test_server_rpc_body_change(self, fixture: Fixture):
+        fixture.dev_mode = True
+        fixture.write_module('server/rpc.py', "async def func1(p1: str) -> str: return f'foo={p1}'")
+
+        fixture.start_remote(  # language=python
+            """
+async def main():
+    import js 
+    from server import rpc 
+    js.document.body.innerText = await rpc.func1("startup")
+""")
+
+        expect(fixture.page.locator('body')).to_have_text('foo=startup', use_inner_text=True)

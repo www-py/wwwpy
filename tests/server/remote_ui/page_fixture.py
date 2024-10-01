@@ -29,13 +29,23 @@ class Fixture:
         t = self.evaluate(python)
         assert t[0], t[1]
 
-    def start_remote(self, remote_init_content):
+    def start_remote(self, remote_init_content: str = None):
         remote_init = self.remote_init
         remote_init.parent.mkdir(parents=True, exist_ok=True)
-        remote_init.write_text(remote_init_content)
+        if remote_init_content:
+            remote_init.write_text(remote_init_content)
         configure.convention(self.tmp_path, self.webserver, dev_mode=self.dev_mode)
         self.webserver.start_listen()
         self.page.goto(self.webserver.localhost_url())
+
+    def write_module(self, module_path: str, content: str):
+        file = self.tmp_path / module_path
+        parent = file.parent
+        parent.mkdir(parents=True, exist_ok=True)
+        file.write_text(content)
+        init = parent / '__init__.py'
+        if not init.exists():
+            init.touch()
 
 
 @pytest.fixture
