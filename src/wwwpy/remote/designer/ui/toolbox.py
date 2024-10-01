@@ -14,7 +14,7 @@ from wwwpy.common.designer import element_library
 from wwwpy.common.designer.code_edit import add_component, ElementDef
 from wwwpy.common.designer.element_path import ElementPath
 from wwwpy.common.designer.html_edit import Position
-from wwwpy.remote import dict_to_js
+from wwwpy.remote import dict_to_js, set_timeout
 from wwwpy.remote.designer import element_path
 from wwwpy.remote.designer.drop_zone import DropZone
 from wwwpy.remote.designer.global_interceptor import GlobalInterceptor, InterceptorEvent
@@ -246,7 +246,7 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
         if path:
             self._select_clear_btn.removeAttribute('disabled')
         else:
-            self._select_clear_btn.setAttribute('disabled','')
+            self._select_clear_btn.setAttribute('disabled', '')
 
 
 def is_inside_toolbar(element: HTMLElement | None):
@@ -291,9 +291,13 @@ async def _drop_zone_start_selection_async(on_pointed, whole=False) -> Optional[
             result.append(selected)
             event.set()
 
-    GlobalInterceptor(intercept_ended).install()
+    GlobalInterceptor(intercept_ended, 'pointerdown').install()
+
+    click_inter = GlobalInterceptor(lambda ev: ev.preventAndStop(), 'click')
+    click_inter.install()
     drop_zone_selector.start_selector(on_pointed, _default_drop_zone_accept, whole=whole)
     await event.wait()
+    set_timeout(lambda: click_inter.uninstall(), 500)
 
     if len(result) == 0:
         return None
