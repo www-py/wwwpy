@@ -42,9 +42,4 @@ def before_each_after_each(request):
         return
     page = request.getfixturevalue('page')
     playwright_setup_page_logger(page)
-    try:
-        yield
-        print("In the hope it is printed. I just experienced that this is not printed if the test fails")
-    except:
-        import traceback
-        print(f"In the hope it is printed. This failed {traceback.format_exc()}")
+    yield
