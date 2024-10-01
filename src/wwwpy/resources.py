@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Iterator, Callable, Optional, TypeVar, Iterable, Protocol, Tuple
 from zipfile import ZipFile
 
+from wwwpy.common import iterlib
 from wwwpy.common.iterlib import CallableToIterable
 
 parent = Path(__file__).resolve().parent
@@ -117,9 +118,10 @@ def from_directory_lazy(
 
 def build_archive(resource_iterator: Iterator[Resource]) -> bytes:
     """builds a zip archive from the given resources and returns the bytes"""
+
     stream = BytesIO()
     zip_file = ZipFile(stream, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=1)
-    for resource in resource_iterator:
+    for resource in iterlib.iter_catching(resource_iterator):
         if isinstance(resource, PathResource):
             zip_file.write(resource.filepath, resource.arcname)
         elif isinstance(resource, Resource):

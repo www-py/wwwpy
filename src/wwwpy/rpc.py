@@ -9,7 +9,6 @@ from wwwpy.exceptions import RemoteException
 from wwwpy.http import HttpRoute, HttpResponse, HttpRequest
 from wwwpy.resources import Resource, StringResource, ResourceIterable
 from wwwpy.unasync import unasync
-import importlib
 
 
 class Function(NamedTuple):
@@ -71,7 +70,7 @@ class Proxy:
 
 class RpcRoute:
     def __init__(self, route_path: str):
-        self._modules: Dict[str, Module] = {}
+        self._allowed_modules: set[str] = set()
         self.route = HttpRoute(route_path, self._route_callback)
 
     def _route_callback(self, request: HttpRequest) -> HttpResponse:
@@ -80,11 +79,18 @@ class RpcRoute:
         return response
 
     def add_module(self, module_name: str):
-        mod = Module(importlib.import_module(module_name))
-        self._modules[module_name] = mod
+        # todo rename to `allow`
+        if not isinstance(module_name, str):
+            raise TypeError('module_name must be a string')
+        self._allowed_modules.add(module_name)
 
     def find_module(self, module_name: str) -> Optional[Module]:
-        return self._modules.get(module_name, None)
+        if module_name not in self._allowed_modules:
+            return None
+        import importlib
+        module = importlib.import_module(module_name)
+        # todo, cache? beware of hot reload
+        return Module(module)
 
     def dispatch(self, request: str) -> str:
         rpc_request = RpcRequest.from_json(request)
@@ -103,12 +109,13 @@ class RpcRoute:
     def remote_stub_resources(self) -> ResourceIterable:
 
         def bundle() -> Iterator[Resource]:
-            for module in self._modules.values():
+            for module_name in self._allowed_modules:
+                module = self.find_module(module_name)
                 if module is None:
                     return
                 imports = 'from wwwpy.remote.fetch import async_fetch_str'
                 stub_source = generate_stub_source(module, self.route.path, imports)
-                yield StringResource(module.name.replace('.', '/') + '.py', stub_source)
+                yield StringResource(module_name.replace('.', '/') + '.py', stub_source)
 
         return CallableToIterable(bundle)
 

@@ -33,7 +33,8 @@ def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
     sys.meta_path.insert(0, CustomFinder({'remote', 'remote.rpc', 'wwwpy.remote', 'wwwpy.remote.rpc'}))
     global websocket_pool
     websocket_pool = WebsocketPool('/wwwpy/ws')
-    services = _configure_services('/wwwpy/rpc')
+    rpc_server_allowed = ['wwwpy.server.rpc', 'server.rpc']
+    services = _configure_rpc_services('/wwwpy/rpc', rpc_server_allowed)
     routes = [services.route, websocket_pool.http_route, *bootstrap_routes(
         resources=[
             library_resources(),
@@ -49,7 +50,7 @@ def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
 
     if dev_mode:
         from wwwpy.server.designer.dev_mode import _dev_mode
-        _dev_mode(['common', 'remote'], [], websocket_pool)
+        _dev_mode(['common', 'remote'], rpc_server_allowed, websocket_pool)
 
     if webserver is not None:
         webserver.set_http_route(*routes)
@@ -58,18 +59,14 @@ def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
 from wwwpy.rpc import RpcRoute, Module
 
 
-def _configure_services(route_path: str) -> RpcRoute:
+def _configure_rpc_services(route_path: str, modules: list[str]) -> RpcRoute:
     services = RpcRoute(route_path)
 
-    def _import_by_name(module_name: str):
+    for module_name in modules:
         try:
-            import importlib
-            # mod = Module(importlib.import_module(module_name))
             services.add_module(module_name)
         except Exception as e:
             print(f'could not load rpc module `{module_name}`: {e}')
             return None
 
-    _import_by_name('wwwpy.server.rpc')
-    _import_by_name('server.rpc')
     return services

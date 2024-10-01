@@ -8,6 +8,7 @@ from playwright.sync_api import Page, expect
 
 from tests import for_all_webservers
 from tests.common import restore_sys_path
+from tests.server.remote_ui.page_fixture import Fixture, fixture
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.common.rpc.custom_loader import CustomFinder
 from wwwpy.resources import library_resources
@@ -22,24 +23,22 @@ layer_5_rpc_server = file_parent / 'layer_5_support/rpc_server'
 class TestServerRpc:
 
     @for_all_webservers()
-    def test_rpc(self, page: Page, webserver: Webserver):
-        configure.convention(layer_5_rpc_server, webserver)
-        webserver.start_listen()
+    def test_rpc(self, fixture: Fixture):
+        fixture.set_path(layer_5_rpc_server)
+        fixture.start_remote()
 
-        page.goto(webserver.localhost_url())
-        expect(page.locator('body')).to_have_text('42')
+        expect(fixture.page.locator('body')).to_have_text('42')
 
     @for_all_webservers()
-    def test_rpc_issue_double_load(self, page: Page, webserver: Webserver):
+    def test_rpc_issue_double_load(self, fixture: Fixture):
         # related to the stubber to being loaded twice
-        configure.convention(layer_5_rpc_server, webserver)
-        webserver.start_listen()
+        fixture.set_path(layer_5_rpc_server)
+        fixture.start_remote()
 
-        page.goto(webserver.localhost_url())
-        expect(page.locator('body')).to_have_text('42')
+        expect(fixture.page.locator('body')).to_have_text('42')
 
-        page.goto(webserver.localhost_url())
-        expect(page.locator('body')).to_have_text('42')
+        fixture.page.goto(fixture.webserver.localhost_url())
+        expect(fixture.page.locator('body')).to_have_text('42')
 
 
 class TestWebsocketRoute:

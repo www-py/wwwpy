@@ -16,6 +16,11 @@ class Fixture:
         self.remote_init = self.remote / '__init__.py'
         self.dev_mode = False
 
+    def set_path(self, path):
+        self.tmp_path = path
+        self.remote = self.tmp_path / 'remote'
+        self.remote_init = self.remote / '__init__.py'
+
     def evaluate_catch(self, python: str):
         safe_python = wrap_in_tryexcept(python,
                                         'import traceback; from js import console; console.log(f"exception! {traceback.format_exc()}")')

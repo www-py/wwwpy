@@ -69,14 +69,20 @@ class TestServerRpcHotReload:
     @for_all_webservers()
     def test_server_rpc_body_change(self, fixture: Fixture):
         fixture.dev_mode = True
-        fixture.write_module('server/rpc.py', "async def func1(p1: str) -> str: return f'foo={p1}'")
+        fixture.write_module('server/rpc.py', "async def func1() -> str: return 'ready'")
 
         fixture.start_remote(  # language=python
             """
 async def main():
     import js 
     from server import rpc 
-    js.document.body.innerText = await rpc.func1("startup")
+    js.document.body.innerText = 'first=' + await rpc.func1()
 """)
 
-        expect(fixture.page.locator('body')).to_have_text('foo=startup', use_inner_text=True)
+        expect(fixture.page.locator('body')).to_have_text('first=ready', use_inner_text=True)
+
+        fixture.write_module('server/rpc.py', "async def func1() -> str: return 'updated'")
+        # force remote hotreload
+        fixture.remote_init.write_text(fixture.remote_init.read_text().replace('first=', 'second='))
+
+        expect(fixture.page.locator('body')).to_have_text('second=updated', use_inner_text=True)

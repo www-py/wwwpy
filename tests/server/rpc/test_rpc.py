@@ -34,14 +34,15 @@ async def test_module_invoke_async():
 def test_rpc_integration(webserver: Webserver):
     """ server part """
     services = RpcRoute('/rpc2')
-    module = Module(support3)
-    services.add_module(module)
+
+    services.add_module(support3.__name__)
 
     webserver.set_http_route(services.route)
     webserver.set_port(find_port()).start_listen().wait_ready()
 
     rpc_url = webserver.localhost_url() + services.route.path
     imports = 'from wwwpy.server.fetch import async_fetch_str'
+    module = Module(support3)
     stub_source = wwwpy.rpc.generate_stub_source(module, rpc_url, imports)
     """ end """
 

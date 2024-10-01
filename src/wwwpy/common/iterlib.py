@@ -20,4 +20,20 @@ class CallableToIterable(Generic[_T]):
         self.iterator_factory = iterator_factory
 
     def __iter__(self) -> Iterator[_T]:
-        return self.iterator_factory()
+        try:
+            return iter_catching(self.iterator_factory())
+        except:
+            import traceback
+            traceback.print_exc()
+            return iter([])
+
+
+def iter_catching(gen):
+    while True:
+        try:
+            yield next(gen)
+        except StopIteration:
+            break
+        except Exception as e:
+            import traceback
+            traceback.print_exc()

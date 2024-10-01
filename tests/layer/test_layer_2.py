@@ -1,11 +1,13 @@
 import os
 from io import BytesIO
+from itertools import chain
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, Iterator
 from zipfile import ZipFile
 
+from wwwpy.common.iterlib import CallableToIterable
 from wwwpy.resources import from_directory, PathResource, Resource, default_resource_accept, build_archive, \
-    StringResource, stacktrace_pathfinder, _is_path_contained, library_resources, from_directory_lazy
+    StringResource, stacktrace_pathfinder, _is_path_contained, library_resources, from_directory_lazy, ResourceIterable
 
 parent = Path(__file__).parent
 
@@ -70,8 +72,36 @@ class Test_build_archive:
         folder = self.support_data / 'simple'
         (folder / 'empty_dir').mkdir(exist_ok=True)  # should be ignored by build_archive
 
-        archive_bytes = build_archive(list(from_directory(folder)) +
-                                      [StringResource('dir1/baz.txt', "#baz")])
+        archive_bytes = build_archive(chain.from_iterable(
+            [from_directory(folder), [StringResource('dir1/baz.txt', "#baz")]]))
+
+        actual_files = set()
+        with ZipFile(BytesIO(archive_bytes)) as zf:
+            for il in zf.infolist():
+                with zf.open(il, 'r') as file:
+                    actual_files.add(ZFile(il.filename, file.read()))
+
+        expected_files = {
+            ZFile('foo.txt', '#foo'.encode()),
+            ZFile('dir1/bar.txt', '#bar'.encode()),
+            ZFile('dir1/baz.txt', '#baz'.encode()),
+        }
+
+        assert expected_files == actual_files
+
+    def test_build_archive_when_some_iter_raises(self):
+        class ZFile(NamedTuple):
+            filename: str
+            content: bytes
+
+        folder = self.support_data / 'simple'
+        (folder / 'empty_dir').mkdir(exist_ok=True)  # should be ignored by build_archive
+
+        def faulty() -> Iterator[Resource]:
+            raise ValueError('some error')
+
+        archive_bytes = build_archive(chain.from_iterable(
+            [from_directory(folder), CallableToIterable(faulty), [StringResource('dir1/baz.txt', "#baz")]]))
 
         actual_files = set()
         with ZipFile(BytesIO(archive_bytes)) as zf:

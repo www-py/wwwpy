@@ -8,8 +8,8 @@ from pathlib import Path
 
 def _find_module_path(module_name) -> Path | None:
     """Finds the path of a module without loading it."""
-    spec = importlib.util.find_spec(module_name)
     try:
+        spec = importlib.util.find_spec(module_name)
         result = Path(spec.origin) if spec else None
     except:
         import traceback

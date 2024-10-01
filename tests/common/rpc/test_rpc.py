@@ -57,7 +57,7 @@ def test_services_not_found():
     actual = target.find_module(support2_module_name)
     assert actual is None
 
-    target.add_module(Module(support2))
+    target.add_module(support2_module_name)
     actual = target.find_module(support2_module_name)
     assert actual is not None
     actual: Module
