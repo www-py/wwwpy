@@ -1,9 +1,11 @@
+import sys
 from pathlib import Path
 
 import pytest
 from playwright.sync_api import Page
 
 from wwwpy.bootstrap import wrap_in_tryexcept
+from wwwpy.common import reloader
 from wwwpy.server import configure
 
 
@@ -52,7 +54,18 @@ class Fixture:
         if not init.exists():
             init.touch()
 
+    def unload(self):
+        reloader.unload_path(str(self.tmp_path))
+
 
 @pytest.fixture
 def fixture(page: Page, tmp_path, webserver):
-    return Fixture(page, tmp_path, webserver)
+    sys_path = sys.path.copy()
+    sys_meta_path = sys.meta_path.copy()
+    fix = Fixture(page, tmp_path, webserver)
+    try:
+        yield fix
+    finally:
+        sys.path = sys_path
+        sys.meta_path = sys_meta_path
+        fix.unload()
