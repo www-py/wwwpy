@@ -48,13 +48,6 @@ def test_document_tag_creation():
             self.element.shadowRoot.innerHTML = '<h1>hello123</h1>'
 
     ele = document.createElement(Comp2.component_metadata.tag_name)
-    # import js
-    # js.console.log(ele)
-    # setattr(js.window,'ciccio',ele)
-    # js.eval('debugger;')
-    # count = 0
-    # for _ in range(100000):
-    #     count += 1
     assert 'hello123' in ele.shadowRoot.innerHTML
 
 
