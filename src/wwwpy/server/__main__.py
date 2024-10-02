@@ -1,31 +1,47 @@
 from __future__ import annotations
 
 import os
+import argparse
 from pathlib import Path
+from typing import NamedTuple, Optional, Sequence
 
-from wwwpy.server import configure
-from wwwpy.webserver import wait_forever
+class Arguments(NamedTuple):
+    directory: str
+    port: int
+    dev: bool
 
 
-def main():
-    import argparse
-    parser = argparse.ArgumentParser()
+def parse_arguments(args: Optional[Sequence[str]] = None) -> Arguments:
+    parser = argparse.ArgumentParser(prog='wwwpy')
     parser.add_argument('--directory', '-d', default=os.getcwd(),
-                        help='Specify alternative directory '
-                             '[default:current directory]')
-    parser.add_argument('port', action='store',
-                        default=8000, type=int,
-                        nargs='?',
+                        help='Specify alternative directory [default: current directory]')
+    parser.add_argument('--port', type=int, default=8000,
                         help='Specify alternate port [default: 8000]')
-    parser.add_argument('dev', action='store', default=False, type=bool, help="Run in development mode")
-    args = parser.parse_args()
+    parser.add_argument('dev', nargs='?', const=True, default=False,
+                        help="Run in development mode")
+
+    parsed_args = parser.parse_args(args)
+    return Arguments(
+        directory=parsed_args.directory,
+        port=parsed_args.port,
+        dev=bool(parsed_args.dev)
+    )
+
+
+def run_server(args: Arguments):
+    from wwwpy.server import configure
+    from wwwpy.webserver import wait_forever
+    import webbrowser
 
     working_dir = Path(args.directory).absolute()
     configure.start_default(args.port, working_dir, dev_mode=args.dev)
-
-    import webbrowser
     webbrowser.open(f'http://localhost:{args.port}')
     wait_forever()
+
+
+def main():
+    args = parse_arguments()
+    run_server(args)
 
 
 if __name__ == '__main__':
