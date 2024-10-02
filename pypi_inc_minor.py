@@ -1,10 +1,14 @@
-import re
+from __future__ import annotations
 
-def update_minor_version():
+import re
+import subprocess
+
+
+def update_minor_version() -> str | None:
     filename = 'pyproject.toml'
     with open(filename, 'r') as f:
         lines = f.readlines()
-
+    msg = None
     for i, line in enumerate(lines):
         stripped_line = line.strip()
         if stripped_line.startswith('version ='):
@@ -19,7 +23,7 @@ def update_minor_version():
                     new_version = '.'.join(version_parts)
                     # Replace the line with the updated version
                     lines[i] = f'version = "{new_version}"\n'
-                    print(f'Updated version to {new_version}')
+                    msg = f'Updated version to {new_version}'
                     break
                 else:
                     print('Error: Last part of the version is not a digit.')
@@ -29,9 +33,23 @@ def update_minor_version():
     else:
         print('Error: Version line not found.')
 
-    # Write the updated lines back to the file
-    with open(filename, 'w') as f:
-        f.writelines(lines)
+    if msg:
+        with open(filename, 'w') as f:
+            f.writelines(lines)
+    return msg
 
-# Run the function to update the minor version
-update_minor_version()
+
+def main():
+    result = subprocess.run(['git', 'diff-index', '--quiet', 'HEAD', '--'], capture_output=True)
+    if result.returncode != 0:
+        print("There are uncommitted changes. Please commit or stash them before running this script.")
+        return
+
+    msg = update_minor_version()
+    if msg:
+        print('=== committing changes')
+        subprocess.run(['git', 'commit', '-am', msg])
+
+
+if __name__ == '__main__':
+    main()
