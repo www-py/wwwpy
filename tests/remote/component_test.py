@@ -131,7 +131,7 @@ def test_redefined_element_should_be_ok():
 
 class TestElementAttribute:
 
-    def test_HTMLElement_attribute(self):
+    def test_HTMLElement_attribute_not_found_should_raise(self):
         class Comp5(Component):
             div1: HTMLElement = element()
             foo1: HTMLElement = element()
@@ -148,6 +148,14 @@ class TestElementAttribute:
             assert False, 'Should raise AttributeError'
         except AttributeError:
             pass
+
+    def test_component_element_that_do_not_exist__should_not_raise(self):
+        class Comp5a(Component): ...
+
+        class Comp5b(Component):
+            foo1: Comp5a = element()
+
+        comp = Comp5b()
 
     def test_Component_attribute(self):
         class Comp6(Component, tag_name='comp-6'):
@@ -231,7 +239,6 @@ class TestElementEventBinding:
         assert [1] == actual
 
     def test_on_sub_component__issue20240923(self):
-
         events = []
 
         class CChild(Component):

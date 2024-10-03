@@ -164,9 +164,11 @@ class Component:
 
     def _bind_events(self):
 
-        members = inspect.getmembers(self)
+        members = dir(self)
 
-        for name, method in members:
+        for name in members:
+            if name.startswith('__'):
+                continue
             parts = name.split('__')
             if len(parts) != 2:
                 continue
