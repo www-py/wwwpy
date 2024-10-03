@@ -20,7 +20,7 @@ def _find_module_path(module_name: str) -> Path | None:
             return init_file
 
     import traceback
-    print(f'error finding module `{module_name}`')
+    print(f'warning: path not found for module `{module_name}`')
     traceback.print_stack()
 
     return None
