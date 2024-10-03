@@ -1,5 +1,7 @@
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+import datetime as datetime_module
 from pathlib import Path
 from time import sleep
 from typing import List
@@ -29,10 +31,17 @@ class WatcherMock:
         arrival = datetime.utcnow()
         delta = arrival - self.prev
         self.prev = arrival
-        self.events.append(MockEvent(arrival, delta, event))
+        mock_event = MockEvent(arrival, delta, event)
+        self.events.append(mock_event)
+        print(f"WatcherMock.callback: {mock_event}")
 
     def wait_for_events(self, count):
+        start = datetime.utcnow()
         [sleep(0.1 * timeout_multiplier()) for _ in range(10) if len(self.events) < count]
+        if len(self.events) < count:
+            delta = datetime.utcnow() - start
+            raise print(f"wait_for_events, expected {count} events, got {len(self.events)} delta={delta}",
+                        file=sys.stderr)
 
     def __str__(self):
         # on GitHub Actions when a test fails we can see the print of the variables in the local scope
