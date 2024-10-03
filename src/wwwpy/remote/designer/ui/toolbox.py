@@ -287,8 +287,12 @@ async def _drop_zone_start_selection_async(on_pointed, whole=False) -> Optional[
         ev.preventAndStop()
         if selected:
             ev.uninstall()
-            console.log(f'selection accepted position {selected.position.name} target: ', selected.element,
-                        'parent: ', selected.element.parentElement)
+            console.log(
+                f'selection accepted position {selected.position.name} target: ', selected.element,
+                'parent: ', selected.element.parentElement,
+                'event: ', ev.event,
+                'composedPath: ', ev.event.composedPath(),
+            )
             result.append(selected)
             event.set()
 
