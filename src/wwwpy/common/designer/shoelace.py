@@ -8,12 +8,20 @@ from wwwpy.common.rpc import serialization
 parent = Path(__file__).parent
 
 
+#
 def _reorder(elements: List[ElementDef]):
-    order = ['sl-button', 'sl-input', 'sl-textarea', 'sl-select',
-             'sl-checkbox', 'sl-dropdown', 'sl-switch', 'sl-progress-bar', 'sl-split-panel',
-             'sl-textarea', 'sl-alert', 'sl-drawer']
+    hide = {'sl-drawer'}
+    for e in elements.copy():
+        if e.tag_name in hide:
+            elements.remove(e)
+
+    order = ['sl-button', 'sl-input', 'sl-textarea',
+             'sl-checkbox', 'sl-switch', 'sl-progress-bar', 'sl-split-panel',
+             'sl-textarea', 'sl-alert', 'sl-select', 'sl-dropdown']
+
     order.reverse()
     by_tag_name = {element.tag_name: element for element in elements}
+
     for o in order:
         ed = by_tag_name.get(o)
         if not ed:
@@ -21,8 +29,8 @@ def _reorder(elements: List[ElementDef]):
         elements.remove(ed)
         elements.insert(0, ed)
 
-def _shoelace_elements_def() -> List[ElementDef]:
 
+def _shoelace_elements_def() -> List[ElementDef]:
     shoelace_json = (parent / 'shoelace.json').read_text()
     elements = serialization.from_json(shoelace_json, List[ElementDef])
     elements = ListMap(elements, key_func=lambda x: x.tag_name)
@@ -82,7 +90,7 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
         'sl-spinner': _def(),
         'sl-icon': _def(add='name="star"'),
         'sl-icon-button': _def(add='name="house-gear"'),
-        'sl-split-panel': lambda: f'''<sl-split-panel position="25">
+        'sl-split-panel': lambda: f'''<sl-split-panel data-name="{name}" position="25">
     <div slot="start" style="height: 200px; background: var(--sl-color-neutral-50); display: flex; align-items: center; justify-content: center; overflow: hidden;">
         <span>Start</span>
     </div>
