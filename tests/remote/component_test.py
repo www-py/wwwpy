@@ -284,7 +284,7 @@ class TestElementEventBinding:
 
         assert [1] == events
 
-
+# todo use dict_to_js
 def to_js(o):
     import js
     import pyodide

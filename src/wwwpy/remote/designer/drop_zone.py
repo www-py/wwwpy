@@ -4,15 +4,31 @@ from dataclasses import dataclass
 from typing import Protocol, Callable
 
 from js import document, MouseEvent, console
+import js
 from pyodide.ffi import create_proxy
 
 from wwwpy.common.designer.html_edit import Position
 from wwwpy.remote.widgets.filesystem_tree_widget import HTMLElement
 
+
 @dataclass
 class DropZone:
     element: HTMLElement
     position: Position
+
+
+def _default_extract_target(event: MouseEvent) -> HTMLElement:
+    return event.target
+
+
+def _extract_first_with_data_name(event: MouseEvent) -> HTMLElement:
+    ele: js.HTMLElement = event.target
+    while ele is not None:
+        if ele.hasAttribute('data-name'):
+            return ele
+        ele = ele.parentElement
+    return event.target
+
 
 # todo refactor to better integrate with toolbox
 class _DropZoneSelector:
@@ -23,14 +39,19 @@ class _DropZoneSelector:
         self._mousemove_proxy = create_proxy(self._mousemove)
         # todo not under test
         self._whole = False
+        self._extract_target = None
 
-    def start_selector(self, callback: SelectorProtocol = None, accept: Callable[[DropZone], bool] = None, whole=False):
+    def start_selector(self, callback: SelectorProtocol = None,
+                       accept: Callable[[DropZone], bool] = None,
+                       whole=False,
+                       extract_target: Callable[[MouseEvent], HTMLElement] = _extract_first_with_data_name):
         """It starts the process for the user to select a drop zone.
         While moving the mouse, it highlights the drop zones.
         """
         self._callback = callback
         self._accept = accept
         self._whole = whole
+        self._extract_target = extract_target
         _ensure_drop_zone_style()
         document.addEventListener('mousemove', self._mousemove_proxy)
 
@@ -46,7 +67,7 @@ class _DropZoneSelector:
 
     def _mousemove(self, event: MouseEvent):
         position = _calc_position(event)
-        element: HTMLElement = event.target
+        element: HTMLElement = self._extract_target(event)
         zone_event = DropZone(element, position)
         accept = True
         if self._accept:
@@ -82,6 +103,7 @@ drop_zone_selector = _DropZoneSelector()
 _beforebegin_css_class = 'drop-zone-beforebegin'
 _afterend_css_class = 'drop-zone-afterend'
 _whole_css_class = 'drop-zone-whole'
+
 
 class SelectorProtocol(Protocol):
     def __call__(self, event: DropZone) -> None: ...
