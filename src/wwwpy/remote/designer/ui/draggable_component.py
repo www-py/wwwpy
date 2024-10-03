@@ -30,7 +30,7 @@ class DraggableComponent(wpc.Component, tag_name='wwwpy-draggable-component'):
 <style>
 .wwwpy-container_div {
   position: absolute;
-  z-index: 1000;
+  z-index: 100000;
   background-color: black;
   border: 1px solid #d3d3d3;
   text-align: center;
@@ -124,9 +124,12 @@ class DraggableComponent(wpc.Component, tag_name='wwwpy-draggable-component'):
         self.container_div.style.left = f"{left}px"
 
     def set_size(self, h, w):
-        console.log('set_toolbar_size', h, w)
         self.container_div.style.width = w
         self.container_div.style.height = h
+
+    def acceptable_geometry(self) -> bool:
+        top, left, width, height = self.geometry()
+        return width > 100 and height > 100
 
 
 def clientX(event: js.MouseEvent | js.TouchEvent):
