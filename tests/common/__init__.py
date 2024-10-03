@@ -32,6 +32,8 @@ class DynSysPath:
         self.path = path
 
     def write_module(self, package: str, module: str, content: str):
+        if not module.endswith('.py'):
+            module += '.py'
         # split package into parts and create directories and __init__.py files
         parts = package.split('.')
         for i in range(0, len(parts)):
