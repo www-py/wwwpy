@@ -10,7 +10,7 @@ parent = Path(__file__).parent
 
 #
 def _reorder(elements: List[ElementDef]):
-    hide = {'sl-drawer', 'sl-radio', 'sl-dialog',
+    hide = {'sl-drawer', 'sl-radio', 'sl-dialog', 'sl-include', 'sl-menu-label'
             'sl-breadcrumb-item', 'sl-carousel-item', 'sl-menu-item', 'sl-tree-item'}
     for e in elements.copy():
         if e.tag_name in hide:
