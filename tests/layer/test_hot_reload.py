@@ -87,6 +87,7 @@ async def main():
 
         # WHEN
         fixture.write_module('server/rpc.py', "async def func1() -> str: return 'updated'")
+        self._wait_filesystem_debounce_and_hotreload()
         fixture.remote_init.write_text(fixture.remote_init.read_text().replace('first=', 'second='))
 
         # THEN
@@ -112,12 +113,13 @@ async def main():
 
         # WHEN
         fixture.write_module('server/database.py', "conn_name = 'conn1-updated'")
-
-        # todo, awful: wait the debounce of file system events/hotreload
-        sleep(0.2 * timeout_multiplier())
-
+        self._wait_filesystem_debounce_and_hotreload()
         # todo server/rpc should hold any request up until hotreload is finished
         fixture.remote_init.write_text(fixture.remote_init.read_text().replace('first=', 'second='))
 
         # THEN
         expect(fixture.page.locator('body')).to_have_text('second=conn:conn1-updated', use_inner_text=True)
+
+    def _wait_filesystem_debounce_and_hotreload(self):
+        # todo, awful: wait the debounce of file system events/hotreload
+        sleep(0.2 * timeout_multiplier())
