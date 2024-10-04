@@ -146,6 +146,10 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
     <sl-carousel-item><img src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e" alt="green grass field during sunset"></sl-carousel-item>
     <sl-carousel-item><img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470" alt="three brown wooden boat on blue lake water taken at daytime"></sl-carousel-item>
 </sl-carousel>""",
+        'sl-details': lambda: f"""<sl-details data-name="{name}" summary="Toggle Me">
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+  aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+</sl-details>""",
 
     }
     gen_html = func.get(tag_name, None)
