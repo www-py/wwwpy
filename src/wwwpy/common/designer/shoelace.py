@@ -10,7 +10,7 @@ parent = Path(__file__).parent
 
 #
 def _reorder(elements: List[ElementDef]):
-    hide = {'sl-drawer'}
+    hide = {'sl-drawer', 'sl-radio'}
     for e in elements.copy():
         if e.tag_name in hide:
             elements.remove(e)
@@ -67,7 +67,11 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
     <sl-option value="option-3">Option 3</sl-option>
 </sl-select>''',
         'sl-checkbox': _def(),
-        'sl-radio': _def(),
+        'sl-radio-group': lambda: f"""<sl-radio-group data-name="{name}" label="Select an option" name="a" value="1">
+    <sl-radio value="1">Option 1</sl-radio>
+    <sl-radio value="2">Option 2</sl-radio>
+    <sl-radio value="3">Option 3</sl-radio>
+</sl-radio-group>""",
         'sl-switch': _def(),
         'sl-alert': _def(add='type="info"'),
         'sl-badge': _def(),
@@ -90,7 +94,7 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
     <img slot="before" src="https://images.unsplash.com/photo-1517331156700-3c241d2b4d83?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80&sat=-100&bri=-5" alt="Grayscale version of kittens in a basket looking around." />
     <img slot="after" src="https://images.unsplash.com/photo-1517331156700-3c241d2b4d83?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80" alt="Color version of kittens in a basket looking around." />
 </sl-image-comparer>''',
-        'sl-avatar': lambda : f"""<sl-avatar data-name="{name}" 
+        'sl-avatar': lambda: f"""<sl-avatar data-name="{name}" 
     image="https://images.unsplash.com/photo-1591871937573-74dbba515c4c?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
     label="Avatar of a white and grey kitten on grey textile"></sl-avatar>""",
         'sl-skeleton': _def(),
