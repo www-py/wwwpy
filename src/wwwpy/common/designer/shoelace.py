@@ -10,7 +10,8 @@ parent = Path(__file__).parent
 
 #
 def _reorder(elements: List[ElementDef]):
-    hide = {'sl-drawer', 'sl-radio', 'sl-breadcrumb-item', 'sl-carousel-item', 'sl-menu-item', 'sl-tree-item'}
+    hide = {'sl-drawer', 'sl-radio', 'sl-dialog',
+            'sl-breadcrumb-item', 'sl-carousel-item', 'sl-menu-item', 'sl-tree-item'}
     for e in elements.copy():
         if e.tag_name in hide:
             elements.remove(e)
@@ -73,7 +74,10 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
     <sl-radio value="3">Option 3</sl-radio>
 </sl-radio-group>""",
         'sl-switch': _def(),
-        'sl-alert': _def(add='type="info"'),
+        'sl-alert': lambda: f"""<sl-alert data-name="{name}" variant="primary" open closable>
+    <sl-icon slot="icon" name="info-circle"></sl-icon>
+    You can close this alert any time!
+</sl-alert>""",
         'sl-badge': _def(),
         'sl-card': lambda: f'''<sl-card data-name="{name}"><div slot="header">{name}</div><div slot="footer">Footer</div></sl-card>''',
         'sl-dialog': lambda: f'''<sl-dialog data-name="{name}" label="{name}" open><sl-button slot="footer" variant="primary">Close</sl-button></sl-dialog>''',
