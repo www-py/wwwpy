@@ -90,6 +90,9 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
     <img slot="before" src="https://images.unsplash.com/photo-1517331156700-3c241d2b4d83?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80&sat=-100&bri=-5" alt="Grayscale version of kittens in a basket looking around." />
     <img slot="after" src="https://images.unsplash.com/photo-1517331156700-3c241d2b4d83?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80" alt="Color version of kittens in a basket looking around." />
 </sl-image-comparer>''',
+        'sl-avatar': lambda : f"""<sl-avatar data-name="{name}" 
+    image="https://images.unsplash.com/photo-1591871937573-74dbba515c4c?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
+    label="Avatar of a white and grey kitten on grey textile"></sl-avatar>""",
         'sl-skeleton': _def(),
         'sl-spinner': _def(),
         'sl-icon': _def(add='name="star"'),
@@ -103,6 +106,24 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
         <span>End<br>You can change orientation setting the attribute `vertical`</span>
     </div>
 </sl-split-panel>''',
+        'sl-tree': lambda: f"""<sl-tree data-name="{name}" selection="multiple">
+    <sl-tree-item expanded><sl-icon name="folder"></sl-icon>
+        Documents
+        <sl-tree-item><sl-icon name="folder"></sl-icon>
+            Photos
+            <sl-tree-item><sl-icon name="image"></sl-icon>birds.jpg</sl-tree-item>
+            <sl-tree-item><sl-icon name="image"></sl-icon>kitten.jpg</sl-tree-item>
+            <sl-tree-item><sl-icon name="image"></sl-icon>puppy.jpg</sl-tree-item>
+        </sl-tree-item>
+
+        <sl-tree-item>
+            <sl-icon name="folder"></sl-icon>Writing
+            <sl-tree-item><sl-icon name="file"></sl-icon>draft.txt</sl-tree-item>
+            <sl-tree-item><sl-icon name="file-pdf"></sl-icon>final.pdf</sl-tree-item>
+            <sl-tree-item><sl-icon name="file-bar-graph"></sl-icon>sales.xls</sl-tree-item>
+        </sl-tree-item>
+    </sl-tree-item>
+</sl-tree>"""
 
     }
     gen_html = func.get(tag_name, None)
