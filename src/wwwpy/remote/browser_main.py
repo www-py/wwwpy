@@ -44,6 +44,8 @@ async def _invoke_browser_main(reload=False):
             from wwwpy.remote.designer import helpers
             js.window.onerror = helpers._on_error
             js.window.onunhandledrejection = helpers._on_unhandledrejection
+            from wwwpy.remote.designer import log_redirect
+            log_redirect.redirect_logging()
 
         try:
             js.document.body.innerHTML = f'Going to import remote (reload={reload})'
