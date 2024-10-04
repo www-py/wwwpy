@@ -137,7 +137,15 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
         </sl-tree-item>
     </sl-tree-item>
 </sl-tree>""",
-        'sl-progress-ring':lambda: f"""<sl-progress-ring data-name="{name}" value="35"></sl-progress-ring>""",
+        'sl-progress-ring': lambda: f"""<sl-progress-ring data-name="{name}" value="35"></sl-progress-ring>""",
+        'sl-carousel': lambda: f"""<sl-carousel data-name="{name}" autoplay pagination navigation>
+    <sl-carousel-item><img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b" alt="Green mountain across body of water"></sl-carousel-item>
+    <sl-carousel-item><img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470" alt="three brown wooden boat on blue lake water taken at daytime"></sl-carousel-item>
+    <sl-carousel-item><img src="https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5" alt="brown wooden dock between lavender flower field near body of water during golden hour"></sl-carousel-item>
+    <sl-carousel-item><img src="https://images.unsplash.com/photo-1523712999610-f77fbcfc3843" alt="forest heat by sunbeam"></sl-carousel-item>
+    <sl-carousel-item><img src="https://images.unsplash.com/photo-1472214103451-9374bd1c798e" alt="green grass field during sunset"></sl-carousel-item>
+    <sl-carousel-item><img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470" alt="three brown wooden boat on blue lake water taken at daytime"></sl-carousel-item>
+</sl-carousel>""",
 
     }
     gen_html = func.get(tag_name, None)
