@@ -142,65 +142,61 @@ class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
         self._set_title('Attribute', 'Value')
         element_editor = ElementEditor(ep, element_def)
         for attr_editor in element_editor.attributes:
-            row1 = PropertyEditorRowAttribute()
-            self.add_row(row1)
             attr_def = attr_editor.definition
+            row1 = PropertyEditorRowAttribute() if not attr_def.boolean else PropertyEditorRowBoolAttribute()
+            self.add_row(row1)
             row1.label.innerHTML = attr_def.name
-            def_val = attr_def.default_value
-            def_val = '' if def_val is None else ' - default:' + def_val
-            # row1.value.placeholder = f'not defined{def_val}' if not attr_editor.exists else (
-            #     'present with no value' if attr_editor.value is None else ''
-            # )
-            options: List[Option] = [Option(value) for value in attr_def.values]
-            focus_search = len(options) > 0
-            for option in options:
-                if option.text == '':
-                    option.label = 'Set to empty string'
-                    option.italic = True
+            if not attr_def.boolean:
+                options: List[Option] = [Option(value) for value in attr_def.values]
+                focus_search = len(options) > 0
+                for option in options:
+                    if option.text == '':
+                        option.label = 'Set to empty string'
+                        option.italic = True
 
-            if attr_editor.exists:
-                if not attr_def.mandatory:
-                    remove = Option('remove attribute')
-                    remove.actions.set_input_value = False
-                    remove.italic = True
+                if attr_editor.exists:
+                    if not attr_def.mandatory:
+                        remove = Option('remove attribute')
+                        remove.actions.set_input_value = False
+                        remove.italic = True
 
-                    def remove_selected(ae=attr_editor):
-                        ae.remove()
-                        self._save(element_editor)
+                        def remove_selected(ae=attr_editor):
+                            ae.remove()
+                            self._save(element_editor)
 
-                    remove.on_selected = remove_selected  # lambda ae=attr_editor: ae.remove()
-                    options.insert(0, remove)
-            else:
+                        remove.on_selected = remove_selected  # lambda ae=attr_editor: ae.remove()
+                        options.insert(0, remove)
+                click_for = 'Click for options...'
                 if attr_def.boolean:
-                    add = Option('add attribute')
-                    add.actions.set_input_value = False
-                    add.italic = True
+                    row1.value.placeholder = 'attribute present' if attr_editor.exists else click_for
+                else:
+                    pre_placeholder = 'Set to empty string. ' if attr_editor.exists and attr_editor.value == '' else ''
+                    row1.value.placeholder = pre_placeholder + (click_for if len(options) > 0 else '')
+                row1.value.option_popup.options = options
+                row1.value.text_value = '' if attr_editor.value is None else attr_editor.value
+                row1.value.option_popup.search_placeholder = 'Search options...'
+                row1.value.focus_search_on_popup = focus_search
 
-                    def add_selected(ae=attr_editor):
-                        ae.value = None
-                        self._save(element_editor)
+                def attr_changed(event, ae=attr_editor, row=row1):
+                    js.console.log(f'attr_changed {ae.definition.name} {row.value.text_value}')
+                    ae.value = row.value.text_value
+                    self._save(element_editor)
 
-                    add.on_selected = add_selected  # lambda ae=attr_editor: ae.remove()
-                    options.insert(0, add)
-
-            click_for = 'Click for options...'
-            if attr_def.boolean:
-                row1.value.placeholder = 'attribute present' if attr_editor.exists else click_for
+                row1.value.element.addEventListener('wp-change', create_proxy(attr_changed))
             else:
-                pre_placeholder = 'Set to empty string. ' if attr_editor.exists and attr_editor.value == '' else ''
-                row1.value.placeholder = pre_placeholder + (click_for if len(options) > 0 else '')
-            row1.value.option_popup.options = options
-            row1.value.text_value = '' if attr_editor.value is None else attr_editor.value
-            row1.value.option_popup.search_placeholder = 'Search options...'
-            row1.value.focus_search_on_popup = focus_search
+                if attr_editor.exists:
+                    row1.value.checked = True
+                else:
+                    row1.value.checked = False
 
-            def attr_changed(event, ae=attr_editor, row=row1):
-                js.console.log(f'attr_changed {ae.definition.name} {row.value.text_value}')
-                ae.value = row.value.text_value
-                self._save(element_editor)
+                def attr_changed(event, ae=attr_editor, row=row1):
+                    if row.value.checked:
+                        ae.value = None  # beware, this is creating the attribute with no value
+                    else:
+                        ae.remove()
+                    self._save(element_editor)
 
-            row1.value.element.addEventListener('wp-change', create_proxy(attr_changed))
-            # row1.double_click_handler = lambda ev=attr_editor: dblclick(ev)
+                row1.value.addEventListener('change', create_proxy(attr_changed))
 
     def _save(self, element_editor):
         source = element_editor.current_python_source()
@@ -284,6 +280,18 @@ class PropertyEditorRowAttribute(wpc.Component):
     def value__dblclick(self, event):
         if self.double_click_handler:
             self.double_click_handler()
+
+
+class PropertyEditorRowBoolAttribute(wpc.Component):
+    label: js.HTMLElement = wpc.element()
+    value: js.HTMLInputElement = wpc.element()
+
+    def init_component(self):
+        # language=html
+        self.element.innerHTML = """
+        <div data-name="label">uff</div>
+        <input type="checkbox" data-name="value" style="transform: scale(1.4)">
+            """
 
 
 class PropertyEditorTitleRow(wpc.Component):
