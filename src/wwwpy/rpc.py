@@ -97,7 +97,7 @@ class RpcRoute:
 
     def dispatch(self, request: str) -> str:
         rpc_request = RpcRequest.from_json(request)
-        print(f'dispatch req={request}')
+        # print(f'dispatch req={request}')
         module = self.find_module(rpc_request.module)
         function = module[rpc_request.func]
         exception = ''

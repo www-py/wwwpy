@@ -25,7 +25,8 @@ class CustomLoader(importlib.abc.Loader):
 
 
 class CustomFinder(importlib.abc.MetaPathFinder):
-
+    """It intercepts the packages specified and rewrites them as a proxy-to-remote.
+    The goal is to seamlessly invoke remote functions from the server"""
     def __init__(self, packages_name: Set[str]):
         self.packages_name = packages_name
         super().__init__()
