@@ -61,14 +61,11 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
         'sl-button': _def(),
         'sl-input': _def(placeHolder=True),
         'sl-textarea': _def(placeHolder=True),
-        'sl-select': lambda: f'''<sl-select data-name="{name}" label="Select a Few" value="option-1 option-2 option-3" multiple clearable max-options-visible="0">
-                <sl-option value="option-1">Option 1</sl-option>
-                <sl-option value="option-2">Option 2</sl-option>
-                <sl-option value="option-3">Option 3</sl-option>
-                <sl-option value="option-4">Option 4</sl-option>
-                <sl-option value="option-5">Option 5</sl-option>
-                <sl-option value="option-6">Option 6</sl-option>
-            </sl-select>''',
+        'sl-select': lambda: f'''<sl-select data-name="{name}" label="Select a Few" value="option-2" multiple clearable max-options-visible="0">
+    <sl-option value="option-1">Option 1</sl-option>
+    <sl-option value="option-2">Option 2</sl-option>
+    <sl-option value="option-3">Option 3</sl-option>
+</sl-select>''',
         'sl-checkbox': _def(),
         'sl-radio': _def(),
         'sl-switch': _def(),
@@ -79,7 +76,14 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
         'sl-drawer': lambda: f'''<sl-drawer data-name="{name}" open label="Drawer" placement="end" class="drawer-placement-start">
     <span>Drop elements here.<br>To close the drawer with Python set {name}.open=False<br>In html, remove the attribute `open`</span>
 </sl-drawer>''',
-        'sl-dropdown': lambda: f'''<sl-dropdown data-name="{name}"><sl-button slot="trigger" caret>{name}</sl-button><sl-menu><sl-menu-item>Item 1</sl-menu-item></sl-menu></sl-dropdown>''',
+        'sl-dropdown': lambda: f'''<sl-dropdown data-name="{name}">
+    <sl-button slot="trigger" caret>{name}</sl-button>
+    <sl-menu>
+        <sl-menu-item>Item 1</sl-menu-item>
+        <sl-menu-item>Item 2</sl-menu-item>
+        <sl-menu-item>Item 3</sl-menu-item>
+    </sl-menu>
+</sl-dropdown>''',
         'sl-tooltip': lambda: f'''<sl-tooltip data-name="{name}" content="{name}"><sl-button>Hover Me</sl-button></sl-tooltip>''',
         'sl-progress-bar': _def(add='value="50"'),
         'sl-image-comparer': lambda: f'''<sl-image-comparer data-name="{name}">
