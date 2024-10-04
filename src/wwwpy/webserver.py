@@ -22,9 +22,12 @@ class Webserver(ABC):
         return self
 
     def start_listen(self) -> 'Webserver':
+        device_ip = f' - http://{_get_ip()}:{self.port}\n' if self.host == '0.0.0.0' else ''
         print(f'Starting web server on:\n'
               f' - http://{self.host}:{self.port}\n'
-              f' - {self.localhost_url()}\n')
+              f' - {self.localhost_url()}\n' +
+              device_ip
+              )
         self._start_listen()
         self.wait_ready()
         return self
@@ -53,3 +56,18 @@ class Webserver(ABC):
 def wait_forever() -> None:
     while True:
         sleep(10)
+
+
+def _get_ip():
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(0)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.254.254.254', 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP
