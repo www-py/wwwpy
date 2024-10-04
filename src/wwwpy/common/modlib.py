@@ -19,9 +19,9 @@ def _find_module_path(module_name: str) -> Path | None:
         if module_path.is_dir() and init_file.is_file():
             return init_file
 
-    import traceback
-    print(f'warning: path not found for module `{module_name}`')
-    traceback.print_stack()
+    print(f'warning: path not found for module `{module_name}`', file=sys.stderr)
+    # import traceback
+    # traceback.print_stack()
 
     return None
 

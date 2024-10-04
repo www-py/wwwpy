@@ -9,7 +9,7 @@ def new_tmp_path() -> Path:
     return Path(tempfile.mkdtemp(prefix='debounce-tmp-path-'))
 
 
-def filesystemevents_print(events: List[Event]):
+def filesystemevents_print(events: List[Event], package:str=''):
     # for e in events:
     #     print(f'  {e}')
     def accept(e: Event) -> bool:
@@ -19,7 +19,9 @@ def filesystemevents_print(events: List[Event]):
         return e.src_path if e.dest_path == '' else f'{e.src_path} -> {e.dest_path}'
     joined = set(to_str(e) for e in events if accept(e))
     summary = ', '.join(joined)
-    print(f'Hotreload event count: {len(events)}. Changes summary: {summary}')
+    if package != '':
+        package = f' for `{package}`'
+    print(f'Hotreload event{package} count: {len(events)}. Changes summary: {summary}')
 
 
 class Sync(Protocol):

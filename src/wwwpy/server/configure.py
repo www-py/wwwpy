@@ -49,8 +49,9 @@ def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
     )]
 
     if dev_mode:
-        from wwwpy.server.designer.dev_mode import _dev_mode
-        _dev_mode(['common', 'remote'], rpc_server_allowed, websocket_pool)
+        from wwwpy.server.designer import dev_mode as dv
+        dv._hotreload_remote(['common', 'remote'], websocket_pool)
+        dv._hotreload_server(['common', 'server'])
 
     if webserver is not None:
         webserver.set_http_route(*routes)
