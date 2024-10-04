@@ -51,8 +51,8 @@ def test_module_getitem_and_invoke():
     actual = target['support2_mul'].func(6, 7)
     assert actual == 42
 
-#
-def test_services_not_found():
+
+def test_services_not_allowed():
     target = RpcRoute('/rpc1')
     actual = target.find_module(support2_module_name)
     assert actual is None
@@ -62,3 +62,10 @@ def test_services_not_found():
     assert actual is not None
     actual: Module
     assert actual.name == support2_module_name
+
+
+def test_module_that_do_not_exists():
+    target = RpcRoute('/rpc1')
+    target.add_module('missing_module.rpc')
+    actual = target.find_module('missing_module.rpc')
+    assert actual is None

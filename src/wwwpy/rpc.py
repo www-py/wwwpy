@@ -3,6 +3,7 @@ from inspect import getmembers, isfunction, signature, iscoroutinefunction, Sign
 from types import ModuleType, FunctionType
 from typing import NamedTuple, List, Tuple, Any, Optional, Dict, Callable, Awaitable, Protocol, Iterator
 
+from wwwpy.common import modlib
 from wwwpy.common.iterlib import CallableToIterable
 from wwwpy.common.rpc.serializer import RpcRequest, RpcResponse
 from wwwpy.exceptions import RemoteException
@@ -86,6 +87,8 @@ class RpcRoute:
 
     def find_module(self, module_name: str) -> Optional[Module]:
         if module_name not in self._allowed_modules:
+            return None
+        if modlib._find_module_path(module_name) is None:
             return None
         import importlib
         module = importlib.import_module(module_name)
