@@ -114,12 +114,12 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
         'sl-spinner': _def(),
         'sl-icon': _def(add='name="star"'),
         'sl-icon-button': _def(add='name="house-gear"'),
-        'sl-split-panel': lambda: f'''<sl-split-panel data-name="{name}" position="25" style="--divider-width: 20px;">
+        'sl-split-panel': lambda: f'''<sl-split-panel data-name="{name}" position="25" style="height: 300px; --divider-width: 20px; background: var(--sl-color-neutral-50);">
     <sl-icon slot="divider" name="grip-vertical"></sl-icon>
-    <div slot="start" style="height: 200px; background: var(--sl-color-neutral-50); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+    <div slot="start" style="display: flex; align-items: center; justify-content: center; overflow: hidden;">
         <span>Start</span>
     </div>
-    <div slot="end" style="height: 200px; background: var(--sl-color-neutral-50); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+    <div slot="end" style="display: flex; align-items: center; justify-content: center; overflow: hidden;">
         <span>End<br>You can change orientation setting the attribute `vertical`</span>
     </div>
 </sl-split-panel>''',
