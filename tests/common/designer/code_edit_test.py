@@ -1,3 +1,5 @@
+from wwwpy.common.designer.code_edit import Attribute, add_component, ElementDef, add_method, \
+    ensure_imports
 from wwwpy.common.designer.code_edit import Attribute, add_property, add_component, add_method
 from wwwpy.common.designer.code_info import info
 from wwwpy.common.designer.element_library import ElementDef
@@ -39,7 +41,8 @@ class MyElement(wpc.Component): # comment2
     btn1: HTMLButtonElement = wpc.element()
     """
 
-    expected_source = """
+    expected_source = """import js
+
 import wwwpy.remote.component as wpc
 # comment1
 class MyElement(wpc.Component): # comment2
@@ -63,7 +66,8 @@ class MyElement(wpc.Component): # comment2
         pass
     """
 
-    expected_source = """
+    expected_source = """import js
+
 import wwwpy.remote.component as wpc
 # comment1
 class MyElement(wpc.Component): # comment2
@@ -87,7 +91,9 @@ class MyElement2(wpc.Component):
         pass
     """
 
-    expected_source = """
+    expected_source = """import js
+import wwwpy.remote.component as wpc
+
 class MyElement(wpc.Component):
         pass
 class MyElement2(wpc.Component):
@@ -109,7 +115,8 @@ class MyElement(wpc.Component):
         self.element.innerHTML = '''<div id='foo'><div></div><div id='target'></div></div>'''
     """
 
-    expected_source = """
+    expected_source = """import js
+
 import wwwpy.remote.component as wpc
 class MyElement(wpc.Component):
     btn1: js.Some = wpc.element()
@@ -133,7 +140,8 @@ class MyElement(wpc.Component):
         self.element.innerHTML = '''<div id='foo'><div></div><div id='target'></div></div>'''
     """
 
-    expected_source = """
+    expected_source = """import js
+
 import wwwpy.remote.component as wpc
 class MyElement(wpc.Component):
     btn1: js.Some = wpc.element()
@@ -218,3 +226,41 @@ class MyElement1(wpc.Component):
     """
     modified_source = add_method(original_source, 'MyElement1', 'button1__click', 'event', instructions='pass # custom')
     assert modified_source == expected_source
+
+
+_default_imports = ['import wwwpy.remote.component as wpc', 'import js']
+
+
+class TestEnsureImports:
+
+    def assert_imports_ok(self, source):
+        __tracebackhide__ = True
+
+        def _remove_comment_if_present(line) -> str:
+            line = line.strip()
+            if '#' in line:
+                line = line[:line.index('#')]
+            return line.strip()
+
+        modified_source = ensure_imports(source)
+        modified_set = [_remove_comment_if_present(l) for l in ensure_imports(source).strip().split('\n')]
+        # so it's order independent
+        assert set(modified_set) == set(_default_imports)
+        return modified_source
+
+    def test_ensure_imports(self):
+        self.assert_imports_ok('')
+
+    def test_ensure_imports__should_not_duplicate_imports(self):
+        self.assert_imports_ok('\n'.join(_default_imports))
+
+    def test_ensure_imports__wpc_already_present(self):
+        self.assert_imports_ok(_default_imports[0])
+
+    def test_ensure_imports__js_already_present(self):
+        self.assert_imports_ok(_default_imports[1])
+
+    def test_ensure_imports__with_confounders(self):
+        original_source = 'import js # noqa'
+        modified_source = self.assert_imports_ok(original_source)
+        assert original_source in modified_source

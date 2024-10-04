@@ -13,7 +13,8 @@ from wwwpy.common.designer.html_locator import NodePath
 
 
 def add_property(source_code: str, class_name: str, attr_info: Attribute):
-    module = cst.parse_module(source_code)
+    source_code_imp = ensure_imports(source_code)
+    module = cst.parse_module(source_code_imp)
     transformer = _AddFieldToClassTransformer(class_name, attr_info)
     modified_tree = module.visit(transformer)
 
@@ -28,6 +29,7 @@ class AddResult:
 
 def add_component(source_code: str, class_name: str, comp_def: ElementDef, node_path: NodePath,
                   position: Position) -> AddResult | None:
+    source_code = ensure_imports(source_code)
     class_info = code_info.class_info(source_code, class_name)
     if class_info is None:
         print(f'Class {class_name} not found inside source ```{source_code}```')
@@ -124,3 +126,25 @@ class _AddMethodToClassTransformer(cst.CSTTransformer):
         new_body.append(cst.EmptyLine())
 
         return updated_node.with_changes(body=updated_node.body.with_changes(body=new_body))
+
+
+def ensure_imports(source_code: str) -> str:
+    required_imports = [
+        'import wwwpy.remote.component as wpc',
+        'import js'
+    ]
+
+    def _remove_comment_if_present(line) -> str:
+        line = line.strip()
+        if '#' in line:
+            line = line[:line.index('#')]
+        return line.strip()
+
+    existing_imports = set(_remove_comment_if_present(line) for line in source_code.split('\n')
+                           if line.strip().startswith('import'))
+
+    for imp in required_imports:
+        if imp not in existing_imports:
+            source_code = imp + '\n' + source_code
+
+    return source_code
