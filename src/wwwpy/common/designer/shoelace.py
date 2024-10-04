@@ -97,7 +97,16 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
         'sl-avatar': lambda: f"""<sl-avatar data-name="{name}" 
     image="https://images.unsplash.com/photo-1591871937573-74dbba515c4c?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
     label="Avatar of a white and grey kitten on grey textile"></sl-avatar>""",
-        'sl-skeleton': _def(),
+        'sl-skeleton': lambda: """<div style="display: block; width: 70%">
+  <header style="display: flex; align-items: center; margin-bottom: 1rem;">
+    <sl-skeleton style="float: left; width: 3rem; height: 3rem; margin-right: 1rem; vertical-align: middle;"></sl-skeleton>
+    <sl-skeleton style="flex: 0 0 auto; width: 30%;"></sl-skeleton>
+  </header>
+
+  <sl-skeleton style="width: 95%; margin-bottom: 1rem;"></sl-skeleton>
+  <sl-skeleton style="width: 80%; margin-bottom: 1rem;"></sl-skeleton>
+  <sl-skeleton style="width: 60%;  margin-bottom: 1rem;"></sl-skeleton>
+</div>""",
         'sl-spinner': _def(),
         'sl-icon': _def(add='name="star"'),
         'sl-icon-button': _def(add='name="house-gear"'),
@@ -127,7 +136,8 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
             <sl-tree-item><sl-icon name="file-bar-graph"></sl-icon>sales.xls</sl-tree-item>
         </sl-tree-item>
     </sl-tree-item>
-</sl-tree>"""
+</sl-tree>""",
+        'sl-progress-ring':lambda: f"""<sl-progress-ring data-name="{name}" value="35"></sl-progress-ring>""",
 
     }
     gen_html = func.get(tag_name, None)
