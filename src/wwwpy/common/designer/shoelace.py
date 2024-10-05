@@ -10,7 +10,8 @@ parent = Path(__file__).parent
 
 #
 def _reorder(elements: List[ElementDef]):
-    hide = {'sl-drawer', 'sl-radio', 'sl-dialog', 'sl-include', 'sl-menu-label', 'sl-radio-button',
+    hide = {'sl-drawer', 'sl-radio', 'sl-dialog', 'sl-include', 'sl-menu-label',
+            'sl-radio-button', 'sl-animation',
             'sl-breadcrumb-item', 'sl-carousel-item', 'sl-menu-item', 'sl-tree-item'}
     for e in elements.copy():
         if e.tag_name in hide:
@@ -154,6 +155,7 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
   Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
   aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 </sl-details>""",
+        'sl-animated-image': lambda: f"""<sl-animated-image data-name={name} src="https://shoelace.style/assets/images/tie.webp" alt="Animation of a shoe being tied"></sl-animated-image>"""
 
     }
     gen_html = func.get(tag_name, None)
