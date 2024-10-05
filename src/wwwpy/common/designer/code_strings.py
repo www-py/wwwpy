@@ -26,7 +26,7 @@ def html_from(module: str, class_name: str) -> str | None:
     return html_from_source(source_code, class_name)
 
 
-def html_from_source(source_code: str, class_name: str) -> str:
+def html_from_source(source_code: str, class_name: str) -> str | None:
     """This function extracts the HTML string from the source code."""
     html_res = []
 
@@ -35,7 +35,8 @@ def html_from_source(source_code: str, class_name: str) -> str:
         return html
 
     html_string_edit(source_code, class_name, html_manipulator)  # improper use to capture html
-
+    if not html_res:
+        return None
     return html_res[0]
 
 

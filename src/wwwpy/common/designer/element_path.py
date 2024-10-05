@@ -5,9 +5,10 @@ import inspect
 from dataclasses import dataclass, field
 from typing import Any
 
-from wwwpy.common.designer.html_locator import NodePath
+from wwwpy.common.designer.html_locator import NodePath, locate
 from wwwpy.common.modlib import _find_module_root
 from wwwpy.common import modlib
+
 
 @dataclass()
 class ElementPath:
@@ -34,3 +35,10 @@ class ElementPath:
         if len(self.path) == 0:
             return None
         return self.path[-1].attributes.get('data-name', None)
+
+    def valid(self) -> bool:
+        from wwwpy.common.designer import code_strings as cs, html_parser as hp, html_locator as hl
+        html = cs.html_from(self.class_module, self.class_name)
+        if not html:
+            return False
+        return hl.locate(html, self.path) is not None

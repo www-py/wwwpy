@@ -31,7 +31,7 @@ class DynSysPath:
     def __init__(self, path: Path):
         self.path = path
 
-    def write_module(self, package: str, module: str, content: str):
+    def write_module(self, package: str, module: str, content: str) -> Path:
         if not module.endswith('.py'):
             module += '.py'
         # split package into parts and create directories and __init__.py files
@@ -46,3 +46,19 @@ class DynSysPath:
         module_path = self.path / '/'.join(parts) / module
         module_path.write_text(content)
         return module_path
+
+    def write_module2(self, module_path: str, content: str) -> Path:
+        if not module_path.endswith('.py'):
+            raise ValueError('path must end with .py')
+        # split package into parts and create directories and __init__.py files
+        parts = module_path.split('/')
+        for i in range(0, len(parts)-1):
+            folder = self.path / '/'.join(parts[:i + 1])
+            folder.mkdir(exist_ok=True)
+            ini = folder / '__init__.py'
+            if not ini.exists():
+                ini.touch()
+        # create module file
+        file_path = self.path / module_path
+        file_path.write_text(content)
+        return file_path

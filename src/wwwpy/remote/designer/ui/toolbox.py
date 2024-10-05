@@ -242,9 +242,14 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
         document.addEventListener('click', self._global_click, True)
 
     def _restore_selected_element_path(self):
-        path = self._toolbox_state.selected_element_path
-        self.property_editor.selected_element_path = path
-        if path:
+        element_path = self._toolbox_state.selected_element_path
+        if element_path:
+            console.log(f'restoring selected element path: {element_path}')
+            if not element_path.valid():
+                element_path = None
+
+        self.property_editor.selected_element_path = element_path
+        if element_path:
             self._select_clear_btn.removeAttribute('disabled')
         else:
             self._select_clear_btn.setAttribute('disabled', '')

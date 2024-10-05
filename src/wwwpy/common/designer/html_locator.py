@@ -79,3 +79,8 @@ def tree_to_path(tree: List[CstNode], indexed_path: list[int]) -> NodePath:
         result.append(_node(index, node))
         children = node.children
     return result
+
+
+def html_to_node_path(html: str, indexed_path: list[int]) -> NodePath:
+    tree = html_to_tree(html)
+    return tree_to_path(tree, indexed_path)

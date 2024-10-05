@@ -213,7 +213,7 @@ class Component2():
 def target_fixture(dyn_sys_path):
     return TargetFixture(dyn_sys_path)
 
-
+# todo should be merged/refactored with ComponentFixture
 class TargetFixture:
 
     def __init__(self, dyn_sys_path, source: str = None):
