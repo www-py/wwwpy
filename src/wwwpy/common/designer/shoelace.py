@@ -80,7 +80,16 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
     You can close this alert any time!
 </sl-alert>""",
         'sl-badge': _def(),
-        'sl-card': lambda: f'''<sl-card data-name="{name}"><div slot="header">{name}</div><div slot="footer">Footer</div></sl-card>''',
+        'sl-card': lambda: f'''<sl-card data-name="{name}" class="card-overview">
+    <img slot="image" src="https://images.unsplash.com/photo-1559209172-0ff8f6d49ff7?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=80" alt="A kitten sits patiently between a terracotta pot and decorative grasses."/>
+    <strong>Mittens</strong><br />
+    This kitten is as cute as he is playful. Bring him home today!<br />
+    <small>6 weeks old</small>
+    <div slot="footer">
+        <sl-button variant="primary" pill>More Info</sl-button>
+        <sl-rating></sl-rating>
+    </div>
+</sl-card>''',
         'sl-dialog': lambda: f'''<sl-dialog data-name="{name}" label="{name}" open><sl-button slot="footer" variant="primary">Close</sl-button></sl-dialog>''',
         'sl-drawer': lambda: f'''<sl-drawer data-name="{name}" open label="Drawer" placement="end" class="drawer-placement-start">
     <span>Drop elements here.<br>To close the drawer with Python set {name}.open=False<br>In html, remove the attribute `open`</span>
