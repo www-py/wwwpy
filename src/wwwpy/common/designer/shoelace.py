@@ -32,6 +32,18 @@ def _reorder(elements: List[ElementDef]):
         elements.insert(0, ed)
 
 
+def _set_icon_values(elements: List[ElementDef], tag_names: List[str]):
+    icon_values = (parent / 'sl_icons.txt').read_text().split('\n')
+    for tag_name in tag_names:
+        element = elements.get(tag_name)
+        if not element:
+            continue
+        attribute = element.attributes.get('name')
+        if not attribute:
+            continue
+        attribute.values = icon_values
+
+
 def _shoelace_elements_def() -> List[ElementDef]:
     shoelace_json = (parent / 'shoelace.json').read_text()
     elements = serialization.from_json(shoelace_json, List[ElementDef])
@@ -41,8 +53,7 @@ def _shoelace_elements_def() -> List[ElementDef]:
     sl_button = elements.get('sl-button')
     url = "https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event"
     sl_button.events.insert(0, EventDef('click', Help('', url)))
-    sl_icon = elements.get('sl-icon')
-    sl_icon.attributes.get('name').values = (parent / 'sl_icons.txt').read_text().split('\n')
+    _set_icon_values(elements, ['sl-icon', 'sl-icon-button'])
 
     _reorder(elements)
     return elements
