@@ -18,9 +18,10 @@ for tup in required:
         missing_pip.add(pip_name)
 
 if len(missing_pip) > 0:
-    msg = ('You need to install the following packages to use this plugin: '
+    msg = ('You need to install the following packages to use this plugin:\n   '
            + ', '.join(missing_pip)
-           + '. You can install them by running `pip install ' + ' '.join(missing_pip) + '`\n'
+           + '\n\nYou can install them by running:\n   `pip install ' + ' '.join(missing_pip) +
+           '`\n\n'
            + 'Packages already installed: ' + ', '.join(installed)
            )
     raise ImportError(msg)
