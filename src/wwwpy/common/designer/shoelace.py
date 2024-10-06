@@ -44,16 +44,25 @@ def _set_icon_values(elements: List[ElementDef], tag_names: List[str]):
         attribute.values = icon_values
 
 
+def _insert_event(elements: List[ElementDef], tag_names, event_def: EventDef):
+    for tag_name in tag_names:
+        element = elements.get(tag_name)
+        if not element:
+            continue
+        element.events.insert(0, event_def)
+
+
 def _shoelace_elements_def() -> List[ElementDef]:
     shoelace_json = (parent / 'shoelace.json').read_text()
     elements = serialization.from_json(shoelace_json, List[ElementDef])
     elements = ListMap(elements, key_func=lambda x: x.tag_name)
     for element in elements:
         element.gen_html = _shoelaceGenerateHtml
-    sl_button = elements.get('sl-button')
-    url = "https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event"
-    sl_button.events.insert(0, EventDef('click', Help('', url)))
+
     _set_icon_values(elements, ['sl-icon', 'sl-icon-button'])
+    _insert_event(elements, ['sl-button', 'sl-icon-button', 'sl-input',
+                             'sl-textarea', 'sl-checkbox', 'sl-progress-bar'], EventDef(
+        'click', Help('', 'https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event')))
 
     _reorder(elements)
     return elements
@@ -72,7 +81,7 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
 
     func = {
         'sl-button': _def(),
-        'sl-input': _def(placeHolder=True),
+        'sl-input': lambda: """<sl-input data-name="{name}" placeholder="{name}"></sl-input>""",
         'sl-textarea': _def(placeHolder=True),
         'sl-select': lambda: f'''<sl-select data-name="{name}" label="Select a Few" value="option-2" multiple clearable max-options-visible="0">
     <sl-option value="option-1">Option 1</sl-option>
@@ -134,7 +143,7 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
 </div>""",
         'sl-spinner': _def(),
         'sl-icon': _def(add='name="star"'),
-        'sl-icon-button': _def(add='name="house-gear"'),
+        'sl-icon-button': lambda: f'''<sl-icon-button data-name="{name}" name="house-gear"></sl-icon-button>''',
         'sl-split-panel': lambda: f'''<sl-split-panel data-name="{name}" position="25" style="height: 300px; --divider-width: 20px; background: var(--sl-color-neutral-50);">
     <sl-icon slot="divider" name="grip-vertical"></sl-icon>
     <div slot="start" style="display: flex; align-items: center; justify-content: center; overflow: hidden;">
