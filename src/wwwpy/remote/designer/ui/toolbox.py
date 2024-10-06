@@ -226,7 +226,7 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
     def _drop_zone_start(self, e: Event):
         assert False, 'Just a placeholder'
 
-    @menu('handle global click')
+    # @menu('handle global click')
     def _handle_global_click(self, e: Event):
         # add input
         def global_click(event: Event):

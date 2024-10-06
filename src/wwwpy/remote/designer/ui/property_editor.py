@@ -14,13 +14,16 @@ import js
 from pyodide.ffi import create_proxy
 
 from wwwpy.remote.designer.helpers import _element_path_lbl, _rpc_save, _log_event, _help_button
+from .button_tab import ButtonTab, Tab
 from .searchable_combobox2 import SearchableComboBox, Option
 
 
 # write enum class with [events, attributes] and use it in the button click event
 class PropertyEditorMode(str, Enum):
+    palette = 'palette'
     events = 'events'
     attributes = 'attributes'
+
 
 
 @dataclass
@@ -31,7 +34,7 @@ class PropertyEditorState:
 class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
     row_container: js.HTMLElement = wpc.element()
     message1div: js.HTMLElement = wpc.element()
-
+    _tabs: ButtonTab = wpc.element()
     _selected_element_path: Optional[ElementPath] = None
     state: PropertyEditorState = PropertyEditorState()
 
@@ -73,15 +76,23 @@ class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
         }
     </style>
 <div data-name="message1div">&nbsp</div>
-<div style='width: 100%; display: flex; justify-content: space-around'>
-            <button data-name="btn_events">events</button>
-            <button data-name="btn_attributes">attributes</button>
-        </div>
+<wwwpy-button-tab data-name="_tabs"></wwwpy-button-tab>
 <div class="wwwpy-property-editor" data-name='row_container'>    
     <div class='wwwpy-property-editor-row' style='font-weight: bold'><div >Event</div><div>Value</div></div>
 </div>
 
         """
+
+        def set_state_render(mode: PropertyEditorMode):
+            self.state.mode = mode
+            self._render()
+
+        self._tabs.tabs = [
+            Tab('palette', on_selected=lambda tab: set_state_render(PropertyEditorMode.palette)),
+            Tab('events', on_selected=lambda tab: set_state_render(PropertyEditorMode.events)),
+            Tab('attributes', on_selected=lambda tab: set_state_render(PropertyEditorMode.attributes)),
+        ]
+
         for lbl in ['data-name', 'name', 'type', 'value', 'form']:
             row1 = PropertyEditorRowAttribute2()
             row1.element.classList.add('wwwpy-property-editor-row')
@@ -94,14 +105,6 @@ class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
     def add_row(self, row: wpc.Component):
         row.element.classList.add('wwwpy-property-editor-row')
         self.row_container.appendChild(row.element)
-
-    async def btn_events__click(self, event):
-        self.state.mode = PropertyEditorMode.events
-        self._render()
-
-    async def btn_attributes__click(self, event):
-        self.state.mode = PropertyEditorMode.attributes
-        self._render()
 
     def _render(self):
         ep = self._selected_element_path
