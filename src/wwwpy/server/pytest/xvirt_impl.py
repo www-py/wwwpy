@@ -53,15 +53,21 @@ class XVirtImpl(XVirt):
             target = modlib._find_package_directory(package_name)
             if not target:
                 return None, None
-            root = target.parent.parent
+            root = target.parent
+            r = range(package_name.count('.'))
+            for _ in r:
+                root = root.parent
+
             return target, root
 
         resources = [library_resources(),
+                     from_directory_lazy(partial(fs_iterable, 'remote')),
+                     from_directory_lazy(partial(fs_iterable, 'common')),
                      from_directory_lazy(partial(fs_iterable, 'tests.remote')),
                      from_directory_lazy(partial(fs_iterable, 'tests.common')),
                      [
-                         # StringResource('tests/__init__.py', ''),
-                         # StringResource('pytest.ini', ''),
+                         StringResource('tests/__init__.py', ''),
+                         StringResource('pytest.ini', ''),
                          StringResource('conftest.py', remote_conftest),
                          StringResource('remote_test_main.py',
                                         (_file_parent / 'remote_test_main.py').read_text())],
