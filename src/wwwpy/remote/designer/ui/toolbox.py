@@ -27,7 +27,7 @@ from wwwpy.remote.designer.ui.property_editor import PropertyEditor
 
 @dataclass
 class ToolboxState:
-    geometry: Tuple[int, int, int, int] = field(default=(100, 100, 300, 250))
+    geometry: Tuple[int, int, int, int] = field(default=(100, 30, 400, 330))
     toolbox_search: str = ''
     selected_element_path: Optional[ElementPath] = None
 
