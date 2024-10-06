@@ -20,3 +20,22 @@ def set_timeout(callback: Callable[[], Union[None, Awaitable[None]]], timeout_mi
     from pyodide.ffi import create_once_callable
     from js import window
     window.setTimeout(create_once_callable(callback), timeout_millis)
+
+
+def dict_to_py(js_obj):
+    import js
+    py_dict = {}
+    # Iterate through properties, including those in the prototype chain
+    current = js_obj
+    while current:
+        for prop in js.Object.getOwnPropertyNames(current):
+            try:
+                value = getattr(js_obj, prop)
+                if not callable(value):  # Skip methods
+                    py_dict[prop] = value
+            except Exception:
+                # Ignore properties that might throw errors when accessed
+                continue
+        current = js.Object.getPrototypeOf(current)
+
+    return py_dict
