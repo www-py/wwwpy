@@ -73,3 +73,22 @@ def test_not_broken_with_default():
 
     default = restore.instance_or_default()
     assert default is restore.instance
+
+
+class TestPersist:
+
+    def test_persist(self):
+        # GIVEN
+        @dataclass
+        class State:
+            counter: int = 0
+
+        storage = state.DictStorage()
+
+        # WHEN
+        target = state._restore(State, storage)
+        target.counter = 1
+
+        # THEN
+        restore = state._restore(State, storage)
+        assert restore.counter == 1

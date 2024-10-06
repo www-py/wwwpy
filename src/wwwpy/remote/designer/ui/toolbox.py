@@ -165,17 +165,8 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
             await rpc.write_module_file(el_path.class_module, add_result.html)
 
     def _manage_toolbox_state(self):
-        self._state_manager = state.State(state.JsStorage(), 'wwwpy.toolbox.state')
-        restore = self._state_manager.restore(ToolboxState)
-        self._toolbox_state: ToolboxState = restore.instance if restore.instance else ToolboxState()
-        ts = self._toolbox_state
-
-        def on_changes(*args):
-            self._state_manager.save(self._toolbox_state)
-
-        property_monitor.monitor_changes(self._toolbox_state, on_changes)
-
-        self.inputSearch.value = ts.toolbox_search
+        self._toolbox_state = state._restore(ToolboxState)
+        self.inputSearch.value = self._toolbox_state.toolbox_search
         self.dragComp1.set_geometry(self._toolbox_state.geometry)
 
         def on_toolbar_geometry_change():

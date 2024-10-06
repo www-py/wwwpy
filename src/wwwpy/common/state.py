@@ -5,6 +5,26 @@ from typing import Protocol, Iterator, TypeVar, Generic, Type
 
 from wwwpy.common.rpc import serialization
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def _restore(cls: Type[T], storage: Storage = None) -> T:
+    if storage is None:
+        storage = JsStorage()
+    name = cls.__module__ + '.' + cls.__name__
+    state_manager = State(storage, f'wwwpy.persist.{name}')
+    result = state_manager.restore(cls).instance_or_default()
+
+    def save():
+        logger.debug(f'save {name} state res={result}')
+        state_manager.save(result)
+
+    from .property_monitor import monitor_changes
+    monitor_changes(result, lambda *a: save())
+    return result
+
 
 class Storage(Protocol):
     @property
@@ -47,7 +67,7 @@ class State:
         try:
             obj = serialization.from_json(j, clazz)
         except Exception as e:
-            print(f'failed restore of type {clazz} with json ```{j}```')
+            logger.error(f'failed restore of type {clazz} with json ```{j}```')
             import traceback
             traceback.print_exc()
             return Restore(clazz, True, None, e)
