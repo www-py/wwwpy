@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import List
 
 from wwwpy.common.collectionlib import ListMap
-from wwwpy.common.designer.element_library import ElementDef, EventDef, Help, NamedListMap
+from wwwpy.common.designer.element_library import ElementDef, EventDef, Help, NamedListMap, AttributeDef
 from wwwpy.common.rpc import serialization
 
 parent = Path(__file__).parent
@@ -50,6 +50,15 @@ def _insert_event(elements: List[ElementDef], tag_names, event_def: EventDef):
         if not element:
             continue
         element.events.insert(0, event_def)
+
+
+def _insert_attribute(elements: List[ElementDef], tag_names, attribute_name: str):
+    for tag_name in tag_names:
+        element: ElementDef = elements.get(tag_name)
+        if not element:
+            continue
+        attr = AttributeDef(attribute_name)
+        element.attributes.insert(0, attr)
 
 
 def _shoelace_elements_def() -> List[ElementDef]:
