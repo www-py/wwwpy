@@ -90,7 +90,7 @@ def _shoelaceGenerateHtml(element_def: ElementDef, name: str) -> str:
 
     func = {
         'sl-button': _def(),
-        'sl-input': lambda: """<sl-input data-name="{name}" placeholder="{name}"></sl-input>""",
+        'sl-input': lambda: f"""<sl-input data-name="{name}" placeholder="{name}"></sl-input>""",
         'sl-textarea': _def(placeHolder=True),
         'sl-select': lambda: f'''<sl-select data-name="{name}" label="Select a Few" value="option-2" multiple clearable max-options-visible="0">
     <sl-option value="option-1">Option 1</sl-option>
