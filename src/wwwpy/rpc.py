@@ -116,7 +116,7 @@ class RpcRoute:
             for module_name in self._allowed_modules:
                 module = self.find_module(module_name)
                 if module is None:
-                    return
+                    continue
                 imports = 'from wwwpy.remote.fetch import async_fetch_str'
                 stub_source = generate_stub_source(module, self.route.path, imports)
                 yield StringResource(module_name.replace('.', '/') + '.py', stub_source)

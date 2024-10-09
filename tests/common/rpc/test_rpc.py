@@ -69,3 +69,13 @@ def test_module_that_do_not_exists():
     target.add_module('missing_module.rpc')
     actual = target.find_module('missing_module.rpc')
     assert actual is None
+
+
+def test_module_missing_and_one_present():
+    target = RpcRoute('/rpc1')
+    target.add_module('missing_module.rpc')
+    target.add_module(support2_module_name)
+
+    actual = list(target.remote_stub_resources())
+    actual_names = list(map(lambda x: x.arcname, actual))
+    assert actual_names == ['tests/common/rpc/support2.py']
