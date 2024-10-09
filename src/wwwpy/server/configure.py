@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from wwwpy.bootstrap import bootstrap_routes
+from wwwpy.common.designer import log_emit
 from wwwpy.common.rpc.custom_loader import CustomFinder
 from wwwpy.resources import library_resources, from_directory, from_file
 from wwwpy.webserver import Webserver
@@ -25,6 +26,7 @@ websocket_pool: WebsocketPool = None
 def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
     print(f'applying convention to working_dir: {directory}')
     if dev_mode:
+        log_emit.add_once(print)
         from wwwpy.common import quickstart
         quickstart._check_quickstart(directory)
 

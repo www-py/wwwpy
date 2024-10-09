@@ -5,11 +5,12 @@ import zipfile
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from io import BytesIO
+from itertools import chain
 from pathlib import Path
 from typing import Iterator, Callable, Optional, TypeVar, Iterable, Protocol, Tuple
 from zipfile import ZipFile
 
-from wwwpy.common import iterlib
+from wwwpy.common import iterlib, modlib
 from wwwpy.common.iterlib import CallableToIterable
 
 parent = Path(__file__).resolve().parent
@@ -160,4 +161,32 @@ def _is_path_contained(child: Path, parent: Path) -> bool:
 
 def library_resources() -> Iterable[PathResource]:
     """returns the resources from the wwwpy library itself"""
-    return from_directory(parent, relative_to=parent.parent)
+
+    # return from_directory(parent, relative_to=parent.parent)
+    def accept(resource: Resource) -> bool:
+        if not default_resource_accept(resource):
+            return False
+        path = Path(resource.arcname)
+        if path.parts[0] != 'wwwpy':
+            return False
+        if len(path.parts) == 2:
+            return True  # wwwpy/* root files
+        return path.parts[1] in {'common', 'remote'}
+
+    return from_directory_lazy(lambda: (parent, parent.parent), accept)
+
+
+def _fs_iterable(package_name: str) -> Tuple[Path | None, Path | None]:
+    target = modlib._find_package_directory(package_name)
+    if not target:
+        return None, None
+    root = target.parent
+    r = range(package_name.count('.'))
+    for _ in r:
+        root = root.parent
+
+    return target, root
+
+
+def from_module_lazy(module_name: str):
+    return from_directory_lazy(lambda: _fs_iterable(module_name))

@@ -153,9 +153,29 @@ def test_library_resources():
     assert actual_minimum(target) == expected_minimum  # use the iterable again
 
 
+def test_library_resources__verify_content():
+    """Should include common, remote and the wwwpy.* root files"""
+
+    actual = {Path(resource.arcname) for resource in library_resources()}
+
+    def is_root_entity(ent: Path):
+        if len(ent.parts) == 2 and ent.parts[0] == 'wwwpy':
+            return True
+        return False
+
+    actual = {ent for ent in actual if not is_root_entity(ent)}
+
+    second_level = {ent.parts[1] for ent in actual}
+    assert second_level == {'common', 'remote'}
+
+
 def fix_path_iterable(iterable):
     return [fix_path(i) for i in iterable]
 
 
 def fix_path(path: str) -> str:
     return path.replace('/', os.path.sep)
+
+
+def posix_path(path: str) -> str:
+    return path.replace(os.path.sep, '/')
