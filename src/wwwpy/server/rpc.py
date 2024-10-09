@@ -1,14 +1,19 @@
+import logging
 import sys
 
 from wwwpy.common import modlib
 
+logger = logging.getLogger(__name__)
 
-async def write_module_file(module: str, content: str):
+
+async def write_module_file(module: str, content: str) -> str:
+    msg = f'write_module_file module={module} content len={len(content)}'
+    logger.debug(msg)
     path = modlib._find_module_path(module)
     if not path:
         raise ValueError(f'Cannot find module {module}')
-    print(f'writing={path.name}, content length={len(content)}')
     path.write_text(content)
+    return f'done {msg}'
 
 
 def _fix_stacktrace(message: str):

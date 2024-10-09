@@ -14,7 +14,7 @@ from wwwpy.common.designer import element_library
 from wwwpy.common.designer.code_edit import add_component, ElementDef
 from wwwpy.common.designer.element_path import ElementPath
 from wwwpy.common.designer.html_edit import Position
-from wwwpy.remote import dict_to_js, set_timeout
+from wwwpy.remote import dict_to_js, set_timeout, dict_to_py
 from wwwpy.remote.designer import element_path
 from wwwpy.remote.designer.drop_zone import DropZone
 from wwwpy.remote.designer.global_interceptor import GlobalInterceptor, InterceptorEvent
@@ -23,6 +23,10 @@ from wwwpy.server import rpc
 
 from wwwpy.remote.designer.helpers import _element_lbl, _help_button
 from wwwpy.remote.designer.ui.property_editor import PropertyEditor
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -131,6 +135,7 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
             async def _start_drop_for_comp(event):
                 _on_pointed(None)
                 res = await _drop_zone_start_selection_async(_on_pointed)
+                logger.debug(f'_start_drop_for_comp res={res}')
                 if res:
                     await self._process_dropzone(res, element_def)
                 else:
@@ -153,16 +158,18 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
             window.alert(f'No component found for dropzone!')
             return
 
-        console.log(f'element_path={el_path}')
+        logger.debug(f'element_path={el_path}')
         file = modlib._find_module_path(el_path.class_module)
         old_source = file.read_text()
 
         add_result = add_component(old_source, el_path.class_name, element_def, el_path.path, drop_zone.position)
 
         if add_result:
+            logger.debug(f'write_module_file len={len(add_result.html)} el_path={el_path}')
             new_element_path = ElementPath(el_path.class_module, el_path.class_name, add_result.node_path)
             self._toolbox_state.selected_element_path = new_element_path
-            await rpc.write_module_file(el_path.class_module, add_result.html)
+            write_res = await rpc.write_module_file(el_path.class_module, add_result.html)
+            logger.debug(f'write_module_file res={write_res}')
 
     def _manage_toolbox_state(self):
         self._toolbox_state = state._restore(ToolboxState)
