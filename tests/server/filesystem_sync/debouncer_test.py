@@ -6,7 +6,6 @@ from tests.server.filesystem_sync.time_mock import TimeMock
 from wwwpy.server.filesystem_sync.debouncer import Debouncer
 
 
-
 class DebounceFixture:
 
     def __init__(self):
@@ -148,3 +147,37 @@ def test_two_debounce_and_timeout__should_return_to_one_wakeup_on_new_event(deb)
     # THEN
     assert events == ["event3"]
     assert deb.wakeup_count == 2
+
+
+def test_is_debouncing__no_event(deb):
+    # GIVEN
+
+    # WHEN
+    result = deb.target.is_debouncing
+
+    # THEN
+    assert not result
+
+
+def test_is_debouncing__single_event(deb):
+    # GIVEN
+    deb.target.add_event("event1")
+
+    # WHEN
+    result = deb.target.is_debouncing
+
+    # THEN
+    assert result
+
+
+def test_is_debouncing__single_event__after_timeout(deb):
+    # GIVEN
+    deb.target.add_event("event1")
+    deb.time_mock.advance(timedelta(milliseconds=101))
+    deb.target.events()  # this is required because we intend is_debouncing up until the events are consumed
+
+    # WHEN
+    result = deb.target.is_debouncing
+
+    # THEN
+    assert not result
