@@ -1,4 +1,5 @@
 from pathlib import Path
+from threading import Thread
 from time import sleep
 from typing import Callable
 
@@ -7,6 +8,10 @@ from watchdog.observers import Observer
 
 from wwwpy.common.filesystem.sync import new_tmp_path
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class AnyObserver(FileSystemEventHandler):
 
@@ -14,10 +19,28 @@ class AnyObserver(FileSystemEventHandler):
         """path need to exist, otherwise the observer will throw an exception."""
         self._path = path
         self._callback = callback
-        self._observer = Observer()
+        self._observer = None
         super().__init__()
 
     def watch_directory(self):
+        if self._path.exists():
+            self._new_observer()
+        else:
+            logger.debug(f'path does not exist, waiting for it to be created: {self._path}')
+            Thread(target=self._wait_for_path, daemon=True).start()
+
+    @property
+    def active(self) -> bool:
+        return self._observer is not None and self._observer.is_alive()
+
+    def _wait_for_path(self):
+        while not self._path.exists():
+            sleep(0.1)
+        self._new_observer()
+
+    def _new_observer(self):
+        logger.debug(f'Creating observer for {self._path}')
+        self._observer = Observer()
         self._observer.schedule(self, str(self._path), recursive=True)
         self._observer.start()
 
