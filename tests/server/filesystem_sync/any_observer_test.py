@@ -3,57 +3,64 @@ from pathlib import Path
 from time import sleep
 from typing import List
 
+import pytest
 from watchdog.events import FileSystemEvent
 
 from tests import timeout_multiplier
 from wwwpy.server.filesystem_sync.any_observer import AnyObserver
 from wwwpy.server.filesystem_sync import any_observer
 
-
 any_observer.logger.setLevel('DEBUG')
 
-def test_watch_non_existing_folder__should_not_fail(tmp_path):
-    target = AnyObserver(tmp_path / 'folder1', lambda e: None)
-    target.watch_directory()
+
+class Fixture:
+    def __init__(self, path: Path):
+        self.path = path
+        self.events = []
+        self.target = AnyObserver(self.path, self._callback)
+
+    def _callback(self, event: FileSystemEvent):
+        self.events.append(event)
+
+    def assert_has_events(self):
+        __tracebackhide__ = True
+        _assert_retry(lambda: len(self.events) > 0)
 
 
-def test_watch_existing_folder_should_yield_some_events(tmp_path: Path):
+@pytest.fixture
+def fixture(tmp_path: Path):
+    return Fixture(tmp_path / 'folder1')
+
+
+def test_watch_non_existing_folder__should_not_fail(fixture: Fixture):
+    fixture.target.watch_directory()
+
+
+def test_watch_existing_folder_should_yield_some_events(fixture: Fixture):
     # GIVEN
-    events = []
-
-    def callback(event: FileSystemEvent):
-        events.append(event)
-
-    target = AnyObserver(tmp_path, callback)
-    target.watch_directory()
+    fixture.path.mkdir()
+    fixture.target.watch_directory()
 
     # WHEN
-    file_path = tmp_path / 'test_file.txt'
+    file_path = fixture.path / 'test_file.txt'
     file_path.touch()
 
     # THEN
-    _assert_retry(lambda: len(events) > 0)
+    fixture.assert_has_events()
 
 
-def test_non_existing_folder_than_created_should_yield_some_events(tmp_path: Path):
+def test_non_existing_folder_than_created_should_yield_some_events(fixture: Fixture):
     # GIVEN
-    events = []
-
-    def callback(event: FileSystemEvent):
-        events.append(event)
-
-    folder1 = tmp_path / 'folder1'
-    target = AnyObserver(folder1, callback)
-    target.watch_directory()
+    fixture.target.watch_directory()
 
     # WHEN
     # at this point, we are in polling mode, so we need a delay to wait for the AnyObserver to start
-    folder1.mkdir()
-    _assert_retry(lambda: target.active)
-    (folder1 / 'file1.txt').touch()
+    fixture.path.mkdir()
+    _assert_retry(lambda: fixture.target.active)
+    (fixture.path / 'file1.txt').touch()
 
     # WHEN
-    _assert_retry(lambda: len(events) > 0)
+    fixture.assert_has_events()
 
 
 def _assert_retry(condition):
