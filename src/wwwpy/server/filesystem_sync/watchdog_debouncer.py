@@ -31,6 +31,10 @@ class WatchdogDebouncer(DebouncerThread):
 
         self._any_observer = AnyObserver(path, skip_open)
 
+    @property
+    def debouncer(self):
+        return self._debouncer
+
     def start(self):
         self._any_observer.watch_directory()
         super().start()
