@@ -14,27 +14,8 @@ def target(tmp_path, request):
     print(f'\ntmp_path file://{tmp_path}')
     fixture = SyncFixture(tmp_path, sync=request.param)
     yield fixture
-    fixture.debounced_watcher.stop()
-    fixture.debounced_watcher.join()
 
-# todo this code does not rely on watchdog events generated during testing
-# todo, remove the old code and minimize the dependencies
-
-def disable_test_a_read_on_source__should_not_generate_events(target):
-    """This is needed because if during the collection of source changes,
-    we will fire new events and we will end up in an infinite loop"""
-    # GIVEN
-    (target.left / 'foo.txt').write_text('content1')
-    target.start()
-
-    # WHEN
-    (target.left / 'foo.txt').read_text()
-    target.wait_at_rest()
-
-    # THEN
-    assert target.all_events == [], target.sync_error()
-
-
+# todo there are still traces of old testing code, e.g., target.start() and target.wait_at_rest(). Remove
 def test_new_file(target):
     # GIVEN
     # target.start()
