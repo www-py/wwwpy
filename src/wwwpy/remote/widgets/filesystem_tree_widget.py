@@ -3,15 +3,14 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import TypeVar
 
+import js
 from js import console
 from pyodide.ffi import create_proxy, create_once_callable
 
 # from wwwpy.remote.asyncjs import set_timeout
-from wwwpy.common.files import download_bytes, zip_in_memory
-
-HTMLElement = TypeVar('HTMLElement')
+from wwwpy.common.files import zip_in_memory
+from wwwpy.remote.files import download_bytes
 from wwwpy.remote.widget import Widget
 
 
@@ -27,9 +26,9 @@ class FilesystemTreeWidget(Widget):
             """
         )
         self.path = Path(path)
-        self._entity: HTMLElement = self
-        self._children: HTMLElement = self
-        self._download: HTMLElement = self
+        self._entity: js.HTMLElement = self
+        self._children: js.HTMLElement = self
+        self._download: js.HTMLElement = self
 
     def after_render(self):
         from js import window

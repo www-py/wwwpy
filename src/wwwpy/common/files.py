@@ -10,27 +10,6 @@ from pathlib import Path
 directory_blacklist = {'.mypy_cache', '__pycache__'}
 
 
-# todo should be moved to remote
-def download_path(filename: str, path: Path, mime_type: str = None):
-    download_bytes(filename, path.read_bytes(), mime_type)
-
-
-# todo should be moved to remote
-def download_bytes(filename: str, content: bytes, mime_type: str = None):
-    from js import console, document
-    if mime_type is None:
-        gt = mimetypes.guess_type(filename)
-        mime_type = gt[0]
-        if mime_type is None:
-            mime_type = 'application/octet-stream'
-        console.log(f'guess mime type for `{filename}` is `{mime_type}`')
-    a = document.createElement('a')
-    a.download = filename
-    a.href = f'data:{mime_type};base64,{base64.b64encode(content).decode("ascii")}'
-    document.body.append(a)
-    a.click()
-
-
 def _zip_path(zip_file, path):
     path = str(path)
     for root, dirs, files in os.walk(path):

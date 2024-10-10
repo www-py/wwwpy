@@ -3,12 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol, Callable
 
-from js import document, MouseEvent, console
+from js import document, MouseEvent, HTMLElement
 import js
 from pyodide.ffi import create_proxy
 
 from wwwpy.common.designer.html_edit import Position
-from wwwpy.remote.widgets.filesystem_tree_widget import HTMLElement
 
 
 @dataclass
