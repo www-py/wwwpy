@@ -5,6 +5,8 @@ from typing import Callable
 from wwwpy.common.rpc.serializer import RpcRequest
 from wwwpy.remote import set_timeout
 
+import logging
+logger = logging.getLogger(__name__)
 
 async def setup_websocket():
     from js import window, console
@@ -15,6 +17,7 @@ async def setup_websocket():
     def message(msg):
         log(f'message:{msg}')
         r = RpcRequest.from_json(msg)
+        # _debug_requested_module(r.module)
         m = importlib.import_module(r.module)
         class_name, func_name = r.func.split('.')
         attr = getattr(m, class_name)
@@ -44,3 +47,10 @@ class _WebSocketReconnect:
         es.onmessage = lambda e: self._on_message(e.data)
         es.onerror = lambda e: es.close()
         es.onclose = lambda e: set_timeout(self._connect, 1000)  # for now, we just retry forever and ever
+
+def _debug_requested_module(module_name:str):
+    from wwwpy.common import modlib
+    mp = modlib._find_module_path(module_name)
+    logger.debug(f'requested module: {module_name} path: {mp}')
+    if mp:
+        logger.debug(f'content: ```{mp.read_text()}```')

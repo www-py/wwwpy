@@ -25,16 +25,20 @@ websocket_pool: WebsocketPool = None
 
 def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
     print(f'applying convention to working_dir: {directory}')
+    server_rpc_packages = ['wwwpy.server.rpc', 'server.rpc']
+    remote_rpc_packages = {'remote', 'remote.rpc', 'wwwpy.remote', 'wwwpy.remote.rpc'}
     if dev_mode:
+        remote_rpc_packages.add('wwwpy.remote.designer')
+        remote_rpc_packages.add('wwwpy.remote.designer.rpc')
         log_emit.add_once(print)
         from wwwpy.common import quickstart
         quickstart._check_quickstart(directory)
 
     sys.path.insert(0, str(directory))
-    sys.meta_path.insert(0, CustomFinder({'remote', 'remote.rpc', 'wwwpy.remote', 'wwwpy.remote.rpc'}))
+    sys.meta_path.insert(0, CustomFinder(remote_rpc_packages))
     global websocket_pool
     websocket_pool = WebsocketPool('/wwwpy/ws')
-    services = _configure_rpc_services('/wwwpy/rpc', ['wwwpy.server.rpc', 'server.rpc'])
+    services = _configure_server_rpc_services('/wwwpy/rpc', server_rpc_packages)
     routes = [services.route, websocket_pool.http_route, *bootstrap_routes(
         resources=[
             library_resources(),
@@ -60,7 +64,7 @@ def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
 from wwwpy.rpc import RpcRoute, Module
 
 
-def _configure_rpc_services(route_path: str, modules: list[str]) -> RpcRoute:
+def _configure_server_rpc_services(route_path: str, modules: list[str]) -> RpcRoute:
     services = RpcRoute(route_path)
 
     for module_name in modules:

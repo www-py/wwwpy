@@ -10,6 +10,7 @@ from wwwpy.common.filesystem import sync
 from wwwpy.common.filesystem.sync import Sync
 from wwwpy.common.filesystem.sync import filesystemevents_print
 from wwwpy.common.filesystem.sync import sync_delta2
+from wwwpy.remote.designer.rpc import DesignerRpc
 from wwwpy.server.filesystem_sync.watchdog_debouncer import WatchdogDebouncer
 from wwwpy.websocket import WebsocketPool
 
@@ -26,7 +27,7 @@ def _watch_filesystem_change_for_remote(package: str, websocket_pool: WebsocketP
             filesystemevents_print(events, package)
             payload = sync_impl.sync_source(directory, events)
             for client in websocket_pool.clients:
-                remote_rpc = client.rpc(rpc.BrowserRpc)
+                remote_rpc = client.rpc(DesignerRpc)
                 remote_rpc.package_file_changed_sync(package, payload)
         except:
             # we could send a sync_init
