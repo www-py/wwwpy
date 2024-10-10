@@ -63,6 +63,24 @@ def test_non_existing_folder_than_created_should_yield_some_events(fixture: Fixt
     fixture.assert_has_events()
 
 
+def test_disappear_and_reappear_folder_should_yield_some_events(fixture: Fixture):
+    # GIVEN
+    fixture.path.mkdir()
+    fixture.target.watch_directory()
+
+    # WHEN
+    fixture.path.rmdir()
+    _assert_retry(lambda: not fixture.target.active)
+    fixture.path.mkdir()
+    _assert_retry(lambda: fixture.target.active)
+    fixture.events.clear()
+
+    (fixture.path / 'file1.txt').touch()
+
+    # THEN
+    fixture.assert_has_events()
+
+
 def _assert_retry(condition):
     __tracebackhide__ = True
     [sleep(0.1) for _ in range(5 * timeout_multiplier()) if not condition()]

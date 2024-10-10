@@ -56,7 +56,16 @@ class AnyObserver(FileSystemEventHandler):
     def on_any_event(self, event: FileSystemEvent) -> None:
         if not Path(event.src_path).is_relative_to(self._path):
             return
+        if self._is_self_delete(event):
+            self._observer.stop()
+            self._observer = None
+            self._wait_for_path()
+            return
+
         self._callback(event)
+
+    def _is_self_delete(self, event: FileSystemEvent) -> bool:
+        return event.event_type == 'deleted' and Path(event.src_path) == self._path
 
 
 def main():
