@@ -33,7 +33,6 @@ class DraggableComponent(wpc.Component, tag_name='wwwpy-draggable-component'):
   z-index: 100000;
   background-color: black;
   border: 1px solid #d3d3d3;
-  text-align: center;
   resize: both;
   overflow: auto;
 }

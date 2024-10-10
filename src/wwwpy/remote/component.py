@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import inspect
-
 import js
 from js import HTMLElement, console
 from pyodide.ffi import create_proxy, create_once_callable
@@ -117,6 +115,7 @@ class Component:
         pass
 
     def root_element(self):
+        """This is used to locate the child elements"""
         return self.element
 
     def _find_element(self, name: str):

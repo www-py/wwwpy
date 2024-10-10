@@ -96,7 +96,7 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
         <text x="9" y="9" fill="white" text-anchor="middle" dominant-baseline="central" font-weight="bold" font-size="12">?</text>
     </symbol>
 </svg>   
-<wwwpy-draggable-component data-name='dragComp1' style="height: 300px">
+<wwwpy-draggable-component data-name='dragComp1' style="height: 300px; text-align: center">
     <span slot='title'>wwwpy</span>     
         <button data-name="_select_element_btn">Select element...</button>   
         <button data-name="_select_clear_btn">Clear selection</button>   

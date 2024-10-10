@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import List
 
 import js
 from js import console
@@ -17,16 +18,18 @@ from wwwpy.remote.widget import Widget
 class FilesystemTreeWidget(Widget):
     def __init__(self, path: Path = Path('/'), indent=1):
         self._indent = indent
+        self.items: List[FilesystemTreeWidget] = []
         super().__init__(  # language=HTML
             f"""
-            <span id="_entity"></span>
-            <span id="_download">&nbsp ↓ &nbsp</span>
+            <span id="_entity" style="cursor: default"></span>
+            <span id="entity_actions"><span id="_download" style="cursor: pointer">&nbsp ⬇ &nbsp</span></span>
             <div id="_children" style="margin-left: 1em"></div>
             
             """
         )
         self.path = Path(path)
         self._entity: js.HTMLElement = self
+        self.entity_actions: js.HTMLElement = self
         self._children: js.HTMLElement = self
         self._download: js.HTMLElement = self
 
@@ -77,4 +80,5 @@ class FilesystemTreeWidget(Widget):
     def _recurse(self):
         for child in self.path.glob('*'):
             w = FilesystemTreeWidget(child, self._indent + 1)
+            self.items.append(w)
             w.append_to(self._children)
