@@ -5,12 +5,11 @@ import zipfile
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from io import BytesIO
-from itertools import chain
 from pathlib import Path
 from typing import Iterator, Callable, Optional, TypeVar, Iterable, Protocol, Tuple
 from zipfile import ZipFile
 
-from wwwpy.common import iterlib, modlib
+from wwwpy.common import iterlib, modlib, files
 from wwwpy.common.iterlib import CallableToIterable
 
 parent = Path(__file__).resolve().parent
@@ -53,8 +52,6 @@ TResource = TypeVar("TResource", bound=Resource)
 
 ResourceAccept = Callable[[TResource], bool]
 
-_directory_blacklist = {'.mypy_cache', '__pycache__'}
-
 
 def default_resource_accept(resource: Resource) -> bool:
     if not isinstance(resource, PathResource):
@@ -62,7 +59,7 @@ def default_resource_accept(resource: Resource) -> bool:
     filepath = resource.filepath
     if filepath.name == '.DS_Store':
         return False
-    if filepath.is_dir() and filepath.name in _directory_blacklist:
+    if filepath.is_dir() and filepath.name in files.directory_blacklist:
         return False
     return True
 

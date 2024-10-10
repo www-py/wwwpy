@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from datetime import timedelta
 from pathlib import Path
-from typing import List, Callable
+from typing import List, Callable, Set
 
-from wwwpy.common import modlib
+from wwwpy.common import modlib, files
 from wwwpy.common.filesystem import sync
 from wwwpy.common.filesystem.sync import Sync
 from wwwpy.common.filesystem.sync import filesystemevents_print
@@ -51,7 +51,7 @@ def _watch_filesystem_change_for_server(package: str, callback: Callable[[str, L
         try:
             # oh, boy. When a .py file is saved it fires the first hot reload. Then, when that file is loaded
             # the python updates the __pycache__ files, firing another (unwanted) reload: the first was enough!
-            filt_events = _remove(events, directory, ['__pycache__'])
+            filt_events = _remove(events, directory, files.directory_blacklist)
             if len(filt_events) > 0:
                 filesystemevents_print(filt_events)
                 callback(package, filt_events)
@@ -81,11 +81,11 @@ def _hotreload_server(hotreload_packages: list[str]):
         _watch_filesystem_change_for_server(package, on_change)
 
 
-def _remove(events: List[sync.Event], directory: Path, remove: List[str]) -> List[sync.Event]:
+def _remove(events: List[sync.Event], directory: Path, black_list: Set[str]) -> List[sync.Event]:
     def reject(e: sync.Event) -> bool:
         p = Path(e.src_path).relative_to(directory)
-        for r in remove:
-            if r in p.parts:
+        for part in p.parts:
+            if part in black_list:
                 return True
         return False
 

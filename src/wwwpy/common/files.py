@@ -7,14 +7,17 @@ import zipfile
 from io import BytesIO
 from pathlib import Path
 
-from js import console, document
+directory_blacklist = {'.mypy_cache', '__pycache__'}
 
 
+# todo should be moved to remote
 def download_path(filename: str, path: Path, mime_type: str = None):
     download_bytes(filename, path.read_bytes(), mime_type)
 
 
+# todo should be moved to remote
 def download_bytes(filename: str, content: bytes, mime_type: str = None):
+    from js import console, document
     if mime_type is None:
         gt = mimetypes.guess_type(filename)
         mime_type = gt[0]
