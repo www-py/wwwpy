@@ -6,7 +6,7 @@ from wwwpy.common.designer.element_library import ElementDef
 from wwwpy.common.designer.element_path import ElementPath
 from wwwpy.remote.designer import element_path
 
-from wwwpy.server import rpc
+from wwwpy.server.designer import rpc
 
 
 async def _rpc_save(el_path: ElementPath, new_source: str):

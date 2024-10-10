@@ -9,17 +9,17 @@ import js
 import wwwpy.remote.component as wpc
 from js import document, console, Event, HTMLElement, window
 from pyodide.ffi import create_proxy
-from wwwpy.common import state, property_monitor, modlib
+from wwwpy.common import state, modlib
 from wwwpy.common.designer import element_library
 from wwwpy.common.designer.code_edit import add_component, ElementDef
 from wwwpy.common.designer.element_path import ElementPath
 from wwwpy.common.designer.html_edit import Position
-from wwwpy.remote import dict_to_js, set_timeout, dict_to_py
+from wwwpy.remote import dict_to_js, set_timeout
 from wwwpy.remote.designer import element_path
 from wwwpy.remote.designer.drop_zone import DropZone
 from wwwpy.remote.designer.global_interceptor import GlobalInterceptor, InterceptorEvent
 from wwwpy.remote.designer.ui.draggable_component import DraggableComponent
-from wwwpy.server import rpc
+from wwwpy.server.designer import rpc
 
 from wwwpy.remote.designer.helpers import _element_lbl, _help_button
 from wwwpy.remote.designer.ui.property_editor import PropertyEditor

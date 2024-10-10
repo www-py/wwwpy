@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 from datetime import timedelta
-from functools import partial
 from typing import List, Callable
 
-import wwwpy.remote.rpc as rpc
 from wwwpy.common import modlib
 from wwwpy.common.filesystem import sync
 from wwwpy.common.filesystem.sync import Sync

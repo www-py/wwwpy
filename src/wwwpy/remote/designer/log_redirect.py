@@ -2,7 +2,7 @@ from js import console
 
 from wwwpy.common.designer import log_emit
 from wwwpy.remote import set_timeout
-from wwwpy.server import rpc
+from wwwpy.server.designer import rpc
 
 
 def redirect_logging():

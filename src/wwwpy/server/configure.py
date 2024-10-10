@@ -25,9 +25,10 @@ websocket_pool: WebsocketPool = None
 
 def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
     print(f'applying convention to working_dir: {directory}')
-    server_rpc_packages = ['wwwpy.server.rpc', 'server.rpc']
+    server_rpc_packages = ['server.rpc']
     remote_rpc_packages = {'remote', 'remote.rpc', 'wwwpy.remote', 'wwwpy.remote.rpc'}
     if dev_mode:
+        server_rpc_packages.append('wwwpy.server.designer.rpc')
         remote_rpc_packages.add('wwwpy.remote.designer')
         remote_rpc_packages.add('wwwpy.remote.designer.rpc')
         log_emit.add_once(print)
