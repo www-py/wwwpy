@@ -24,7 +24,7 @@ from wwwpy.server.designer import rpc
 
 from wwwpy.remote.designer.helpers import _element_lbl, _help_button, info_link
 from wwwpy.remote.designer.ui.property_editor import PropertyEditor
-from .help_icon import HelpIcon # noqa
+from .help_icon import HelpIcon  # noqa
 import logging
 
 logger = logging.getLogger(__name__)
@@ -107,7 +107,8 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
 
         def add_p(menu_meta: MenuMeta, callback):  # callback can be async
             self._all_items.append(menu_meta)
-            p = document.createElement('p')
+            p: js.HTMLElement = document.createElement('p')
+            p.style.color = 'white'
             menu_meta.p_element = p
             p.innerHTML = menu_meta.html
             p.addEventListener('click', create_proxy(callback))
@@ -218,7 +219,6 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
         res = await _drop_zone_start_selection_async(_on_pointed, whole=True)
         self._toolbox_state.selected_element_path = element_path.element_path(res.element) if res else None
         self._restore_selected_element_path()
-
 
     @menu(components_marker)
     def _drop_zone_start(self, e: Event):
