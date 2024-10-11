@@ -60,9 +60,6 @@ async def _invoke_browser_main(reload=False):
             js.document.body.innerHTML = msg.replace('\n', '<br>')
             return
 
-        from . import shoelace
-        shoelace.setup_shoelace()
-
         if hasattr(remote, 'main'):
             if iscoroutinefunction(remote.main):
                 await remote.main()
