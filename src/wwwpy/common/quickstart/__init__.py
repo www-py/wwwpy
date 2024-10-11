@@ -47,5 +47,5 @@ def quickstart_list() -> NamedListMap[Quickstart]:
     for d in source.iterdir():
         if d.is_dir() and not d.name.startswith('.'):
             add(d.name, d / 'readme.txt')
-
+    quickstarts = sorted(quickstarts, key=lambda x: x.name)
     return NamedListMap(quickstarts)

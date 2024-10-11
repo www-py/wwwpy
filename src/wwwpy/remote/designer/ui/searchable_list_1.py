@@ -27,13 +27,12 @@ class SearchableList1(wpc.Component, tag_name='wwwpy-searchable-list-1'):
     def init_component(self):
         # language=html
         self.element.innerHTML = """
-<style>
-</style>
-
-<input type='search' data-name="_search_box" placeholder='Search...' style='display: block'>
-<hr>        
-<div data-name="_no_results"></div>
-<div data-name="_container"></div>      
+<div style='padding: 0.5em'>
+    <input type='search' data-name="_search_box" placeholder='Search...' style='display: block'>
+    <hr>        
+    <div data-name="_no_results"></div>
+    <div data-name="_container"></div>
+</div>      
 """
         self.items = [Item(f'title {i}', f'description {i}') for i in range(3)]
 
@@ -95,11 +94,14 @@ class Component3(wpc.Component):
         self.element.innerHTML = """
 <style>
 .row-highlight:hover {
-    background-color: DimGray;
+    background-color: DimGray;    
+}
+.row-highlight {
+    cursor: pointer;
 }
 </style>        
 <div class='row-highlight' data-name="_row">
-    <div data-name="title">Title</div>
+    <div data-name="title" style='font-weight: bold ; margin-bottom: 0.4em'>Title</div>
     <div data-name="description">Description</div>
 </div>
         """

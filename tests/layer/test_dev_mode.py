@@ -13,7 +13,7 @@ def test_dev_mode_disabled__should_NOT_create_canonical_components(restore_sys_p
 def test_dev_mode_empty_folder__should_create_canonical_components(restore_sys_path, tmp_path: Path):
     configure.convention(tmp_path, dev_mode=True)
 
-    dir1 = modlib._find_package_directory('wwwpy.common') / 'quickstart/setup1'
+    dir1 = modlib._find_package_directory('wwwpy.common') / 'quickstart/basic'
     dir2 = tmp_path
     dir1_set = get_all_paths_with_hashes(dir1)
     dir2_set = get_all_paths_with_hashes(dir2)

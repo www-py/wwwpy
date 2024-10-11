@@ -14,3 +14,8 @@ def test_basic():
     assert basic.name == 'basic'
     assert basic.title == 'Basic setup for a new project'
     assert basic.description == 'It contains just a simple Component with almost no content'
+
+def test_basic_should_be_the_first():
+    target = quickstart_list()
+    first = target[0]
+    assert first.name == 'basic'
