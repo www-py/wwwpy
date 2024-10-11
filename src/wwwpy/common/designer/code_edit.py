@@ -23,6 +23,7 @@ def add_property(source_code: str, class_name: str, attr_info: Attribute):
 
 @dataclass
 class AddResult:
+    # todo rename, this is actually python code with some html inside
     html: str
     node_path: NodePath
 
