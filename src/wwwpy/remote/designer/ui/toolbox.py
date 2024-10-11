@@ -22,8 +22,9 @@ from wwwpy.remote.designer.global_interceptor import GlobalInterceptor, Intercep
 from wwwpy.remote.designer.ui.draggable_component import DraggableComponent
 from wwwpy.server.designer import rpc
 
-from wwwpy.remote.designer.helpers import _element_lbl, _help_button, info_link
+from wwwpy.remote.designer.helpers import _element_lbl, _help_button, info_link, _help_url
 from wwwpy.remote.designer.ui.property_editor import PropertyEditor
+from . import filesystem_tree
 from .help_icon import HelpIcon  # noqa
 import logging
 
@@ -224,11 +225,15 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
     def _drop_zone_start(self, e: Event):
         assert False, 'Just a placeholder'
 
-    @menu(Help('Create new component', 'https://wwwpy.dev/help/add_component.html'))
+    @menu(Help('Create new component', _help_url('add_component')))
     async def _add_new_component(self, e: Event):
         if js.window.confirm('Add new component file?\nIt will be added to your "remote" folder.'):
             res = await rpc.add_new_component()
             js.window.alert(res)
+
+    @menu(Help("Explore local filesystem", _help_url('remote_filesystem')))
+    async def _browse_local_filesystem(self, e: Event):
+        filesystem_tree.show_explorer()
 
     # @menu('handle global click')
     def _handle_global_click(self, e: Event):

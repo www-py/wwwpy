@@ -16,7 +16,7 @@ async def _rpc_save(el_path: ElementPath, new_source: str):
 def info_link(href):
     # open in a new page
     # <a href='https://www.google.com' target='_blank'><svg class="help-icon"><use href="#help-icon"/></svg></a>
-    #language=html
+    # language=html
     return f"""<wwwpy-help-icon href="{href}"></wwwpy-help-icon>"""
 
     return (f'<a href="{href}" style="text-decoration: none" target="_blank">'
@@ -50,9 +50,13 @@ def _help_button(element_def: ElementDef) -> str:
     return help_button
 
 
-async def _on_error( message, source, lineno, colno, error):
+async def _on_error(message, source, lineno, colno, error):
     await rpc.on_error(message, source, lineno, colno, str(error))
+
 
 async def _on_unhandledrejection(event):
     await rpc.on_unhandledrejection(f'{event.reason}')
 
+
+def _help_url(help_str: str) -> str:
+    return f'https://wwwpy.dev/help/{help_str}.html'
