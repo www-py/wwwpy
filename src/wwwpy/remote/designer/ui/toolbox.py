@@ -136,7 +136,7 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
                 else:
                     self.property_editor.message1div.innerHTML = 'canceled'
 
-            element_html = f'{element_def.tag_name} {_help_button(element_def)}'
+            element_html = f'<span style="cursor: pointer">{element_def.tag_name}</span> {_help_button(element_def)}'
             add_p(MenuMeta(element_def.tag_name, element_html), _start_drop_for_comp)
 
         for member in attrs:
