@@ -141,3 +141,36 @@ def clientX(event: js.MouseEvent | js.TouchEvent):
 
 def clientY(event: js.MouseEvent | js.TouchEvent):
     return event.clientY if hasattr(event, 'clientY') else list(event.targetTouches)[0].clientY
+
+
+def new_window(title: str, closable=True):
+    component = DraggableComponent()
+    # language=html
+    fragment = js.document.createRange().createContextualFragment(f"""
+<div slot='title' style="display: flex; justify-content: space-between; align-items: center;">
+    {title} 
+    <button data-name="close" style="cursor:pointer">X</button>
+</div>
+            """)
+    ct = ClosableTitle()
+    ct.element.setAttribute('slot', 'title')
+    ct.title.innerHTML = title
+    ct.close.onclick = lambda ev: component.element.remove()
+    component.element.append(ct.element)
+    if not closable:
+        ct.close.style.display = 'none'
+    return component
+
+
+class ClosableTitle(wpc.Component):
+    title: js.HTMLElement = wpc.element()
+    close: js.HTMLElement = wpc.element()
+
+    def init_component(self):
+        # language=html
+        self.element.innerHTML = f"""
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <span data-name='title'></span>&nbsp;
+    <button data-name="close" style="cursor:pointer">X</button>
+</div>
+            """
