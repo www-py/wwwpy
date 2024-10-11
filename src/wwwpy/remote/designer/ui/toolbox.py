@@ -10,8 +10,9 @@ import wwwpy.remote.component as wpc
 from js import document, console, Event, HTMLElement, window
 from pyodide.ffi import create_proxy
 from wwwpy.common import state, modlib
-from wwwpy.common.designer import element_library
+from wwwpy.common.designer import element_library, new_component
 from wwwpy.common.designer.code_edit import add_component, ElementDef
+from wwwpy.common.designer.element_library import Help
 from wwwpy.common.designer.element_path import ElementPath
 from wwwpy.common.designer.html_edit import Position
 from wwwpy.remote import dict_to_js, set_timeout
@@ -21,9 +22,9 @@ from wwwpy.remote.designer.global_interceptor import GlobalInterceptor, Intercep
 from wwwpy.remote.designer.ui.draggable_component import DraggableComponent
 from wwwpy.server.designer import rpc
 
-from wwwpy.remote.designer.helpers import _element_lbl, _help_button
+from wwwpy.remote.designer.helpers import _element_lbl, _help_button, info_link
 from wwwpy.remote.designer.ui.property_editor import PropertyEditor
-
+from .help_icon import HelpIcon # noqa
 import logging
 
 logger = logging.getLogger(__name__)
@@ -42,12 +43,17 @@ class MenuMeta:
     html: str
     always_visible: bool = False
     p_element: js.HTMLElement = None
+    help: Help = None
 
 
 def menu(label, always_visible=False):
-    def wrapped(fn):
+    def wrapped(fn, label=label):
+        help = None
+        if isinstance(label, Help):
+            help = label
+            label = label.description
         fn.label = label
-        fn.meta = MenuMeta(label, label, always_visible)
+        fn.meta = MenuMeta(label, label, always_visible, help=help)
         return fn
 
     return wrapped
@@ -83,19 +89,7 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
 .two-column-layout p:nth-child(even) {
   margin-right: 0; /* Removes right margin for every even child */
 }
- .help-icon {
-            width: 18px;
-            height: 18px;
-            vertical-align: middle;
-            margin-left: 5px;
-        }
 </style>     
-<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-    <symbol id="help-icon" viewBox="0 0 18 18">
-        <circle cx="9" cy="9" r="8" fill="#007bff"/>
-        <text x="9" y="9" fill="white" text-anchor="middle" dominant-baseline="central" font-weight="bold" font-size="12">?</text>
-    </symbol>
-</svg>   
 <wwwpy-draggable-component data-name='dragComp1' style="height: 300px; text-align: center">
     <span slot='title'>wwwpy</span>     
         <button data-name="_select_element_btn">Select element...</button>   
@@ -117,7 +111,6 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
             menu_meta.p_element = p
             p.innerHTML = menu_meta.html
             p.addEventListener('click', create_proxy(callback))
-            # p.menu_meta = menu_meta
 
         def add_comp(element_def: ElementDef):
 
@@ -148,7 +141,13 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
             if member.meta.label == self.components_marker:
                 [add_comp(ele_def) for ele_def in element_library.element_library().elements]
             else:
-                add_p(member.meta, partial(member, self))
+                help = member.meta.help
+                if help:
+                    help_html = '' if not help.url else info_link(help.url)
+                    element_html = f'{help.description} {help_html}'
+                    add_p(MenuMeta(help.description, element_html), partial(member, self))
+                else:
+                    add_p(member.meta, partial(member, self))
         self._update_toolbox_elements()
 
     async def _process_dropzone(self, drop_zone: DropZone, element_def: ElementDef):
@@ -220,9 +219,16 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
         self._toolbox_state.selected_element_path = element_path.element_path(res.element) if res else None
         self._restore_selected_element_path()
 
+
     @menu(components_marker)
     def _drop_zone_start(self, e: Event):
         assert False, 'Just a placeholder'
+
+    @menu(Help('Create new component', 'https://wwwpy.dev/help/add_component.html'))
+    async def _add_new_component(self, e: Event):
+        if js.window.confirm('Add new component file?\nIt will be added to your "remote" folder.'):
+            res = await rpc.add_new_component()
+            js.window.alert(res)
 
     # @menu('handle global click')
     def _handle_global_click(self, e: Event):

@@ -2,6 +2,7 @@ import logging
 import sys
 
 from wwwpy.common import modlib
+from wwwpy.common.designer import new_component
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +40,22 @@ async def print_module_line(module: str, message: str, lineno: int):
     if not path:
         raise ValueError(f'Cannot find module {module}')
     print(message)
-    print(f' File "{path}", line {lineno}')
+    print(_ide_path_link(path, lineno))
+
+
+def _ide_path_link(path, lineno):
+    ide_path_link = f'  File "{path}", line {lineno}'
+    return ide_path_link
 
 
 async def server_console_log(message: str):
     print(message)
+
+
+async def add_new_component() -> str:
+    path = new_component.add()
+    if path:
+        print(f'Added new component')
+        print(_ide_path_link(path, 1))
+        return f'Added new component file:\n\n{path.name}'
+    return 'Failed to add new component'
