@@ -43,6 +43,8 @@ def main():
     result = subprocess.run(['git', 'diff-index', '--quiet', 'HEAD', '--'], capture_output=True)
     if result.returncode != 0:
         print("There are uncommitted changes. Please commit or stash them before running this script.")
+        print("")
+        subprocess.run(['git', 'diff-index', 'HEAD', '--'])
         return
 
     msg = update_minor_version()
