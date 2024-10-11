@@ -75,7 +75,7 @@ class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
             /* border: 1px solid ; */                     
         }
     </style>
-<div data-name="message1div">&nbsp</div>
+<div data-name="message1div" style='color: white'>&nbsp</div>
 <wwwpy-button-tab data-name="_tabs"></wwwpy-button-tab>
 <div class="wwwpy-property-editor" data-name='row_container'>    
     <div class='wwwpy-property-editor-row' style='font-weight: bold'><div >Event</div><div>Value</div></div>
