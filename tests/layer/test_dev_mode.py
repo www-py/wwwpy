@@ -1,29 +1,27 @@
-from pathlib import Path
-
-from tests.common import restore_sys_path
+from tests.common import dyn_sys_path, DynSysPath
 from wwwpy.common import modlib
 from wwwpy.server import configure
 
 
-def test_dev_mode_disabled__should_NOT_create_canonical_components(restore_sys_path, tmp_path: Path):
-    configure.convention(tmp_path)
-    assert get_all_paths_with_hashes(tmp_path) == set()
+def test_dev_mode_disabled__should_NOT_create_canonical_components(dyn_sys_path: DynSysPath):
+    configure.convention(dyn_sys_path.path)
+    assert get_all_paths_with_hashes(dyn_sys_path.path) == set()
 
 
-def test_dev_mode_empty_folder__should_create_canonical_components(restore_sys_path, tmp_path: Path):
-    configure.convention(tmp_path, dev_mode=True)
+def test_dev_mode_empty_folder__should_create_canonical_components(dyn_sys_path: DynSysPath):
+    configure.convention(dyn_sys_path.path, dev_mode=True)
 
     dir1 = modlib._find_package_directory('wwwpy.common') / 'quickstart/basic'
-    dir2 = tmp_path
+    dir2 = dyn_sys_path.path
     dir1_set = get_all_paths_with_hashes(dir1)
     dir2_set = get_all_paths_with_hashes(dir2)
     assert dir1_set == dir2_set, "Directories do not match!"
 
 
-def test_dev_mode_non_empty_folder_but_no_remote__should_not_fail(restore_sys_path, tmp_path: Path):
-    # tmp_path.mkdir('some-folder')
-    (tmp_path / 'some-folder').mkdir()
-    configure.convention(tmp_path, dev_mode=True)
+def test_dev_mode_non_empty_folder_but_no_remote__should_not_fail(dyn_sys_path: DynSysPath):
+    # dyn_sys_path.path.mkdir('some-folder')
+    (dyn_sys_path.path / 'some-folder').mkdir()
+    configure.convention(dyn_sys_path.path, dev_mode=True)
 
 
 from pathlib import Path
