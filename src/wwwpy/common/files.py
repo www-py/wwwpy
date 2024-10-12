@@ -7,8 +7,8 @@ import zipfile
 from io import BytesIO
 from pathlib import Path
 
-directory_blacklist = {'.mypy_cache', '__pycache__'}
-
+directory_blacklist = {'.mypy_cache', '__pycache__', '.DS_Store'}
+_bundle_path = '/wwwpy_bundle'
 
 def _zip_path(zip_file, path):
     path = str(path)
