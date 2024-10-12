@@ -8,7 +8,7 @@ from playwright.sync_api import Page, expect
 
 from tests import for_all_webservers
 from tests.common import restore_sys_path
-from tests.server.remote_ui.page_fixture import PageFixture, fixture
+from tests.server.page_fixture import PageFixture, fixture
 from wwwpy.bootstrap import bootstrap_routes
 from wwwpy.common.rpc.custom_loader import CustomFinder
 from wwwpy.resources import library_resources

@@ -1,7 +1,7 @@
 from playwright.sync_api import expect
 
 from tests import for_all_webservers
-from .page_fixture import PageFixture, fixture
+from tests.server.page_fixture import PageFixture, fixture
 
 
 @for_all_webservers()

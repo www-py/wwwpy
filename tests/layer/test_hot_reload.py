@@ -3,8 +3,7 @@ from time import sleep
 from playwright.sync_api import expect
 
 from tests import for_all_webservers, timeout_multiplier
-from tests.server.remote_ui.page_fixture import fixture, PageFixture
-from wwwpy.unasync import unasync
+from tests.server.page_fixture import fixture, PageFixture
 
 
 @for_all_webservers()
