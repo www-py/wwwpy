@@ -31,6 +31,7 @@ class Quickstart:
     name: str
     title: str
     description: str
+    path: Path
 
 
 def quickstart_list() -> NamedListMap[Quickstart]:
@@ -44,7 +45,7 @@ def quickstart_list() -> NamedListMap[Quickstart]:
         lines = readme.read_text().splitlines()
         title = lines[0]
         description = '\n'.join(lines[2:])
-        quickstart = Quickstart(name, title, description)
+        quickstart = Quickstart(name, title, description, source / name)
         quickstarts.append(quickstart)
 
     for d in source.iterdir():

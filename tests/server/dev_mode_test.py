@@ -4,6 +4,8 @@ from playwright.sync_api import expect
 
 from tests import for_all_webservers, timeout_multiplier
 from tests.server.page_fixture import PageFixture, fixture
+from wwwpy.common import quickstart
+from wwwpy.common.files import get_all_paths_with_hashes
 from wwwpy.common.quickstart import is_empty_project
 
 
@@ -13,15 +15,42 @@ def test_dev_mode_with_empty_project__should_show_quickstart_dialog(fixture: Pag
     assert list(fixture.tmp_path.iterdir()) == []
     fixture.start_remote()
 
-    expect(fixture.page.locator('wwwpy-dev-mode')).to_be_attached()
-    # language=python
+    expect(fixture.page.locator('wwwpy-dev-mode-component')).to_be_attached()
 
+    # language=python
     fixture.assert_evaluate_retry("""
 from wwwpy.remote.designer.ui.dev_mode_component import DevModeComponent
-DevModeComponent.instance.quickstart_visible()
+DevModeComponent.instance.quickstart is not None
 """)
     assert list(fixture.tmp_path.iterdir()) == []
     assert is_empty_project(fixture.tmp_path)
 
-    #         from wwwpy.common import quickstart
-    #         quickstart._check_quickstart(directory)
+    # language=python
+    fixture.assert_evaluate_retry("""
+from wwwpy.remote.designer.ui.dev_mode_component import DevModeComponent
+not DevModeComponent.instance.quickstart.accept_quickstart('basic')
+""")
+
+    # language=python
+    fixture.assert_evaluate_retry("""
+from wwwpy.remote.designer.ui.dev_mode_component import DevModeComponent
+DevModeComponent.instance.quickstart.window.element.isConnected is False
+""")
+    return
+    def project_is_right():
+        if is_empty_project(fixture.tmp_path):
+            return False, 'project is empty'
+        dir1 = quickstart.quickstart_list().get('basic').path
+        dir2 = fixture.tmp_path
+        dir1_set = get_all_paths_with_hashes(dir1)
+        dir2_set = get_all_paths_with_hashes(dir2)
+        return dir1_set == dir2_set, f'{dir1_set} != {dir2_set}'
+
+    _assert_retry(project_is_right)
+
+
+def _assert_retry(condition):
+    __tracebackhide__ = True
+    [sleep(0.1) for _ in range(5 * timeout_multiplier()) if not condition()[0]]
+    c = condition()
+    assert c[0], c[1]

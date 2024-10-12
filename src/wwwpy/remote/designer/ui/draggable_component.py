@@ -51,7 +51,7 @@ class DraggableComponent(wpc.Component, tag_name='wwwpy-draggable-component'):
     <div  data-name="draggable_component_div" class='wwwpy-draggable_component_div' >
         <slot name='title' >slot=title</slot>
     </div>
-    <slot>slot=default</div>    
+    <slot>slot=default</slot>    
 </div> 
 """
         self.client_x = 0
