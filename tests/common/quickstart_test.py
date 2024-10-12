@@ -26,8 +26,19 @@ def test_empty_project(tmp_path):
     assert is_empty_project(tmp_path)
 
 
+def test_empty_project2(tmp_path):
+    (tmp_path / 'remote').mkdir()
+    (tmp_path / '__pycache__').mkdir()
+    assert is_empty_project(tmp_path)
+
+
 def test_not_empty_project(tmp_path):
     remote = tmp_path / 'remote'
     remote.mkdir()
     (remote / '__init__.py').write_text('# some content')
+    assert not is_empty_project(tmp_path)
+
+
+def test_not_empty_project2(tmp_path):
+    (tmp_path / 'some-file.txt').touch()
     assert not is_empty_project(tmp_path)

@@ -14,6 +14,7 @@ def test_dev_mode_with_empty_project__should_show_quickstart_dialog(fixture: Pag
     fixture.dev_mode = True
     assert list(fixture.tmp_path.iterdir()) == []
     fixture.start_remote()
+    assert is_empty_project(fixture.tmp_path)
 
     expect(fixture.page.locator('wwwpy-dev-mode-component')).to_be_attached()
 
@@ -36,7 +37,7 @@ not DevModeComponent.instance.quickstart.accept_quickstart('basic')
 from wwwpy.remote.designer.ui.dev_mode_component import DevModeComponent
 DevModeComponent.instance.quickstart.window.element.isConnected is False
 """)
-    return
+
     def project_is_right():
         if is_empty_project(fixture.tmp_path):
             return False, 'project is empty'

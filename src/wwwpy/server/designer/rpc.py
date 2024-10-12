@@ -1,5 +1,6 @@
 import logging
 import sys
+from pathlib import Path
 
 from wwwpy.common import modlib
 from wwwpy.common.designer import new_component
@@ -59,3 +60,22 @@ async def add_new_component() -> str:
         print(_ide_path_link(path, 1))
         return f'Added new component file:\n\n{path.name}'
     return 'Failed to add new component'
+
+
+async def quickstart_apply(quickstart_name: str) -> str:
+    if not await quickstart_possible():
+        return 'Quickstart not possible'
+    from wwwpy.server import custom_str
+    root = custom_str.get_root_folder_or_fail()
+    from wwwpy.common import quickstart
+    quickstart.setup_quickstart(Path(root), quickstart_name)
+    logger.info(f'Quickstart applied {quickstart_name} to {root}')
+    return 'Quickstart applied'
+
+
+async def quickstart_possible() -> bool:
+    from wwwpy.server import custom_str
+    from wwwpy.common import quickstart
+    root = custom_str.get_root_folder_or_fail()
+    emtpy = quickstart.is_empty_project(root)
+    return emtpy

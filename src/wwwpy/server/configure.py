@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from wwwpy.bootstrap import bootstrap_routes
+from wwwpy.server.custom_str import CustomStr
 from wwwpy.common.designer import log_emit
 from wwwpy.common.rpc.custom_loader import CustomFinder
 from wwwpy.resources import library_resources, from_directory, from_file
@@ -33,7 +34,7 @@ def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
         remote_rpc_packages.add('wwwpy.remote.designer.rpc')
         log_emit.add_once(print)
 
-    sys.path.insert(0, str(directory))
+    sys.path.insert(0, CustomStr(directory))
     sys.meta_path.insert(0, CustomFinder(remote_rpc_packages))
     global websocket_pool
     websocket_pool = WebsocketPool('/wwwpy/ws')
@@ -60,7 +61,7 @@ def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
         webserver.set_http_route(*routes)
 
 
-from wwwpy.rpc import RpcRoute, Module
+from wwwpy.rpc import RpcRoute
 
 
 def _configure_server_rpc_services(route_path: str, modules: list[str]) -> RpcRoute:

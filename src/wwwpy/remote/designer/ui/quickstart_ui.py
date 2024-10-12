@@ -2,8 +2,10 @@ import js
 from pyodide.ffi import create_proxy
 
 from wwwpy.common import quickstart
+from wwwpy.remote import set_timeout
 from wwwpy.remote.designer.ui.draggable_component import new_window, DraggableComponent
 from wwwpy.remote.designer.ui.searchable_list_1 import SearchableList1, Item
+from wwwpy.server.designer import rpc
 
 
 class QuickstartUI:
@@ -20,21 +22,21 @@ class QuickstartUI:
         cmp1.placeholder = 'Search or select below...'
         self.window.element.append(cmp1.element)
 
-
         cmp1.element.addEventListener('item-click', create_proxy(self._item_click_handler))
 
-    def accept_quickstart(self, name: str):
+    def accept_quickstart(self, quickstart_name: str):
         self.window.element.remove()
-        return
-        self.quickstart_list.get(name).run()
-        pass
-        item = event.detail
-        js.alert(f'item_click: {item}')
 
-    def _item_click_handler(self,event):
+        async def _notify_server():
+            await rpc.quickstart_apply(quickstart_name)
+
+        set_timeout(_notify_server)
+
+    def _item_click_handler(self, event):
         item = event.detail
         assert isinstance(item, Item)
         self.accept_quickstart(item.values['quickstart'].name)
+
 
 def create() -> QuickstartUI:
     return QuickstartUI()

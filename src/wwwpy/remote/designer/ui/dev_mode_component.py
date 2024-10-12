@@ -4,7 +4,8 @@ import js
 
 import wwwpy.remote.component as wpc
 from wwwpy.common import files
-from wwwpy.remote import dict_to_js, dict_to_py
+from wwwpy.remote import dict_to_js, dict_to_py, set_timeout
+from wwwpy.server.designer import rpc
 from . import quickstart_ui
 from .quickstart_ui import QuickstartUI
 from .toolbox import ToolboxComponent
@@ -43,7 +44,10 @@ class DevModeComponent(wpc.Component, tag_name='wwwpy-dev-mode-component'):
         self.shadow.innerHTML = """
 <wwwpy-toolbox data-name="toolbox"></wwwpy-toolbox>        
         """
-        from wwwpy.common import quickstart
-        if quickstart.is_empty_project(files._bundle_path):
-            self.quickstart = quickstart_ui.create()
-            self.shadow.append(self.quickstart.window.element)
+
+        async def check_for_quickstart():
+            if await rpc.quickstart_possible():
+                self.quickstart = quickstart_ui.create()
+                self.shadow.append(self.quickstart.window.element)
+
+        set_timeout(check_for_quickstart)
