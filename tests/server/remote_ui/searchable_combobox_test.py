@@ -1,11 +1,11 @@
 from playwright.sync_api import expect
 
 from tests import for_all_webservers
-from .page_fixture import Fixture, fixture
+from .page_fixture import PageFixture, fixture
 
 
 @for_all_webservers()
-def test_combo(fixture: Fixture):
+def test_combo(fixture: PageFixture):
     # language=python
     fixture.start_remote("""
 from wwwpy.remote.designer.ui.searchable_combobox2 import SearchableComboBox

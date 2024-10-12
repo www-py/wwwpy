@@ -1,11 +1,11 @@
 from playwright.sync_api import expect
 
 from tests import for_all_webservers
-from .page_fixture import Fixture, fixture
+from .page_fixture import PageFixture, fixture
 
 
 @for_all_webservers()
-def test_drop_zone(fixture: Fixture):
+def test_drop_zone(fixture: PageFixture):
     # GIVEN
     page = setup_initial(fixture)
 
@@ -50,7 +50,7 @@ def setup_initial(fixture):
 
 
 @for_all_webservers()
-def test_drop_zone_stop(fixture: Fixture):
+def test_drop_zone_stop(fixture: PageFixture):
     page = setup_initial(fixture)
     fixture.evaluate_catch("remote.stop()")
 

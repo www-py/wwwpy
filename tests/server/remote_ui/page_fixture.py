@@ -9,7 +9,7 @@ from wwwpy.common import reloader
 from wwwpy.server import configure
 
 
-class Fixture:
+class PageFixture:
     def __init__(self, page: Page, tmp_path: Path, webserver):
         self.page = page
         self.tmp_path = tmp_path
@@ -62,7 +62,7 @@ class Fixture:
 def fixture(page: Page, tmp_path, webserver):
     sys_path = sys.path.copy()
     sys_meta_path = sys.meta_path.copy()
-    fix = Fixture(page, tmp_path, webserver)
+    fix = PageFixture(page, tmp_path, webserver)
     try:
         yield fix
     finally:

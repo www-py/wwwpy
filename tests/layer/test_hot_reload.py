@@ -3,12 +3,12 @@ from time import sleep
 from playwright.sync_api import expect
 
 from tests import for_all_webservers, timeout_multiplier
-from tests.server.remote_ui.page_fixture import fixture, Fixture
+from tests.server.remote_ui.page_fixture import fixture, PageFixture
 from wwwpy.unasync import unasync
 
 
 @for_all_webservers()
-def test_hot_reload__modified(fixture: Fixture):
+def test_hot_reload__modified(fixture: PageFixture):
     fixture.dev_mode = True
     fixture.start_remote("""from js import document;document.body.innerHTML = '<input id="tag1" value="ready">'""")
 
@@ -20,7 +20,7 @@ def test_hot_reload__modified(fixture: Fixture):
 
 
 @for_all_webservers()
-def test_hot_reload__created(fixture: Fixture):
+def test_hot_reload__created(fixture: PageFixture):
     fixture.dev_mode = True
     fixture.start_remote(_created_python)
     expect(fixture.page.locator('id=msg1')).to_have_value('exists=False')
@@ -48,7 +48,7 @@ except:
 
 
 @for_all_webservers()
-def test_hot_reload__deleted(fixture: Fixture):
+def test_hot_reload__deleted(fixture: PageFixture):
     fixture.dev_mode = True
     fixture.remote.mkdir()
     file1 = fixture.remote / 'file1.txt'
@@ -70,7 +70,7 @@ document.body.innerHTML = f'<input id="msg1" value="exists={str(file1_txt.exists
 class TestServerRpcHotReload:
 
     @for_all_webservers()
-    def test_server_rpc_body_change(self, fixture: Fixture):
+    def test_server_rpc_body_change(self, fixture: PageFixture):
         # GIVEN
         fixture.dev_mode = True
         fixture.write_module('server/rpc.py', "async def func1() -> str: return 'ready'")
@@ -94,7 +94,7 @@ async def main():
         expect(fixture.page.locator('body')).to_have_text('second=updated', use_inner_text=True)
 
     @for_all_webservers()
-    def test_server_rpc__call_another_file(self, fixture: Fixture):
+    def test_server_rpc__call_another_file(self, fixture: PageFixture):
         # GIVEN
         fixture.dev_mode = True
         fixture.write_module('server/database.py', "conn_name = 'conn1'")
