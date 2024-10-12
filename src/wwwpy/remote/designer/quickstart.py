@@ -7,8 +7,8 @@ from pyodide.ffi import create_proxy
 
 def show_selector():
     dg = new_window("Select a quickstart", closable=False)
-    dg.set_size('300px', '300px')
-    dg.set_position('40','40')
+    dg.window.set_size('300px', '300px')
+    dg.window.set_position('40','40')
     cmp1 = SearchableList1()
     cmp1.items = [Item(qs.title, qs.description, {'quickstart': qs}) for qs in quickstart_list()]
     cmp1.placeholder = 'Search or select below...'

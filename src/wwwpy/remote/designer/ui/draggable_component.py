@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Tuple, List, Callable
 
 import js
@@ -143,23 +144,26 @@ def clientY(event: js.MouseEvent | js.TouchEvent):
     return event.clientY if hasattr(event, 'clientY') else list(event.targetTouches)[0].clientY
 
 
-def new_window(title: str, closable=True):
-    component = DraggableComponent()
+@dataclass
+class WindowResult:
+    window: DraggableComponent
+
+    @property
+    def element(self):
+        return self.window.element
+
+
+def new_window(title: str, closable=True) -> WindowResult:
+    win = DraggableComponent()
     # language=html
-    fragment = js.document.createRange().createContextualFragment(f"""
-<div slot='title' style="display: flex; justify-content: space-between; align-items: center;">
-    {title} 
-    <button data-name="close" style="cursor:pointer">X</button>
-</div>
-            """)
     ct = ClosableTitle()
     ct.element.setAttribute('slot', 'title')
     ct.title.innerHTML = title
-    ct.close.onclick = lambda ev: component.element.remove()
-    component.element.append(ct.element)
+    ct.close.onclick = lambda ev: win.element.remove()
+    win.element.append(ct.element)
     if not closable:
         ct.close.style.display = 'none'
-    return component
+    return WindowResult(win)
 
 
 class ClosableTitle(wpc.Component):
@@ -169,8 +173,7 @@ class ClosableTitle(wpc.Component):
     def init_component(self):
         # language=html
         self.element.innerHTML = f"""
-<div style="display: flex; justify-content: space-between; align-items: center;">
-    <span data-name='title'></span>&nbsp;
-    <button data-name="close" style="cursor:pointer">X</button>
-</div>
-            """
+<div style="display: flex; justify-content: center; align-items: center;">
+    <span data-name='title' style="flex-grow: 1; text-align: center;"></span>&nbsp;
+    <button data-name="close" style="cursor:pointer;">X</button>
+</div> """
