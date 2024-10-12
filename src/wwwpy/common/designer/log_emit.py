@@ -13,8 +13,12 @@ class _CustomHandler(logging.Handler):
 
 
 def add_once(emit: Callable[[str], None]):
+    for log_name in ['common', 'remote', 'server']:
+        log = logging.getLogger(log_name)
+        log.setLevel(logging.DEBUG)
+
     root = logging.getLogger()
-    root.setLevel(logging.DEBUG)
+
     for handler in root.handlers:
         if isinstance(handler, _CustomHandler):
             return
