@@ -44,7 +44,7 @@ all = ["foo_package[test,dev,pypy]"]
 
 
 [project.entry-points.pytest11]
-pytest_wwwpy = "wwwpy.server.pytest.pytest_plugin"
+pytest_wwwpy = "wwwpy.server.pytestlib.pytest_plugin"
 
 
 # the following should be already the default see: https://setuptools.pypa.io/en/latest/userguide/datafiles.html
