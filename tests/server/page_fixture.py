@@ -32,9 +32,14 @@ class PageFixture:
         return self.page.evaluate(f'pyodide.runPythonAsync(`{python}`)')
 
     def assert_evaluate(self, python: str):
+        """Assert on the evaluated python expression. So the evaluated expression should return a Tuple[bool, str]
+        This pass through javascript so, beware of using `` separators"""
         __tracebackhide__ = True
         t = self.evaluate(python)
-        assert t[0], t[1]
+        if isinstance(t, tuple) or isinstance(t, list):
+            assert t[0], t[1]
+        else:
+            assert t
 
     def start_remote(self, remote_init_content: str = None):
         remote_init = self.remote_init
