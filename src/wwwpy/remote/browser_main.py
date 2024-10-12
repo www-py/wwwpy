@@ -67,5 +67,5 @@ async def _invoke_browser_main(reload=False):
                 remote.main()
     finally:
         if dm.is_active():
-            from .designer.ui import toolbox  # noqa
-            js.document.body.insertAdjacentHTML('beforeend', '<wwwpy-toolbox></wwwpy-toolbox>')
+            from wwwpy.remote.designer.ui import dev_mode_component
+            dev_mode_component.show()
