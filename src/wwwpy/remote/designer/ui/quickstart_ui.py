@@ -1,5 +1,5 @@
 from wwwpy.common.quickstart import quickstart_list
-from wwwpy.remote.designer.ui.draggable_component import new_window
+from wwwpy.remote.designer.ui.draggable_component import new_window, WindowResult
 from wwwpy.remote.designer.ui.searchable_list_1 import SearchableList1, Item
 import js
 from pyodide.ffi import create_proxy

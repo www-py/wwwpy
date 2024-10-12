@@ -1,13 +1,18 @@
 import sys
+from datetime import datetime, timedelta
 from pathlib import Path
+from time import sleep
 
 import pytest
 from playwright.sync_api import Page
 
+from tests import timeout_multiplier
 from wwwpy.bootstrap import wrap_in_tryexcept
 from wwwpy.common import reloader
 from wwwpy.server import configure
+import logging
 
+logger = logging.getLogger(__name__)
 
 class PageFixture:
     def __init__(self, page: Page, tmp_path: Path, webserver):
@@ -35,7 +40,30 @@ class PageFixture:
         """Assert on the evaluated python expression. So the evaluated expression should return a Tuple[bool, str]
         This pass through javascript so, beware of using `` separators"""
         __tracebackhide__ = True
+
         t = self.evaluate(python)
+        if isinstance(t, tuple) or isinstance(t, list):
+            assert t[0], t[1]
+        else:
+            assert t
+
+    def assert_evaluate_retry(self, python: str, millis=5000):
+        """Assert on the evaluated python expression. So the evaluated expression should return a Tuple[bool, str]
+        This pass through javascript so, beware of using `` separators"""
+        __tracebackhide__ = True
+        millis = millis * timeout_multiplier()
+        delta = timedelta(milliseconds=millis)
+        start = datetime.utcnow()
+        while True:
+            t = self.evaluate(python)
+            expr = t[0] if isinstance(t, tuple) or isinstance(t, list) else t
+            if expr:
+                return
+            sleep(0.2)
+            if datetime.utcnow() - start > delta:
+                break
+            logger.warning(f"retrying assert_evaluate_retry")
+
         if isinstance(t, tuple) or isinstance(t, list):
             assert t[0], t[1]
         else:
@@ -43,8 +71,8 @@ class PageFixture:
 
     def start_remote(self, remote_init_content: str = None):
         remote_init = self.remote_init
-        remote_init.parent.mkdir(parents=True, exist_ok=True)
         if remote_init_content:
+            remote_init.parent.mkdir(parents=True, exist_ok=True)
             remote_init.write_text(remote_init_content)
         configure.convention(self.tmp_path, self.webserver, dev_mode=self.dev_mode)
         self.webserver.start_listen()

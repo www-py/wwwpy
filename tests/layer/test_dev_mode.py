@@ -8,16 +8,6 @@ def test_dev_mode_disabled__should_NOT_create_canonical_components(dyn_sys_path:
     assert get_all_paths_with_hashes(dyn_sys_path.path) == set()
 
 
-def test_dev_mode_empty_folder__should_create_canonical_components(dyn_sys_path: DynSysPath):
-    configure.convention(dyn_sys_path.path, dev_mode=True)
-
-    dir1 = modlib._find_package_directory('wwwpy.common') / 'quickstart/basic'
-    dir2 = dyn_sys_path.path
-    dir1_set = get_all_paths_with_hashes(dir1)
-    dir2_set = get_all_paths_with_hashes(dir2)
-    assert dir1_set == dir2_set, "Directories do not match!"
-
-
 def test_dev_mode_non_empty_folder_but_no_remote__should_not_fail(dyn_sys_path: DynSysPath):
     # dyn_sys_path.path.mkdir('some-folder')
     (dyn_sys_path.path / 'some-folder').mkdir()

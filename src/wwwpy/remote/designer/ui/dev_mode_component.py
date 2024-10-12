@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-from pathlib import Path
-
-import wwwpy.remote.component as wpc
 import js
 
+import wwwpy.remote.component as wpc
 from wwwpy.common import files
-from wwwpy.common.designer import dev_mode
 from wwwpy.remote import dict_to_js, dict_to_py
-from pyodide.ffi import create_proxy
+from . import quickstart_ui
 from .toolbox import ToolboxComponent
 
 
@@ -23,6 +20,7 @@ class classproperty(property):
 
 class DevModeComponent(wpc.Component, tag_name='wwwpy-dev-mode'):
     toolbox: ToolboxComponent = wpc.element()
+    _quickstart: bool
 
     @classproperty
     def instance(cls) -> DevModeComponent:  # noqa
@@ -44,7 +42,10 @@ class DevModeComponent(wpc.Component, tag_name='wwwpy-dev-mode'):
         self.shadow.innerHTML = """
 <wwwpy-toolbox data-name="toolbox"></wwwpy-toolbox>        
         """
+        from wwwpy.common import quickstart
+        self._quickstart = quickstart.is_empty_project(files._bundle_path)
+        if self._quickstart:
+            quickstart_ui.show_selector()
 
-        # from wwwpy.common.quickstart import is_empty_project
-        # if is_empty_project(Path(files._bundle_path)):
-        #     self.toolbox.element.style.display = 'none'
+    def quickstart_visible(self) -> bool:
+        return self._quickstart

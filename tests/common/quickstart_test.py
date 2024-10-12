@@ -1,4 +1,4 @@
-from wwwpy.common.quickstart import quickstart_list
+from wwwpy.common.quickstart import quickstart_list, is_empty_project
 
 
 def test_quickstart_list():
@@ -15,7 +15,19 @@ def test_basic():
     assert basic.title == 'Basic setup for a new project'
     assert basic.description == 'It contains just a simple Component with almost no content'
 
+
 def test_basic_should_be_the_first():
     target = quickstart_list()
     first = target[0]
     assert first.name == 'basic'
+
+
+def test_empty_project(tmp_path):
+    assert is_empty_project(tmp_path)
+
+
+def test_not_empty_project(tmp_path):
+    remote = tmp_path / 'remote'
+    remote.mkdir()
+    (remote / '__init__.py').write_text('# some content')
+    assert not is_empty_project(tmp_path)
