@@ -95,21 +95,16 @@ class FilesystemTree(wpc.Component):
     def _view__click(self, event):
         if not self.is_file():
             return
-        component = DraggableComponent()
+        win = new_window(f'{self.path}', closable=True)
+        component = win.window
         js.document.body.append(component.element)
-        fragment = js.document.createRange().createContextualFragment(f"""
-        <span slot='title'>{self.path} <button data-name="close" style="cursor:pointer">X</button></span>
-        <pre data-name="pre1"></pre>
-        """)
-        selector = fragment.querySelector(f'[data-name="close"]')
-        selector.onclick = lambda ev: component.element.remove()
-        pre1: js.HTMLElement = fragment.querySelector(f'[data-name="pre1"]')
+
+        pre1: js.HTMLElement = js.document.createElement('pre')
         pre1.innerText = self.path.read_text()
-        component.element.append(fragment)
+        win.element.append(pre1)
 
 
 def show_explorer():
-    from js import document
     import js
 
     component = new_window('Browse local filesystem')
