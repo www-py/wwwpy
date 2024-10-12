@@ -111,4 +111,5 @@ def show_explorer():
     tree = FilesystemTree()
     tree.show_path('/')
     component.element.append(tree.element)
+    # todo use DevModeComponent.instance
     js.document.body.append(component.element)
