@@ -291,7 +291,8 @@ def is_inside_toolbar(element: HTMLElement | None):
 
 def _default_drop_zone_accept(drop_zone: DropZone):
     name = drop_zone.element.tagName.lower()
-    accept = not (name == 'body' or name == 'html' or name == ToolboxComponent.component_metadata.tag_name)
+    from wwwpy.remote.designer.ui.dev_mode_component import DevModeComponent
+    accept = not (name == 'body' or name == 'html' or name == DevModeComponent.component_metadata.tag_name)
     return accept
 
 
