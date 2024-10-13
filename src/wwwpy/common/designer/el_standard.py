@@ -42,6 +42,8 @@ def _standard_elements_def() -> List[ElementDef]:
                 AttributeDef('autofocus', Help('Whether the control should have input focus when the page loads.', ''),
                              boolean=True),
                 AttributeDef('checked', Help('Whether the control is checked.', ''), boolean=True),
+                AttributeDef('multiple', Help('Whether the user is allowed to enter more than one value.', ''),
+                             boolean=True),
 
             ],
             events=[
@@ -56,6 +58,18 @@ def _standard_elements_def() -> List[ElementDef]:
             help=Help('A generic container element.',
                       'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div')
         ),
+        ElementDef(
+            'progress', 'js.HTMLProgressElement',
+            help=Help('A progress bar.',
+                      'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/progress'),
+            attributes=[
+                AttributeDef('value', Help('The current value of the progress bar.', '')),
+                AttributeDef('max', Help('The maximum value of the progress bar.', '')),
+            ],
+            events=[
+                EventDef('click', Help('The progress bar was clicked.', '')),
+                ])
+
 
     ]
 
@@ -79,6 +93,7 @@ def _generateHtml(element_def: ElementDef, name: str) -> str:
     func = {
         'button': _def(),
         'input': lambda: f"""<input data-name="{name}" placeholder="{name}">""",
+        'progress': lambda: f"""<progress data-name="{name}" value="70" max="100">70 %</progress>""",
     }
     gen_html = func.get(tag_name, None)
     html = '\n' + gen_html() if gen_html else '' + ElementDef.default_gen_html(element_def, name)
