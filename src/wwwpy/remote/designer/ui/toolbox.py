@@ -69,6 +69,14 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
     _select_clear_btn: js.HTMLElement = wpc.element()
     components_marker = '-components-'
 
+    @property
+    def visible(self) -> bool:
+        return self.dragComp1.element.style.display != 'none'
+
+    @visible.setter
+    def visible(self, value: bool):
+        self.dragComp1.element.style.display = 'block' if value else 'none'
+
     def root_element(self):
         return self.shadow
 

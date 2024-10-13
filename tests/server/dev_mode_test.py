@@ -33,6 +33,12 @@ DevModeComponent.instance.quickstart is not None
     # language=python
     fixture.assert_evaluate_retry("""
 from wwwpy.remote.designer.ui.dev_mode_component import DevModeComponent
+not DevModeComponent.instance.toolbox.visible
+""")
+
+    # language=python
+    fixture.assert_evaluate_retry("""
+from wwwpy.remote.designer.ui.dev_mode_component import DevModeComponent
 not DevModeComponent.instance.quickstart.accept_quickstart('basic')
 """)
 
@@ -43,6 +49,12 @@ DevModeComponent.instance.quickstart.window.element.isConnected is False
 """)
 
     expect(fixture.page.locator('component-1')).to_be_attached()
+
+    # language=python
+    fixture.assert_evaluate_retry("""
+from wwwpy.remote.designer.ui.dev_mode_component import DevModeComponent
+DevModeComponent.instance.toolbox.visible
+""")
     return
     def project_is_right():
         if is_empty_project(fixture.tmp_path):

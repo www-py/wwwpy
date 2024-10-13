@@ -49,5 +49,6 @@ class DevModeComponent(wpc.Component, tag_name='wwwpy-dev-mode-component'):
             if await rpc.quickstart_possible():
                 self.quickstart = quickstart_ui.create()
                 self.shadow.append(self.quickstart.window.element)
+                self.toolbox.visible = False
 
         set_timeout(check_for_quickstart)
