@@ -78,6 +78,7 @@ def _generateHtml(element_def: ElementDef, name: str) -> str:
 
     func = {
         'button': _def(),
+        'input': lambda: f"""<input data-name="{name}" placeholder="{name}">""",
     }
     gen_html = func.get(tag_name, None)
     html = '\n' + gen_html() if gen_html else '' + ElementDef.default_gen_html(element_def, name)
