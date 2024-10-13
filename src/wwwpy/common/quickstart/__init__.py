@@ -21,7 +21,7 @@ def setup_quickstart(directory: Path, quickstart_name: str):
     # _delete_empty_project(directory)
     shutil.copytree(source, directory, dirs_exist_ok=True)
     logger.warning(f'Quickstart applied {quickstart_name} to {directory}')
-    print_tree(directory, logger.warning)
+    # print_tree(directory, logger.warning)
 
 def _delete_empty_project(directory: Path):
     assert is_empty_project(directory), f'project is not empty: {directory}'
