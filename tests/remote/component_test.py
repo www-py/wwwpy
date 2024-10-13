@@ -1,6 +1,6 @@
 from js import document, HTMLElement, Event
 
-from wwwpy.remote.component import Component, Metadata, attribute, element
+from wwwpy.remote.component import Component, attribute, element
 
 
 def test_component_metadata():
@@ -234,6 +234,15 @@ def to_js(o):
 
 class TestAttributes:
 
+    def test_verify_value(self):
+        class Comp1(Component):
+            text: str = attribute()
+
+        comp = Comp1()
+        comp.text = 'abc'
+        assert 'abc' == comp.text
+        assert 'abc' == comp.element.getAttribute('text')
+
     def test_observed_attributes__with_default_metadata(self):
         calls = []
 
@@ -290,3 +299,26 @@ class TestAttributes:
         comp = document.createElement('comp-9')
         comp.setAttribute('attr1', 'x')
         assert 'Comp9b' == comp.innerHTML
+
+    # def test_attribute__present(self):
+    #     class Comp11(Component):
+    #         attr1 = attribute()
+    #
+    #     comp = Comp11()
+    #
+    #     assert not comp.attr1.present
+    #     comp.attr1 = 'x'
+    #     assert comp.attr1.present
+    #
+    # def test_attribute__toggle(self):
+    #     class Comp11(Component):
+    #         attr1:Attribute = attribute()
+    #
+    #     comp = Comp11()
+    #
+    #     comp.attr1.toggle()
+    #     assert comp.attr1.present
+    #
+    #     assert not comp.attr1.present
+    #     comp.attr1 = 'x'
+    #     assert comp.attr1.present

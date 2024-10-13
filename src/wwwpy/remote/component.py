@@ -215,6 +215,14 @@ window.$ClassName = $ClassName;
 """
 
 
+# class Attribute(str):
+#     _attr: attribute
+#     present: bool
+#
+#     def toggle(self):
+#         pass
+
+
 class attribute:
 
     def __init__(self):
