@@ -61,44 +61,6 @@ def test_append_tag_to_document():
     assert 'hello456' in document.body.innerHTML
 
 
-def test_observed_attributes__with_default_metadata():
-    calls = []
-
-    class Comp3(Component):
-        text = attribute()
-
-        def attributeChangedCallback(self, name, oldValue, newValue):
-            calls.append((name, oldValue, newValue))
-
-    comp = Comp3()
-    comp.text = 'abc'
-
-    assert calls == [('text', None, 'abc')]
-    calls.clear()
-
-    comp.element.setAttribute('text', 'def')
-    assert calls == [('text', 'abc', 'def')]
-
-
-def test_observed_attributes__with_custom_metadata():
-    calls = []
-
-    class Comp4(Component, tag_name='comp-4'):
-        text = attribute()
-
-        def attributeChangedCallback(self, name, oldValue, newValue):
-            calls.append((name, oldValue, newValue))
-
-    comp = Comp4()
-    comp.text = 'abc'
-
-    assert calls == [('text', None, 'abc')]
-    calls.clear()
-
-    comp.element.setAttribute('text', 'def')
-    assert calls == [('text', 'abc', 'def')]
-
-
 def test_redefining_an_element_should_be_ok():
     class Comp10a(Component, tag_name='comp-10'):
         pass
@@ -107,29 +69,7 @@ def test_redefining_an_element_should_be_ok():
         pass
 
 
-def test_redefined_element_should_be_ok():
-    class Comp9a(Component, tag_name='comp-9'):
-        attr1 = attribute()
-
-        def attributeChangedCallback(self, name: str, oldValue: str, newValue: str):
-            self.element.innerHTML = f'Comp9a'
-
-    comp = document.createElement('comp-9')
-    comp.setAttribute('attr1', 'x')
-    assert 'Comp9a' == comp.innerHTML
-
-    class Comp9b(Component, tag_name='comp-9'):
-        attr1 = attribute()
-
-        def attributeChangedCallback(self, name: str, oldValue: str, newValue: str):
-            self.element.innerHTML = f'Comp9b'
-
-    comp = document.createElement('comp-9')
-    comp.setAttribute('attr1', 'x')
-    assert 'Comp9b' == comp.innerHTML
-
-
-class TestElementAttribute:
+class TestElement:
 
     def test_HTMLElement_attribute_not_found_should_raise(self):
         class Comp5(Component):
@@ -284,8 +224,69 @@ class TestElementEventBinding:
 
         assert [1] == events
 
+
 # todo use dict_to_js
 def to_js(o):
     import js
     import pyodide
     return pyodide.ffi.to_js(o, dict_converter=js.Object.fromEntries)
+
+
+class TestAttributes:
+
+    def test_observed_attributes__with_default_metadata(self):
+        calls = []
+
+        class Comp3(Component):
+            text = attribute()
+
+            def attributeChangedCallback(self, name, oldValue, newValue):
+                calls.append((name, oldValue, newValue))
+
+        comp = Comp3()
+        comp.text = 'abc'
+
+        assert calls == [('text', None, 'abc')]
+        calls.clear()
+
+        comp.element.setAttribute('text', 'def')
+        assert calls == [('text', 'abc', 'def')]
+
+    def test_observed_attributes__with_custom_metadata(self):
+        calls = []
+
+        class Comp4(Component, tag_name='comp-4'):
+            text = attribute()
+
+            def attributeChangedCallback(self, name, oldValue, newValue):
+                calls.append((name, oldValue, newValue))
+
+        comp = Comp4()
+        comp.text = 'abc'
+
+        assert calls == [('text', None, 'abc')]
+        calls.clear()
+
+        comp.element.setAttribute('text', 'def')
+        assert calls == [('text', 'abc', 'def')]
+
+    def test_redefined_element_should_be_ok(self):
+        class Comp9a(Component, tag_name='comp-9'):
+            attr1 = attribute()
+
+            def attributeChangedCallback(self, name: str, oldValue: str, newValue: str):
+                self.element.innerHTML = f'Comp9a'
+
+        comp = document.createElement('comp-9')
+        comp.setAttribute('attr1', 'x')
+        assert 'Comp9a' == comp.innerHTML
+
+        class Comp9b(Component, tag_name='comp-9'):
+            attr1 = attribute()
+
+            def attributeChangedCallback(self, name: str, oldValue: str, newValue: str):
+                self.element.innerHTML = f'Comp9b'
+
+        comp = document.createElement('comp-9')
+        comp.setAttribute('attr1', 'x')
+        assert 'Comp9b' == comp.innerHTML
