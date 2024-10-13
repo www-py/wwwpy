@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 class Component1(wpc.Component, tag_name='component-1'):
     multiple_checkbox: js.HTMLInputElement = wpc.element()
     upload1: UploadComponent = wpc.element()
+    rpc_issue: js.HTMLHeadingElement = wpc.element()
 
     def init_component(self):
         # language=html
@@ -24,10 +25,15 @@ class Component1(wpc.Component, tag_name='component-1'):
  Multiple files upload</label>
  
 <wwwpy-quickstart-upload data-name="upload1"></wwwpy-quickstart-upload>
-<h2>You need to restart the server process because it does not support the server.rpc complete hot-reload yet</h2>  
+<h2 data-name="rpc_issue">You need to restart the server process because it does not support the server.rpc complete hot-reload yet</h2>  
  </div>               
         """
         self.multiple_checkbox.checked = self.upload1.multiple
+        try:
+            import server.rpc
+            self.rpc_issue.style.display = 'none'
+        except ImportError as e:
+            pass
 
     async def multiple_checkbox__input(self, event):
         js.console.log('handler multiple_checkbox__input event =', event)
