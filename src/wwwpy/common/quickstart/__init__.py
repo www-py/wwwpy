@@ -1,17 +1,37 @@
 from __future__ import annotations
 
+import logging
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
 from wwwpy.common.designer.element_library import NamedListMap
+from wwwpy.common.tree import print_tree
+
+_known = {'common', 'remote', 'server'}
+
+
+logger = logging.getLogger(__name__)
 
 
 def setup_quickstart(directory: Path, quickstart_name: str):
     assert is_empty_project(directory), f'project is not empty: {directory}'
     source = Path(__file__).parent / quickstart_name
     assert source.exists(), f'quickstart not found: {source}'
+    # _delete_empty_project(directory)
     shutil.copytree(source, directory, dirs_exist_ok=True)
+    logger.warning(f'Quickstart applied {quickstart_name} to {directory}')
+    print_tree(directory, logger.warning)
+
+def _delete_empty_project(directory: Path):
+    assert is_empty_project(directory), f'project is not empty: {directory}'
+    for p in _known:
+        sub = directory / p
+        if sub.exists():
+            try:
+                shutil.rmtree(sub)
+            except Exception as e:
+                pass
 
 
 # def _check_quickstart(directory: Path):
@@ -35,7 +55,7 @@ def _make_hotreload_work(root_path: Path):
         package.mkdir(exist_ok=True)
         (package / '__init__.py').write_text('')
 
-    for p in ['common', 'remote', 'server']:
+    for p in _known:
         _write_empty_package(p)
 
 
@@ -89,8 +109,7 @@ def is_empty_project(root_path: Path | str):
 
         return all(blacklisted(item) or is_init(item) for item in directory.iterdir())
 
-    known = {'common', 'remote', 'server'}
-    known_empty = all(empty(folder) for folder in known)
-    rest_ok = all(i.name in known or blacklisted(i) for i in root_path.iterdir())
+    known_empty = all(empty(folder) for folder in _known)
+    rest_ok = all(i.name in _known or blacklisted(i) for i in root_path.iterdir())
     result = known_empty and rest_ok
     return result

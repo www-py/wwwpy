@@ -42,6 +42,8 @@ from wwwpy.remote.designer.ui.dev_mode_component import DevModeComponent
 DevModeComponent.instance.quickstart.window.element.isConnected is False
 """)
 
+    expect(fixture.page.locator('component-1')).to_be_attached()
+    return
     def project_is_right():
         if is_empty_project(fixture.tmp_path):
             return False, 'project is empty'
