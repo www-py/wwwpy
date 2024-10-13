@@ -26,6 +26,18 @@ def setup_quickstart(directory: Path, quickstart_name: str):
 #     items = list(directory.iterdir())
 #     return all(item.name.startswith('.') for item in items)
 
+def _make_hotreload_work(root_path: Path):
+    if not is_empty_project(root_path):
+        return
+
+    def _write_empty_package(name: str):
+        package = root_path / name
+        package.mkdir(exist_ok=True)
+        (package / '__init__.py').write_text('')
+
+    for p in ['common', 'remote', 'server']:
+        _write_empty_package(p)
+
 
 @dataclass
 class Quickstart:
@@ -72,7 +84,10 @@ def is_empty_project(root_path: Path | str):
         if init.exists() and init.read_text().strip() != '':
             return False
 
-        return all(blacklisted(item) for item in directory.iterdir())
+        def is_init(item: Path) -> bool:
+            return item.name == '__init__.py'
+
+        return all(blacklisted(item) or is_init(item) for item in directory.iterdir())
 
     known = {'common', 'remote', 'server'}
     known_empty = all(empty(folder) for folder in known)

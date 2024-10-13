@@ -33,6 +33,8 @@ def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
         remote_rpc_packages.add('wwwpy.remote.designer')
         remote_rpc_packages.add('wwwpy.remote.designer.rpc')
         log_emit.add_once(print)
+        from wwwpy.common import quickstart
+        quickstart._make_hotreload_work(directory)
 
     sys.path.insert(0, CustomStr(directory))
     sys.meta_path.insert(0, CustomFinder(remote_rpc_packages))

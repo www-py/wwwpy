@@ -32,6 +32,12 @@ def test_empty_project2(tmp_path):
     assert is_empty_project(tmp_path)
 
 
+def test_empty_project3(tmp_path):
+    (tmp_path / 'remote').mkdir()
+    (tmp_path / 'remote/__init__.py').touch()
+    assert is_empty_project(tmp_path)
+
+
 def test_not_empty_project(tmp_path):
     remote = tmp_path / 'remote'
     remote.mkdir()

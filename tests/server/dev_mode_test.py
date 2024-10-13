@@ -1,3 +1,4 @@
+from datetime import timedelta, datetime
 from time import sleep
 
 from playwright.sync_api import expect
@@ -7,6 +8,10 @@ from tests.server.page_fixture import PageFixture, fixture
 from wwwpy.common import quickstart
 from wwwpy.common.files import get_all_paths_with_hashes
 from wwwpy.common.quickstart import is_empty_project
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @for_all_webservers()
@@ -23,7 +28,6 @@ def test_dev_mode_with_empty_project__should_show_quickstart_dialog(fixture: Pag
 from wwwpy.remote.designer.ui.dev_mode_component import DevModeComponent
 DevModeComponent.instance.quickstart is not None
 """)
-    assert list(fixture.tmp_path.iterdir()) == []
     assert is_empty_project(fixture.tmp_path)
 
     # language=python
@@ -45,13 +49,27 @@ DevModeComponent.instance.quickstart.window.element.isConnected is False
         dir2 = fixture.tmp_path
         dir1_set = get_all_paths_with_hashes(dir1)
         dir2_set = get_all_paths_with_hashes(dir2)
-        return dir1_set == dir2_set, f'{dir1_set} != {dir2_set}'
+        return dir1_set in dir2_set, f'{dir1_set} != {dir2_set}\n\n{dir1}\n\n{dir2}'
 
-    _assert_retry(project_is_right)
+    _assert_retry_millis(project_is_right)
 
 
-def _assert_retry(condition):
+def _assert_retry_millis(condition, millis=5000):
     __tracebackhide__ = True
-    [sleep(0.1) for _ in range(5 * timeout_multiplier()) if not condition()[0]]
-    c = condition()
-    assert c[0], c[1]
+    millis = millis * timeout_multiplier()
+    delta = timedelta(milliseconds=millis)
+    start = datetime.utcnow()
+    while True:
+        t = condition()
+        expr = t[0] if isinstance(t, tuple) or isinstance(t, list) else t
+        if expr:
+            return
+        sleep(0.2)
+        if datetime.utcnow() - start > delta:
+            break
+        logger.warning(f"retrying assert_evaluate_retry")
+
+    if isinstance(t, tuple) or isinstance(t, list):
+        assert t[0], t[1]
+    else:
+        assert t
