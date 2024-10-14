@@ -40,7 +40,7 @@ test = ["tox", "pytest", "playwright", "pytest-playwright", "pytest-xvirt", "lib
 dev = ["webtypy", "playwright"]
 pypi = ["twine", "build"]
 # pip install -e ".[all]" or pip install -e ".[test,dev]"
-all = ["foo_package[test,dev,pypy]"]
+all = ["wwwpy[test,dev,pypi]"]
 
 
 [project.entry-points.pytest11]
