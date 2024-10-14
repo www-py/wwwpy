@@ -21,17 +21,8 @@ def test_hot_reload__modified(fixture: PageFixture):
 @for_all_webservers()
 def test_hot_reload__created(fixture: PageFixture):
     fixture.dev_mode = True
-    fixture.start_remote(_created_python)
-    expect(fixture.page.locator('id=msg1')).to_have_value('exists=False')
-
-    (fixture.remote / 'component1.py').write_text(
-        "import js; js.console.log('comp1!')\n" +
-        """js.document.body.innerHTML = '<input id="tag1" value="import ok">'""")
-    expect(fixture.page.locator('id=msg1')).to_have_value('exists=True')
-
-
-# language=python
-_created_python = """
+    # language=python
+    fixture.start_remote("""
 from pathlib import Path   
 from js import document, console
 component1_py = Path(__file__).parent / 'component1.py'
@@ -41,9 +32,14 @@ console.log('importing component1')
 try:
     import component1
 except:
-    pass
-    
-"""
+    pass 
+""")
+    expect(fixture.page.locator('id=msg1')).to_have_value('exists=False')
+
+    (fixture.remote / 'component1.py').write_text(
+        "import js; js.console.log('comp1!')\n" +
+        """js.document.body.innerHTML = '<input id="tag1" value="import ok">'""")
+    expect(fixture.page.locator('id=msg1')).to_have_value('exists=True')
 
 
 @for_all_webservers()
