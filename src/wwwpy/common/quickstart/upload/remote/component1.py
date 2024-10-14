@@ -3,8 +3,8 @@ import logging
 
 import wwwpy.remote.component as wpc
 
-from remote.upload_component import UploadComponent
-from wwwpy.common.quickstart.upload.remote.rpc_issue import RpcIssueAlert
+from .upload_component import UploadComponent
+from .rpc_issue import RpcIssueAlert
 
 logger = logging.getLogger(__name__)
 
