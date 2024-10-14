@@ -101,7 +101,7 @@ class DraggableComponent(wpc.Component, tag_name='wwwpy-draggable-component'):
         new_left = self.container_div.offsetLeft - delta_x
         new_top = self.container_div.offsetTop - delta_y
 
-        self.set_position(new_left, new_top)
+        self.set_position(f'{new_left}px', f'{new_top}px')
         self._on_geometry_change()
 
     def _move_stop(self, event):
@@ -116,16 +116,20 @@ class DraggableComponent(wpc.Component, tag_name='wwwpy-draggable-component'):
 
     def set_geometry(self, geometry_tuple):
         top, left, width, height = geometry_tuple
-        self.set_position(left, top)
+        self.set_position(f"{top}px", f"{left}px")
         self.set_size(f"{height}px", f"{width}px")
 
-    def set_position(self, left, top):
-        self.container_div.style.top = f"{top}px"
-        self.container_div.style.left = f"{left}px"
+    def set_position(self, left: str | None = None, top: str | None = None):
+        if top:
+            self.container_div.style.top = top
+        if left:
+            self.container_div.style.left = left
 
-    def set_size(self, h, w):
-        self.container_div.style.width = w
-        self.container_div.style.height = h
+    def set_size(self, height: str | None = None, width: str | None = None):
+        if height:
+            self.container_div.style.height = height
+        if width:
+            self.container_div.style.width = width
 
     def acceptable_geometry(self) -> bool:
         top, left, width, height = self.geometry()

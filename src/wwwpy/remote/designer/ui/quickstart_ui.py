@@ -12,8 +12,8 @@ class QuickstartUI:
 
     def __init__(self):
         self.window: DraggableComponent = new_window("Select a quickstart", closable=False).window
-        self.window.set_size('300px', '300px')
-        self.window.set_position('40', '40')
+        # self.window.set_size('300px', '300px')
+        self.window.set_position('5px', '5px')
         cmp1 = SearchableList1()
         cmp1.root_element().style.color = 'white'
         quickstart_list = quickstart.quickstart_list()

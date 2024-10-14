@@ -48,7 +48,7 @@ async def _invoke_browser_main(reload=False):
             log_redirect.redirect_logging()
 
         try:
-            js.document.body.innerHTML = f'Going to import remote (reload={reload})'
+            js.document.body.innerText = f'Going to import the "remote" package'
             import remote
             if reload:
                 import importlib
