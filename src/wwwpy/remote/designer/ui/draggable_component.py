@@ -116,7 +116,7 @@ class DraggableComponent(wpc.Component, tag_name='wwwpy-draggable-component'):
 
     def set_geometry(self, geometry_tuple):
         top, left, width, height = geometry_tuple
-        self.set_position(f"{top}px", f"{left}px")
+        self.set_position(f"{left}px", f"{top}px")
         self.set_size(f"{height}px", f"{width}px")
 
     def set_position(self, left: str | None = None, top: str | None = None):
