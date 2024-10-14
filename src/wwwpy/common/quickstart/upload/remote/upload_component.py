@@ -66,25 +66,30 @@ class UploadProgressComponent(wpc.Component):
 
         logger.info(f'upload file: {file.name} {file.size} {file.type}')
         set_label('uploading...')
-        from server import rpc
-        await rpc.upload_init(file.name, file.size)
-        offset = 0
-        total_size = file.size
-        self.progress.max = total_size
-        while offset < total_size:
-            chunk: js.Blob = file.slice(offset, offset + chunk_size)
-            array_buffer = await self._read_chunk(chunk)
-            # Process the chunk_text as needed
-            logger.info(f'offset={offset}')
-            b64str = base64.b64encode(array_buffer.to_py()).decode()
-            await rpc.upload_append(file.name, b64str)
-            offset += chunk_size
-            self.progress.value = offset
-            # percentage with two decimals
-            percentage = round(offset / total_size * 100, 2)
-            set_label(f'{percentage}%')
-        set_label('done')
-        self.progress.value = total_size
+        try:
+            from server import rpc
+            await rpc.upload_init(file.name, file.size)
+            offset = 0
+            total_size = file.size
+            self.progress.max = total_size
+            while offset < total_size:
+                chunk: js.Blob = file.slice(offset, offset + chunk_size)
+                array_buffer = await self._read_chunk(chunk)
+                # Process the chunk_text as needed
+                logger.info(f'offset={offset}')
+                b64str = base64.b64encode(array_buffer.to_py()).decode()
+                await rpc.upload_append(file.name, b64str)
+                offset += chunk_size
+                self.progress.value = offset
+                # percentage with two decimals
+                percentage = round(offset / total_size * 100, 2)
+                set_label(f'{percentage}%')
+            set_label('done')
+            self.progress.value = total_size
+        except Exception as e:
+            set_label(f'error: {e}')
+            logger.exception(e)
+            raise
 
     async def _read_chunk(self, blob: js.Blob) -> str:
         future: asyncio.Future = asyncio.Future()
