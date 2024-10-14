@@ -36,7 +36,7 @@ def _watch_filesystem_change_for_remote(package: str, websocket_pool: WebsocketP
         except:
             # we could send a sync_init
             import traceback
-            print(f'on_sync_events 1 {traceback.format_exc()}')
+            logger.error(f'on_sync_events 1 {traceback.format_exc()}')
 
     handler = WatchdogDebouncer(directory, timedelta(milliseconds=100), on_sync_events)
     handler.watch_directory()
@@ -61,7 +61,7 @@ def _watch_filesystem_change_for_server(package: str, callback: Callable[[str, L
                 callback(package, filt_events)
         except:
             import traceback
-            print(f'_watch_filesystem_change_for_server {traceback.format_exc()}')
+            logger.error(f'_watch_filesystem_change_for_server {traceback.format_exc()}')
 
     handler = WatchdogDebouncer(directory, timedelta(milliseconds=100), on_sync_events)
     handler.watch_directory()
@@ -79,7 +79,7 @@ def _hotreload_server(hotreload_packages: list[str]):
                 except:
                     # we could send a sync_init
                     import traceback
-                    print(f'_hotreload_server {traceback.format_exc()}')
+                    logger.error(f'_hotreload_server {traceback.format_exc()}')
 
     for package in hotreload_packages:
         _watch_filesystem_change_for_server(package, on_change)
@@ -97,7 +97,7 @@ def _remove_blacklist(events: List[sync.Event], directory: Path, package: str) -
         return False
 
     result = [e for e in events if not reject(e)]
-    _print_events(result, directory, package)
+    _print_events(result, directory, package, len(events) - len(result))
     return result
 
 
@@ -113,7 +113,7 @@ def _warning_on_multiple_clients(websocket_pool: WebsocketPool):
     websocket_pool.on_after_change.append(pool_before_change)
 
 
-def _print_events(events: List[Event], root_dir: Path, package: str):
+def _print_events(events: List[Event], root_dir: Path, package: str, blackisted_count: int):
     def accept(e: Event) -> bool:
         bad = e.is_directory and e.event_type == 'modified'
         return not bad
@@ -121,10 +121,11 @@ def _print_events(events: List[Event], root_dir: Path, package: str):
     def to_str(e: Event) -> str:
         def rel(path: str) -> str:
             return str(Path(path).relative_to(root_dir))
+
         dest_path = rel(e.dest_path) if e.dest_path else ''
         src_path = rel(e.src_path)
         return src_path if dest_path == '' else f'{src_path} -> {dest_path}'
 
-    joined = set(to_str(e) for e in events if accept(e))
-    summary = ', '.join(joined)
-    print(f'Hotreload package `{package}` count: {len(events)}. Changes summary: {summary}')
+    summary = list(set(to_str(e) for e in events if accept(e)))
+    blacklist_applied = f' [{blackisted_count} blacklisted events]' if blackisted_count > 0 else ''
+    logger.info(f'Hotreload package `{package}` events: {len(events)}. Changes summary: {summary}{blacklist_applied}')
