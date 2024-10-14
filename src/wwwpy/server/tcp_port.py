@@ -1,6 +1,10 @@
 import errno
 import socket
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 _start = (10035 - 1)  # windows doesn't like the previous port range
 _end = 30000
 
@@ -11,6 +15,7 @@ def find_port() -> int:
         _start += 1
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             try:
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 s.bind(('0.0.0.0', _start))
                 print(f'findport() -> {_start}')
                 return _start
@@ -29,7 +34,9 @@ if __name__ == '__main__':
 def is_port_busy(port:int) -> bool:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             s.bind(('0.0.0.0', port))
             return False
         except socket.error as e:
+            # logger.error(f'is_port_busy({port}) -> {e.errno}', exc_info=e)
             return e.errno == errno.EADDRINUSE

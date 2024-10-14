@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import time
 from pathlib import Path
 
 from wwwpy.bootstrap import bootstrap_routes
@@ -11,12 +12,21 @@ from wwwpy.resources import library_resources, from_directory, from_file
 from wwwpy.webserver import Webserver
 from wwwpy.webservers.available_webservers import available_webservers
 from wwwpy.websocket import WebsocketPool
+from wwwpy.server import tcp_port
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def start_default(port: int, directory: Path, dev_mode=False):
     webserver = available_webservers().new_instance()
 
     convention(directory, webserver, dev_mode=dev_mode)
+
+    while tcp_port.is_port_busy(port):
+        logger.warning(f'port {port} is busy, retrying...')
+        [time.sleep(0.1) for _ in range(20) if tcp_port.is_port_busy(port)]
 
     webserver.set_port(port).start_listen()
 
