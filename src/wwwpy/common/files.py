@@ -7,6 +7,7 @@ from io import BytesIO
 from pathlib import Path
 
 directory_blacklist = {'.mypy_cache', '__pycache__', '.DS_Store'}
+extension_blacklist = {'.py~'}
 _bundle_path = '/wwwpy_bundle'
 
 

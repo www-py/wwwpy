@@ -27,9 +27,8 @@ def _watch_filesystem_change_for_remote(package: str, websocket_pool: WebsocketP
 
     def on_sync_events(events: List[sync.Event]):
         try:
-            filt_events = _remove_blacklist(events, directory)
+            filt_events = _remove_blacklist(events, directory, package)
             if len(filt_events) > 0:
-                _print_events(filt_events, package)
                 payload = sync_impl.sync_source(directory, filt_events)
                 for client in websocket_pool.clients:
                     remote_rpc = client.rpc(DesignerRpc)
@@ -57,9 +56,8 @@ def _watch_filesystem_change_for_server(package: str, callback: Callable[[str, L
         try:
             # oh, boy. When a .py file is saved it fires the first hot reload. Then, when that file is loaded
             # the python updates the __pycache__ files, firing another (unwanted) reload: the first was enough!
-            filt_events = _remove_blacklist(events, directory)
+            filt_events = _remove_blacklist(events, directory, package)
             if len(filt_events) > 0:
-                _print_events(filt_events, package)
                 callback(package, filt_events)
         except:
             import traceback
@@ -87,17 +85,20 @@ def _hotreload_server(hotreload_packages: list[str]):
         _watch_filesystem_change_for_server(package, on_change)
 
 
-def _remove_blacklist(events: List[sync.Event], directory: Path) -> List[sync.Event]:
-    black_list = files.directory_blacklist
-
+def _remove_blacklist(events: List[sync.Event], directory: Path, package: str) -> List[sync.Event]:
     def reject(e: sync.Event) -> bool:
-        p = Path(e.src_path).relative_to(directory)
+        src_path = Path(e.src_path)
+        if src_path.suffix in files.extension_blacklist:
+            return True
+        p = src_path.relative_to(directory)
         for part in p.parts:
-            if part in black_list:
+            if part in files.directory_blacklist:
                 return True
         return False
 
-    return [e for e in events if not reject(e)]
+    result = [e for e in events if not reject(e)]
+    _print_events(result, directory, package)
+    return result
 
 
 def _warning_on_multiple_clients(websocket_pool: WebsocketPool):
@@ -112,18 +113,18 @@ def _warning_on_multiple_clients(websocket_pool: WebsocketPool):
     websocket_pool.on_after_change.append(pool_before_change)
 
 
-
-def _print_events(events: List[Event], package: str):
-    # for e in events:
-    #     print(f'  {e}')
+def _print_events(events: List[Event], root_dir: Path, package: str):
     def accept(e: Event) -> bool:
         bad = e.is_directory and e.event_type == 'modified'
         return not bad
 
     def to_str(e: Event) -> str:
-        return e.src_path if e.dest_path == '' else f'{e.src_path} -> {e.dest_path}'
+        def rel(path: str) -> str:
+            return str(Path(path).relative_to(root_dir))
+        dest_path = rel(e.dest_path) if e.dest_path else ''
+        src_path = rel(e.src_path)
+        return src_path if dest_path == '' else f'{src_path} -> {dest_path}'
 
     joined = set(to_str(e) for e in events if accept(e))
     summary = ', '.join(joined)
-    print(f'Hotreload `{package}` count: {len(events)}. Changes summary: {summary}')
-
+    print(f'Hotreload package `{package}` count: {len(events)}. Changes summary: {summary}')

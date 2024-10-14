@@ -72,18 +72,19 @@ def test_hot_reload__directory_blacklist(fixture: PageFixture):
         # language=python
         """from pathlib import Path; from js import document; import glob
 rem = Path(__file__).parent
-txt_list = str([str(p.relative_to(rem)) for p in rem.rglob('*.txt')])
+txt_list = str([str(p.relative_to(rem)) for p in rem.rglob("**/*") if p.suffix in {'.txt', '.py~'} ])
 document.body.innerHTML = f'<input id="msg1" value="{txt_list}">'
 """)
 
     expect(fixture.page.locator('id=msg1')).to_have_value("[]")
-    
+
     def write_file(name: str):
         file = fixture.remote / name
         file.parent.mkdir(parents=True, exist_ok=True)
         file.write_text(f'content of {name}')
 
     [write_file(f'{not_ok}/f1.txt') for not_ok in files.directory_blacklist]
+    write_file('not_ok/f1.py~')
     write_file('ok/f1.txt')
 
     expect(fixture.page.locator('id=msg1')).to_have_value("['ok/f1.txt']")
