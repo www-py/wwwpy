@@ -24,3 +24,12 @@ def find_port() -> int:
 if __name__ == '__main__':
     print(find_port())
     print(find_port())
+
+
+def is_port_busy(port:int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.bind(('0.0.0.0', port))
+            return False
+        except socket.error as e:
+            return e.errno == errno.EADDRINUSE
