@@ -30,8 +30,11 @@ def _element_lbl(element: HTMLElement) -> str:
 
 
 def _element_path_lbl(ep: ElementPath | None) -> str:
+    from wwwpy.common import modlib
+    class_file_path = modlib._find_module_path(ep.class_module)
+    cfp = '' if not class_file_path else f'{class_file_path.name}::'
     lbl = '' if not ep.data_name else f' ({ep.data_name})'
-    msg = f'{ep.tag_name} element {lbl} in {ep.class_name}'
+    msg = f'{ep.tag_name} element {lbl} in {cfp}{ep.class_name}'
     return msg
 
 
