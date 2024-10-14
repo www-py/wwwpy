@@ -22,13 +22,15 @@ class SearchableList1(wpc.Component, tag_name='wwwpy-searchable-list-1'):
     _container: js.HTMLDivElement = wpc.element()
     _search_box: js.HTMLInputElement = wpc.element()
     _no_results: js.HTMLDivElement = wpc.element()
+    _info: js.HTMLElement = wpc.element()
     _items: List[Item] = []
 
     def init_component(self):
         # language=html
         self.element.innerHTML = """
 <div style='padding: 0.5em'>
-    <input type='search' data-name="_search_box" placeholder='Search...' style='display: block'>
+    <input type='search' data-name="_search_box" placeholder='Search...'>
+    <span data-name="_info"></span>
     <hr>        
     <div data-name="_no_results"></div>
     <div data-name="_container"></div>
@@ -74,6 +76,8 @@ class SearchableList1(wpc.Component, tag_name='wwwpy-searchable-list-1'):
             ele.style.display = '' if show else 'none'
 
         self._no_results.innerHTML = 'No results' if visible == 0 else ''
+        item_word = 'item' if visible == 1 else 'items'
+        self._info.innerText = f'Showing {visible} of {len(self._items)} {item_word}'
 
     async def _search_box__input(self, event):
         js.console.log('handler _search_box__input event =', event)
