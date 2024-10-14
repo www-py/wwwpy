@@ -1,5 +1,6 @@
 from js import window
 from pyodide.ffi import create_once_callable
+from wwwpy.remote import set_timeout
 
 
 def pytest_sessionstart(session):
@@ -23,6 +24,3 @@ async def async_fetch_str(url: str, method: str = 'GET', data: str = '') -> str:
     text = await response.text()
     return text
 
-
-def set_timeout(callback, timeout=0):
-    window.setTimeout(create_once_callable(callback), timeout)
