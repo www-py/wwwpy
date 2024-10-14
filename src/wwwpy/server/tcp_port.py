@@ -1,7 +1,6 @@
 import errno
-import socket
-
 import logging
+import socket
 
 logger = logging.getLogger(__name__)
 
@@ -25,18 +24,20 @@ def find_port() -> int:
 
     raise Exception(f'find_port(start={_start},end={_end}) no bindable tcp port found in interval')
 
-
 if __name__ == '__main__':
     print(find_port())
     print(find_port())
 
 
-def is_port_busy(port:int) -> bool:
+def is_port_busy(port: int) -> bool:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
-            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            if hasattr(socket, "SO_REUSEPORT"):
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             s.bind(('0.0.0.0', port))
             return False
         except socket.error as e:
             # logger.error(f'is_port_busy({port}) -> {e.errno}', exc_info=e)
-            return e.errno == errno.EADDRINUSE
+            if e.errno == errno.EADDRINUSE:
+                return True
+            raise
