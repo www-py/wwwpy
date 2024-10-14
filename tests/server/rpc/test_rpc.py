@@ -7,7 +7,7 @@ from tests import for_all_webservers
 from tests.common.rpc import support3, support1, support2
 from wwwpy.exceptions import RemoteException
 from wwwpy.rpc import Module, RpcRequest, RpcRoute
-from wwwpy.server import find_port
+from wwwpy.server.find_port import find_port
 from wwwpy.unasync import unasync
 from wwwpy.webserver import Webserver
 

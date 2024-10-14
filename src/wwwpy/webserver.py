@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from time import sleep
 
 from wwwpy.http import HttpRoute
-from wwwpy.server import wait_url
+from wwwpy.server.wait_url import wait_url
 from wwwpy.websocket import WebsocketRoute
 
 

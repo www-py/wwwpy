@@ -9,7 +9,7 @@ from typing import Callable
 
 from tests import for_all_webservers
 from wwwpy.http import HttpRoute, HttpResponse, HttpRequest
-from wwwpy.server import find_port
+from wwwpy.server.find_port import find_port
 from wwwpy.server.fetch import sync_fetch_response
 from wwwpy.webserver import Webserver
 
