@@ -40,22 +40,27 @@ class WebsocketPool:
         self.clients: list[WebsocketEndpoint] = []
         self.http_route = WebsocketRoute(route, self._on_connect)
         self.on_before_change: List[PoolChangeCallback] = []
+        self.on_after_change: List[PoolChangeCallback] = []
 
-    def _notify_change(self, change: PoolEvent) -> None:
-        for callback in self.on_before_change:
+    def _notify_change(self, change: PoolEvent, listeners: List[PoolChangeCallback]) -> None:
+        for callback in listeners:
             callback(change)
 
     def _on_connect(self, endpoint: WebsocketEndpointIO) -> None:
 
-        self._notify_change(PoolEvent(Change.add, endpoint, self))
+        add = PoolEvent(Change.add, endpoint, self)
+        self._notify_change(add, self.on_before_change)
 
         def handle_remove(msg: str | bytes | None):
             if msg is None:
-                self._notify_change(PoolEvent(Change.remove, endpoint, self))
+                remove = PoolEvent(Change.remove, endpoint, self)
+                self._notify_change(remove, self.on_before_change)
                 self.clients.remove(endpoint)
+                self._notify_change(remove, self.on_after_change)
 
         endpoint.listeners.append(handle_remove)
         self.clients.append(endpoint)
+        self._notify_change(add, self.on_after_change)
 
 
 class ListenerProtocol(Protocol):

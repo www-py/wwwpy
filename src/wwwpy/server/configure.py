@@ -65,9 +65,11 @@ def convention(directory: Path, webserver: Webserver = None, dev_mode=False):
     )]
 
     if dev_mode:
-        from wwwpy.server.designer import dev_mode as dv
-        dv._hotreload_remote(['common', 'remote'], websocket_pool)
-        dv._hotreload_server(['common', 'server'])
+        from wwwpy.server.designer import dev_mode as dm
+        dm._hotreload_remote(['common', 'remote'], websocket_pool)
+        dm._hotreload_server(['common', 'server'])
+        dm._warning_on_multiple_clients(websocket_pool)
+
 
     if webserver is not None:
         webserver.set_http_route(*routes)

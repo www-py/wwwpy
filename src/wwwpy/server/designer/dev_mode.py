@@ -10,10 +10,15 @@ from wwwpy.common.filesystem.sync import Sync
 from wwwpy.common.filesystem.sync import filesystemevents_print
 from wwwpy.common.filesystem.sync import sync_delta2
 from wwwpy.remote.designer.rpc import DesignerRpc
+from wwwpy.server.filesystem_sync.any_observer import logger
 from wwwpy.server.filesystem_sync.watchdog_debouncer import WatchdogDebouncer
-from wwwpy.websocket import WebsocketPool
+from wwwpy.websocket import WebsocketPool, PoolEvent
 
 sync_impl: Sync = sync_delta2
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def _watch_filesystem_change_for_remote(package: str, websocket_pool: WebsocketPool):
@@ -90,3 +95,15 @@ def _remove(events: List[sync.Event], directory: Path, black_list: Set[str]) -> 
         return False
 
     return [e for e in events if not reject(e)]
+
+
+def _warning_on_multiple_clients(websocket_pool: WebsocketPool):
+    def pool_before_change(event: PoolEvent):
+        client_count = len(websocket_pool.clients)
+        if client_count > 1:
+            logger.warning(f'WARNING: more than one client connected, total={client_count}')
+        elif event.remove:
+            # 0 or 1
+            logger.warning(f'Connected client count: {client_count}')
+
+    websocket_pool.on_after_change.append(pool_before_change)
