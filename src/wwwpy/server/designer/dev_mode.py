@@ -7,7 +7,6 @@ from typing import List, Callable, Set
 from wwwpy.common import modlib, files
 from wwwpy.common.filesystem import sync
 from wwwpy.common.filesystem.sync import Sync
-from wwwpy.common.filesystem.sync import filesystemevents_print
 from wwwpy.common.filesystem.sync import sync_delta2
 from wwwpy.remote.designer.rpc import DesignerRpc
 from wwwpy.server.filesystem_sync.any_observer import logger
@@ -28,11 +27,13 @@ def _watch_filesystem_change_for_remote(package: str, websocket_pool: WebsocketP
 
     def on_sync_events(events: List[sync.Event]):
         try:
-            filesystemevents_print(events, package)
-            payload = sync_impl.sync_source(directory, events)
-            for client in websocket_pool.clients:
-                remote_rpc = client.rpc(DesignerRpc)
-                remote_rpc.package_file_changed_sync(package, payload)
+            filt_events = _remove_blacklist(events, directory)
+            if len(filt_events) > 0:
+                _print_events(filt_events, package)
+                payload = sync_impl.sync_source(directory, filt_events)
+                for client in websocket_pool.clients:
+                    remote_rpc = client.rpc(DesignerRpc)
+                    remote_rpc.package_file_changed_sync(package, payload)
         except:
             # we could send a sync_init
             import traceback
@@ -56,9 +57,9 @@ def _watch_filesystem_change_for_server(package: str, callback: Callable[[str, L
         try:
             # oh, boy. When a .py file is saved it fires the first hot reload. Then, when that file is loaded
             # the python updates the __pycache__ files, firing another (unwanted) reload: the first was enough!
-            filt_events = _remove(events, directory, files.directory_blacklist)
+            filt_events = _remove_blacklist(events, directory)
             if len(filt_events) > 0:
-                filesystemevents_print(filt_events)
+                _print_events(filt_events, package)
                 callback(package, filt_events)
         except:
             import traceback
@@ -86,7 +87,9 @@ def _hotreload_server(hotreload_packages: list[str]):
         _watch_filesystem_change_for_server(package, on_change)
 
 
-def _remove(events: List[sync.Event], directory: Path, black_list: Set[str]) -> List[sync.Event]:
+def _remove_blacklist(events: List[sync.Event], directory: Path) -> List[sync.Event]:
+    black_list = files.directory_blacklist
+
     def reject(e: sync.Event) -> bool:
         p = Path(e.src_path).relative_to(directory)
         for part in p.parts:
@@ -107,3 +110,20 @@ def _warning_on_multiple_clients(websocket_pool: WebsocketPool):
             logger.warning(f'Connected client count: {client_count}')
 
     websocket_pool.on_after_change.append(pool_before_change)
+
+
+
+def _print_events(events: List[Event], package: str):
+    # for e in events:
+    #     print(f'  {e}')
+    def accept(e: Event) -> bool:
+        bad = e.is_directory and e.event_type == 'modified'
+        return not bad
+
+    def to_str(e: Event) -> str:
+        return e.src_path if e.dest_path == '' else f'{e.src_path} -> {e.dest_path}'
+
+    joined = set(to_str(e) for e in events if accept(e))
+    summary = ', '.join(joined)
+    print(f'Hotreload `{package}` count: {len(events)}. Changes summary: {summary}')
+

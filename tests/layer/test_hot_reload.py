@@ -4,6 +4,8 @@ from playwright.sync_api import expect
 
 from tests import for_all_webservers, timeout_multiplier
 from tests.server.page_fixture import fixture, PageFixture
+from wwwpy.common import files
+from wwwpy.common.tree import print_tree
 
 
 @for_all_webservers()
@@ -60,6 +62,35 @@ document.body.innerHTML = f'<input id="msg1" value="exists={str(file1_txt.exists
 
     file1.unlink()
     expect(fixture.page.locator('id=msg1')).to_have_value('exists=False')
+
+
+@for_all_webservers()
+def test_hot_reload__directory_blacklist(fixture: PageFixture):
+    fixture.dev_mode = True
+
+    fixture.start_remote(
+        # language=python
+        """from pathlib import Path; from js import document; import glob
+rem = Path(__file__).parent
+txt_list = str([str(p.relative_to(rem)) for p in rem.rglob('*.txt')])
+document.body.innerHTML = f'<input id="msg1" value="{txt_list}">'
+""")
+
+    expect(fixture.page.locator('id=msg1')).to_have_value("[]")
+    
+    def write_file(name: str):
+        file = fixture.remote / name
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.write_text(f'content of {name}')
+
+    [write_file(f'{not_ok}/f1.txt') for not_ok in files.directory_blacklist]
+    write_file('ok/f1.txt')
+
+    expect(fixture.page.locator('id=msg1')).to_have_value("['ok/f1.txt']")
+
+    # print_tree(fixture.tmp_path)
+    # txt_list = str([str(p.relative_to(fixture.remote)) for p in fixture.remote.rglob('*.txt')])
+    # print(txt_list)
 
 
 class TestServerRpcHotReload:
