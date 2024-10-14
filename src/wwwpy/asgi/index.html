@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Echo Client</title>
+    <style>
+        #log {
+            width: 100%;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+<h1>WebSocket Echo Test</h1>
+<label for="message">Message to send:</label>
+<input type="text" id="message" placeholder="Type your message here">
+<button onclick="sendMessage()">Send</button>
+
+<h3>Log:</h3>
+<textarea id="log" readonly></textarea>
+
+<script>
+    const logArea = document.getElementById('log');
+    const ws = new WebSocket('ws://' + window.location.host + '/echo');
+
+    ws.onopen = function() {
+        logMessage('Connected to WebSocket');
+    };
+
+    ws.onmessage = function(event) {
+        logMessage('Received: ' + event.data);
+    };
+
+    ws.onclose = function() {
+        logMessage('WebSocket connection closed');
+    };
+
+    function sendMessage() {
+        const message = document.getElementById('message').value;
+        if (message && ws.readyState === WebSocket.OPEN) {
+            logMessage('Sent: ' + message);
+            ws.send(message);
+        }
+    }
+
+    function logMessage(message) {
+        logArea.value += message + '\n';
+        logArea.scrollTop = logArea.scrollHeight; // Scroll to bottom
+    }
+</script>
+</body>
+</html>
