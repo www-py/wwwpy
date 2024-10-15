@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from logging import exception
 
 import libcst as cst
 
@@ -10,6 +11,10 @@ from wwwpy.common.designer.code_strings import html_string_edit
 from wwwpy.common.designer.element_library import ElementDef
 from wwwpy.common.designer.html_edit import Position, html_add
 from wwwpy.common.designer.html_locator import NodePath
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def add_property(source_code: str, class_name: str, attr_info: Attribute):
@@ -27,30 +32,55 @@ class AddResult:
     html: str
     node_path: NodePath
 
+@dataclass
+class AddComponentExceptionReport:
+    stack_trace: str
+    source_code_orig: str
+    class_name: str
+    tag_name: str
+    node_path: NodePath
+    position: Position
 
 def add_component(source_code: str, class_name: str, comp_def: ElementDef, node_path: NodePath,
                   position: Position) -> AddResult | None:
-    source_code = ensure_imports(source_code)
-    class_info = code_info.class_info(source_code, class_name)
-    if class_info is None:
-        print(f'Class {class_name} not found inside source ```{source_code}```')
+    source_code_orig = source_code
+    try:
+        source_code = ensure_imports(source_code)
+        class_info = code_info.class_info(source_code, class_name)
+        if class_info is None:
+            print(f'Class {class_name} not found inside source ```{source_code}```')
+            return None
+
+        attr_name = class_info.next_attribute_name(comp_def.tag_name)
+        named_html = comp_def.new_html(attr_name)
+
+        source1 = add_property(source_code, class_name, Attribute(attr_name, comp_def.python_type, 'wpc.element()'))
+
+        def manipulate_html(html):
+            add = html_add(html, named_html, node_path, position)
+            return add
+
+        source2 = html_string_edit(source1, class_name, manipulate_html)
+        new_tree = html_parser.html_to_tree(source2)
+        displacement = 0 if position == Position.beforebegin else 1
+        indexes = [n.child_index for n in node_path[0:-1]] + [node_path[-1].child_index + displacement]
+        new_node_path = html_locator.tree_to_path(new_tree, indexes)
+        result = AddResult(source2, new_node_path)
+    except Exception as e:
+        import traceback
+        from wwwpy.common.rpc import serialization
+        logger.error(f'Error adding component: {e}')
+
+        exception_report = AddComponentExceptionReport(traceback.format_exc(), source_code_orig, class_name,
+                                           comp_def.tag_name, node_path, position)
+        exception_report_str = serialization.to_json(exception_report, AddComponentExceptionReport)
+        logger.error(f'Exception report str:\n{"=" * 20}\n{exception_report_str}\n{"=" * 20}')
+        from wwwpy.common.files import str_gzip_base64
+        exception_report_b64 = str_gzip_base64(exception_report_str)
+        logger.error(f'Exception report b64:\n{"=" * 20}\n{exception_report_b64}\n{"=" * 20}')
+
         return None
-
-    attr_name = class_info.next_attribute_name(comp_def.tag_name)
-    named_html = comp_def.new_html(attr_name)
-
-    source1 = add_property(source_code, class_name, Attribute(attr_name, comp_def.python_type, 'wpc.element()'))
-
-    def manipulate_html(html):
-        add = html_add(html, named_html, node_path, position)
-        return add
-
-    source2 = html_string_edit(source1, class_name, manipulate_html)
-    new_tree = html_parser.html_to_tree(source2)
-    displacement = 0 if position == Position.beforebegin else 1
-    indexes = [n.child_index for n in node_path[0:-1]] + [node_path[-1].child_index + displacement]
-    new_node_path = html_locator.tree_to_path(new_tree, indexes)
-    return AddResult(source2, new_node_path)
+    return result
 
 
 class _AddFieldToClassTransformer(cst.CSTTransformer):
