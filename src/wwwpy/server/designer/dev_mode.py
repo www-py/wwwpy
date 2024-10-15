@@ -106,8 +106,7 @@ def _warning_on_multiple_clients(websocket_pool: WebsocketPool):
         client_count = len(websocket_pool.clients)
         if client_count > 1:
             logger.warning(f'WARNING: more than one client connected, total={client_count}')
-        elif event.remove:
-            # 0 or 1
+        else:
             logger.warning(f'Connected client count: {client_count}')
 
     websocket_pool.on_after_change.append(pool_before_change)
