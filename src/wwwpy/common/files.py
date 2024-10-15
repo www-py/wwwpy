@@ -48,3 +48,24 @@ def get_file_hash(filepath: str | Path) -> str:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_sha256.update(chunk)
     return hash_sha256.hexdigest()
+
+
+import gzip
+import io
+
+def bytes_gzip(content: bytes) -> bytes:
+    buffer = io.BytesIO()
+    with gzip.GzipFile(fileobj=buffer, mode='wb') as gz_file:
+        gz_file.write(content)
+    return buffer.getvalue()
+
+def bytes_ungzip(compressed_data: bytes) -> bytes:
+    buffer = io.BytesIO(compressed_data)
+    with gzip.GzipFile(fileobj=buffer, mode='rb') as gz_file:
+        return gz_file.read()
+
+def str_gzip(content: str) -> bytes:
+    return bytes_gzip(content.encode('utf-8'))
+
+def str_ungzip(compressed_data: bytes) -> str:
+    return bytes_ungzip(compressed_data).decode('utf-8')
