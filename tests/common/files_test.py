@@ -1,7 +1,7 @@
 import pytest
 import base64
 
-from wwwpy.common.files import bytes_gzip, bytes_ungzip, str_gzip, str_ungzip
+from wwwpy.common.files import bytes_gzip, bytes_ungzip, str_gzip, str_ungzip, str_gzip_base64, str_ungzip_base64
 
 
 def test_bytes_gzip_and_ungzip():
@@ -93,3 +93,36 @@ def test_bytes_input_to_str_gzip_raises_error():
 def test_str_input_to_bytes_gzip_raises_error():
     with pytest.raises(TypeError):
         bytes_gzip("Some string")  # Passing string instead of bytes
+
+
+
+import pytest
+import base64
+
+def test_str_gzip_base64_returns_str():
+    content = "Test string"
+    compressed_encoded = str_gzip_base64(content)
+    assert isinstance(compressed_encoded, str), "str_gzip_base64 should return a string"
+
+def test_str_gzip_base64_and_ungzip_base64():
+    content = "Hello, Base64 and gzip!"
+    compressed_encoded = str_gzip_base64(content)
+    decompressed = str_ungzip_base64(compressed_encoded)
+    assert content == decompressed, "Decompressed string should match the original"
+
+def test_str_gzip_base64_with_unicode():
+    content = "こんにちは世界🌏"  # "Hello, World!" with an Earth emoji
+    compressed_encoded = str_gzip_base64(content)
+    decompressed = str_ungzip_base64(compressed_encoded)
+    assert content == decompressed, "Unicode characters should be handled correctly"
+
+def test_str_gzip_base64_empty_string():
+    content = ""
+    compressed_encoded = str_gzip_base64(content)
+    decompressed = str_ungzip_base64(compressed_encoded)
+    assert content == decompressed, "Empty string should be handled correctly"
+
+def test_str_ungzip_base64_with_invalid_base64():
+    invalid_base64 = "Not a valid Base64 string!"
+    with pytest.raises(Exception):
+        str_ungzip_base64(invalid_base64)

@@ -52,6 +52,8 @@ def get_file_hash(filepath: str | Path) -> str:
 
 import gzip
 import io
+import base64
+
 
 def bytes_gzip(content: bytes) -> bytes:
     buffer = io.BytesIO()
@@ -59,13 +61,40 @@ def bytes_gzip(content: bytes) -> bytes:
         gz_file.write(content)
     return buffer.getvalue()
 
+
 def bytes_ungzip(compressed_data: bytes) -> bytes:
     buffer = io.BytesIO(compressed_data)
     with gzip.GzipFile(fileobj=buffer, mode='rb') as gz_file:
         return gz_file.read()
 
+
 def str_gzip(content: str) -> bytes:
     return bytes_gzip(content.encode('utf-8'))
 
+
 def str_ungzip(compressed_data: bytes) -> str:
     return bytes_ungzip(compressed_data).decode('utf-8')
+
+
+def str_gzip_base64(content: str) -> str:
+    """
+    Compresses a string using gzip and encodes it with Base64.
+
+    :param content: The input string to compress and encode.
+    :return: A Base64-encoded string of the compressed data.
+    """
+    compressed_bytes = str_gzip(content)
+    base64_encoded = base64.b64encode(compressed_bytes).decode('utf-8')
+    return base64_encoded
+
+
+def str_ungzip_base64(base64_string: str) -> str:
+    """
+    Decodes a Base64-encoded string and decompresses it using gzip.
+
+    :param base64_string: The Base64-encoded compressed string.
+    :return: The original uncompressed string.
+    """
+    compressed_bytes = base64.b64decode(base64_string)
+    decompressed_str = str_ungzip(compressed_bytes)
+    return decompressed_str
