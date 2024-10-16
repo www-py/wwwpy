@@ -5,8 +5,3 @@ try:
     del version
 except:
     __version__ = 'unknown'
-
-try:
-    from wwwpy import build_meta
-except ImportError:
-    pass

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import subprocess
+from pathlib import Path
 
 
 def uncommitted_changes():
@@ -11,3 +12,14 @@ def uncommitted_changes():
         print("")
         subprocess.run(['git', 'diff-index', 'HEAD', '--'])
     return present
+
+
+def write_build_meta():
+    Path('src/wwwpy/_build_meta.py').write_text(
+        f"""git_hash_short="{subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode().strip()}"
+git_hash="{subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()}"
+""")
+
+
+if __name__ == '__main__':
+    write_build_meta()

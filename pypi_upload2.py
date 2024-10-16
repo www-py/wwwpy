@@ -1,10 +1,9 @@
-import os
-import sys
 import glob
+import os
 import subprocess
-from pathlib import Path
+import sys
 
-from pypi_helper import uncommitted_changes
+from pypi_helper import uncommitted_changes, write_build_meta
 
 
 def main():
@@ -25,10 +24,7 @@ def main():
     for file in dist_files:
         os.remove(file)
 
-    Path('src/wwwpy/build_meta.py').write_text(
-        f"""git_hash_short="{subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode().strip()}"
-git_hash="{subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode().strip()}"
-""")
+    write_build_meta()
 
     # Build the package
     try:
