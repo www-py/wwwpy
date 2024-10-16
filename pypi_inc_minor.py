@@ -3,6 +3,8 @@ from __future__ import annotations
 import re
 import subprocess
 
+from pypi_helper import uncommitted_changes
+
 
 def update_minor_version() -> str | None:
     filename = 'pyproject.toml'
@@ -40,11 +42,7 @@ def update_minor_version() -> str | None:
 
 
 def main():
-    result = subprocess.run(['git', 'diff-index', '--quiet', 'HEAD', '--'], capture_output=True)
-    if result.returncode != 0:
-        print("There are uncommitted changes. Please commit or stash them before running this script.")
-        print("")
-        subprocess.run(['git', 'diff-index', 'HEAD', '--'])
+    if uncommitted_changes():
         return
 
     msg = update_minor_version()

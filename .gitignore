@@ -132,3 +132,4 @@ dmypy.json
 
 
 wwwpy_user_conf.py
+src/wwwpy/build_meta.py
