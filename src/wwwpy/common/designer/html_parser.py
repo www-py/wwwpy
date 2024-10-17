@@ -22,6 +22,7 @@ def cst_attribute_dict(*attributes: CstAttribute) -> Dict[str, CstAttribute]:
 class CstNode:
     tag_name: str
     span: Tuple[int, int]
+    """The span of the node in the HTML string, including the `<` and `>` characters."""
     attr_span: Tuple[int, int]
     """The span of the attributes part. If there is no span the tuple will contain the same value."""
     
