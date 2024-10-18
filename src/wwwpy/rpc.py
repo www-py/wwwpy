@@ -139,6 +139,8 @@ proxy = Proxy(module_name, rpc_url, async_fetch_str)
 
     stub_functions = ''
     for f in module.functions:
+        if f.name.startswith('_'):
+            continue
         parameters = f.sign.parameters.values()
         params_list = ', '.join(p.name for p in parameters)
         args_list = '' if params_list == '' else ', ' + params_list
