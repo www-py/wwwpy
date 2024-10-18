@@ -55,15 +55,13 @@ def locate_node(html: str, path: NodePath) -> CstNode | None:
     return target_node
 
 
-def locate(html: str, path: NodePath) -> Tuple[int, int] | None:
+def locate_span(html: str, path: NodePath) -> Tuple[int, int] | None:
     """This function locates the position of the node specified by the path in the HTML string.
     The position is represented by the start and end indices of the node in the HTML string.
     """
 
-    target_node = locate_node(html, path)
-    if target_node:
-        return target_node.span
-    return None
+    node = locate_node(html, path)
+    return node.span if node else None
 
 
 def tree_to_path(tree: CstNodeList, indexed_path: list[int]) -> NodePath:

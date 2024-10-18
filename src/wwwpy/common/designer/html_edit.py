@@ -16,7 +16,7 @@ class Position(str, Enum):
 def html_add(html: str, add: str, node_path: NodePath, position: Position) -> str:
     """This function adds an HTML piece to the specified position in the HTML string."""
 
-    start, end = html_locator.locate(html, node_path)
+    start, end = html_locator.locate_span(html, node_path)
 
     index = start if position == Position.beforebegin else end
 
@@ -25,7 +25,7 @@ def html_add(html: str, add: str, node_path: NodePath, position: Position) -> st
 
 def html_edit(html: str, edit: str, node_path: NodePath) -> str:
     """This function edits the HTML string at the specified path."""
-    start, end = html_locator.locate(html, node_path)
+    start, end = html_locator.locate_span(html, node_path)
 
     return html[:start] + edit + html[end:]
 

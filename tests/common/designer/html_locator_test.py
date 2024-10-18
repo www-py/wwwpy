@@ -6,7 +6,7 @@ def test_locate():
     # language=html
     html = "<div id='foo'><div></div><div id='target'></div></div>"
     path = [Node("div", 0, {'id': 'foo'}), Node("div", 1, {'id': 'target'})]
-    actual = html_locator.locate(html, path)
+    actual = html_locator.locate_span(html, path)
     expect = (25, 48)
     assert actual == expect
 

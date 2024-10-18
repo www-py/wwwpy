@@ -5,7 +5,7 @@ import inspect
 from dataclasses import dataclass, field
 from typing import Any
 
-from wwwpy.common.designer.html_locator import NodePath, locate
+from wwwpy.common.designer.html_locator import NodePath, locate_span
 from wwwpy.common.modlib import _find_module_root
 from wwwpy.common import modlib
 
@@ -41,4 +41,4 @@ class ElementPath:
         html = cs.html_from(self.class_module, self.class_name)
         if not html:
             return False
-        return hl.locate(html, self.path) is not None
+        return hl.locate_span(html, self.path) is not None
