@@ -1,14 +1,9 @@
 from __future__ import annotations
 
 from js import Array, Element, document
-
 from wwwpy.common.designer.element_path import ElementPath
 from wwwpy.common.designer.html_locator import Node
 from wwwpy.remote.component import get_component
-
-
-def _fqn(obj):
-    return f"{obj.__class__.__module__}.{obj.__class__.__name__}"
 
 
 def element_path(element: Element) -> ElementPath | None:
@@ -30,4 +25,3 @@ def element_path(element: Element) -> ElementPath | None:
         element = parent
 
     return None
-
