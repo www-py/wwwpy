@@ -59,9 +59,23 @@ class Proxy:
         self.fetch = fetch
         self.module_name = module_name
 
-    async def dispatch(self, func_name: str, *args) -> Any:
+    async def dispatch_async(self, func_name: str, *args) -> Any:
         rpc_request = RpcRequest.build_request(self.module_name, func_name, *args)
         json_response = await self.fetch(self.rpc_url, method='POST', data=rpc_request.json())
+        response = RpcResponse.from_json(json_response)
+        ex = response.exception
+        if ex is not None and ex != '':
+            raise RemoteException(ex)
+        return response.result
+
+    def dispatch_sync(self, func_name: str, *args) -> Any:
+        rpc_request = RpcRequest.build_request(self.module_name, func_name, *args)
+        import js
+        xhr = js.XMLHttpRequest.new()
+        xhr.open('POST', self.rpc_url, False)
+        xhr.setRequestHeader('Content-Type', 'application/json')
+        xhr.send(rpc_request.json())
+        json_response = xhr.responseText
         response = RpcResponse.from_json(json_response)
         ex = response.exception
         if ex is not None and ex != '':
@@ -144,8 +158,10 @@ proxy = Proxy(module_name, rpc_url, async_fetch_str)
         parameters = f.sign.parameters.values()
         params_list = ', '.join(p.name for p in parameters)
         args_list = '' if params_list == '' else ', ' + params_list
-        fun_stub = f'\nasync def {f.name}{f.signature}:\n' + \
-                   f'    return await proxy.dispatch("{f.name}"{args_list})\n'
-        stub_functions += fun_stub
+        fun_stub_as = f'\nasync def {f.name}{f.signature}:\n' + \
+                      f'    return await proxy.dispatch_async("{f.name}"{args_list})\n'
+        fun_stub_sy = f'\ndef {f.name}{f.signature}:\n' + \
+                      f'    return proxy.dispatch_sync("{f.name}"{args_list})\n'
+        stub_functions += fun_stub_as if f.is_coroutine_function else fun_stub_sy
 
     return stub_header + stub_functions
