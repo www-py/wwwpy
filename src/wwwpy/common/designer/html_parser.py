@@ -26,7 +26,9 @@ class CstNode:
     """The span of the node in the HTML string, including the `<` and `>` characters."""
     attr_span: Tuple[int, int]
     """The span of the attributes part. If there is no span the tuple will contain the same value."""
-
+    content_span: Tuple[int, int] | None = None
+    """The span of the content part. If there is no content the tuple will contain the same value. 
+    If the node is a void tag, this will be None."""
     children: CstNodeList = field(default_factory=lambda: CstNodeList())
     attributes_list: List[CstAttribute] = field(default_factory=list)
     html: str = field(repr=False, compare=False, default='')
@@ -91,6 +93,7 @@ class _PositionalHTMLParser(HTMLParser):
             tag_name=tag,
             span=(start_pos, None),
             attr_span=attr_span,
+            content_span=None if autoclosing else (attr_span[1] + 1, None),
             attributes_list=[_cst_attr(name, v) for name, v in attrs_extended.items()],
         )
 
@@ -101,6 +104,7 @@ class _PositionalHTMLParser(HTMLParser):
             self.stack.append(node)
         else:
             node.span = (start_pos, self.current_pos + len(text))
+            node.content_span = None
             if not self.stack:
                 self.nodes.append(node)
 
@@ -113,7 +117,10 @@ class _PositionalHTMLParser(HTMLParser):
             return
 
         node = self.stack.pop()
-        node.span = (node.span[0], self.current_pos + len(tag) + 3)  # +3 for </ and >
+        span_end = self.current_pos + len(tag) + 3  # +3 for </ and >
+        node.span = (node.span[0], span_end)
+        if node.content_span:
+            node.content_span = (node.content_span[0], self.current_pos)
         if not self.stack:
             self.nodes.append(node)
 
