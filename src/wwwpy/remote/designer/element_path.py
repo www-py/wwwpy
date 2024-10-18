@@ -4,6 +4,7 @@ from js import Array, Element, document
 
 from wwwpy.common.designer.element_path import ElementPath
 from wwwpy.common.designer.html_locator import Node
+from wwwpy.remote.component import get_component
 
 
 def _fqn(obj):
@@ -15,12 +16,8 @@ def element_path(element: Element) -> ElementPath | None:
 
     path = []
     while element:
-        if hasattr(element, "_py"):
-            # todo this should be moved to component.py in a function like component_from_element
-            # or get_underlying_component
-            component = element._py
-            if hasattr(component, "unwrap"):
-                component = component.unwrap()
+        component = get_component(element)
+        if component:
             clazz = component.__class__
             return ElementPath(clazz.__module__, clazz.__name__, path)
         if element == document.body:
