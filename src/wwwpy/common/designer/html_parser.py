@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import UserList
 from dataclasses import dataclass, field
 from .html_parser_mod import HTMLParser
 from typing import Tuple, Dict, List
@@ -25,10 +26,12 @@ class CstNode:
     """The span of the node in the HTML string, including the `<` and `>` characters."""
     attr_span: Tuple[int, int]
     """The span of the attributes part. If there is no span the tuple will contain the same value."""
-    
-    children: List['CstNode'] = field(default_factory=list)
+
+    children: CstNodeList = field(default_factory=lambda: CstNodeList())
     attributes_list: List[CstAttribute] = field(default_factory=list)
     html: str = field(repr=False, compare=False, default='')
+    parent: CstNode | None = field(default=None, compare=False)
+    level: int = field(default=0, compare=False)
 
     def __post_init__(self):
         self._attributes_dict = None
@@ -46,10 +49,22 @@ class CstNode:
         return None
 
 
-def html_to_tree(html: str) -> List[CstNode]:
+class CstNodeList(UserList[CstNode]):
+    def traverse(self, indexes: list[int]) -> CstNode | None:
+        children = self
+        node = None
+        for i in indexes:
+            if i < 0 or i >= len(children):
+                return None
+            node = children[i]
+            children = node.children
+        return node
+
+
+def html_to_tree(html: str) -> CstNodeList:
     parser = _PositionalHTMLParser(html)
     parse = parser.parse()
-    _compile_html(html, parse)
+    _complete_tree_data(html, parse)
     return parse
 
 
@@ -59,7 +74,7 @@ class _PositionalHTMLParser(HTMLParser):
     def __init__(self, html: str):
         super().__init__()
         self.html = html
-        self.nodes = []
+        self.nodes = CstNodeList()
         self.stack = []
         self.current_pos = 0
 
@@ -76,7 +91,7 @@ class _PositionalHTMLParser(HTMLParser):
             tag_name=tag,
             span=(start_pos, None),
             attr_span=attr_span,
-            attributes_list=[_cst_attr(name, v) for name, v in attrs_extended.items()]
+            attributes_list=[_cst_attr(name, v) for name, v in attrs_extended.items()],
         )
 
         if self.stack:
@@ -112,8 +127,10 @@ class _PositionalHTMLParser(HTMLParser):
         return self.nodes
 
 
-def _compile_html(html: str, tree: List[CstNode]):
+def _complete_tree_data(html: str, tree: CstNodeList, parent: CstNode | None = None, level: int = 0):
     for node in tree:
+        node.parent = parent
+        node.level = level
         start, end = node.span
         node.html = html[start:end]
-        _compile_html(node.html, node.children)
+        _complete_tree_data(node.html, node.children, node, level + 1)

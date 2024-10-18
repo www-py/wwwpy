@@ -4,7 +4,7 @@ import json
 from dataclasses import dataclass
 from typing import Dict, List, Tuple, Optional
 
-from wwwpy.common.designer.html_parser import html_to_tree, CstNode
+from wwwpy.common.designer.html_parser import html_to_tree, CstNode, CstNodeList
 
 
 @dataclass()
@@ -38,7 +38,7 @@ def node_path_deserialize(serialized: str) -> NodePath:
 def locate_node(html: str, path: NodePath) -> CstNode | None:
     cst_tree = html_to_tree(html)
 
-    def find_node(nodes: List[CstNode], path: NodePath, depth: int) -> CstNode | None:
+    def find_node(nodes: CstNodeList, path: NodePath, depth: int) -> CstNode | None:
         if depth >= len(path):
             return None
 
@@ -66,7 +66,7 @@ def locate(html: str, path: NodePath) -> Tuple[int, int] | None:
     return None
 
 
-def tree_to_path(tree: List[CstNode], indexed_path: list[int]) -> NodePath:
+def tree_to_path(tree: CstNodeList, indexed_path: list[int]) -> NodePath:
     """This function converts a tree of CstNode objects to a NodePath."""
 
     def _node(index: int, node: CstNode) -> Node:
