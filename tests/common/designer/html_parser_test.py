@@ -10,6 +10,8 @@ def test_html_to_tree():
     expect = [CstNode(tag_name='div', span=(0, 11), attr_span=(4, 4), content_span=(5, 5))]
     assert actual == expect
 
+    assert actual[0].content == ''
+
 
 def test_nested():
     actual = html_to_tree('<div><p></p></div>')
@@ -24,6 +26,9 @@ def test_nested():
     assert actual_p.parent == actual_div
     assert actual_p.level == 1
 
+    assert actual_div.content == '<p></p>'
+    assert actual_p.content == ''
+
 
 def test_nested_with_attributes_and_spaces():
     actual = html_to_tree('<div   id="div1" > <p ></p> </div> ')
@@ -32,6 +37,8 @@ def test_nested_with_attributes_and_spaces():
     expect = [CstNode(tag_name='div', span=(0, 34), attr_span=(4, 17), content_span=(18, 28)
                       , attributes_list=attributes_list, children=children)]
     assert actual == expect
+
+    assert actual[0].content == ' <p ></p> '
 
 
 def test_attribute_without_value():
@@ -46,6 +53,7 @@ def test_void_tags():
     expect = [CstNode(tag_name='div', span=(0, 18), attr_span=(4, 4), content_span=(5, 12),
                       children=CstNodeList([CstNode(tag_name='input', span=(5, 12), attr_span=(11, 11))]))]
     assert actual == expect
+    assert actual[0].content == '<input>'
 
 
 def test_void_tags_with_attributes_and_spaces():
@@ -70,7 +78,7 @@ def test_issue20240727():
                       children=CstNodeList([CstNode(tag_name='input', span=(5, 13), attr_span=(11, 11))])),
               CstNode(tag_name='input', span=(19, 26), attr_span=(25, 25))]
     assert actual == expect
-
+    assert actual[0].content == '<input/>'
 
 def test_attribute_span_for_autoclosing():
     # language=html

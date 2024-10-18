@@ -32,8 +32,9 @@ class CstNode:
     children: CstNodeList = field(default_factory=lambda: CstNodeList())
     attributes_list: List[CstAttribute] = field(default_factory=list)
     html: str = field(repr=False, compare=False, default='')
-    parent: CstNode | None = field(default=None, compare=False)
-    level: int = field(default=0, compare=False)
+    content: str | None = field(repr=False, compare=False, default=None)
+    parent: CstNode | None = field(repr=False, compare=False, default=None)
+    level: int = field(repr=False, compare=False, default=0)
 
     def __post_init__(self):
         self._attributes_dict = None
@@ -140,4 +141,6 @@ def _complete_tree_data(html: str, tree: CstNodeList, parent: CstNode | None = N
         node.level = level
         start, end = node.span
         node.html = html[start:end]
+        c_sp = node.content_span
+        node.content = html[c_sp[0]:c_sp[1]] if c_sp else None
         _complete_tree_data(node.html, node.children, node, level + 1)
