@@ -29,7 +29,7 @@ class CstNode:
     content_span: Tuple[int, int] | None = None
     """The span of the content part. If there is no content the tuple will contain the same value. 
     If the node is a void tag, this will be None."""
-    children: CstNodeList = field(default_factory=lambda: CstNodeList())
+    children: CstTree = field(default_factory=lambda: CstTree())
     attributes_list: List[CstAttribute] = field(default_factory=list)
     html: str = field(repr=False, compare=False, default='')
     content: str | None = field(repr=False, compare=False, default=None)
@@ -52,7 +52,7 @@ class CstNode:
         return None
 
 
-class CstNodeList(UserList[CstNode]):
+class CstTree(UserList[CstNode]):
     def traverse(self, indexes: list[int]) -> CstNode | None:
         children = self
         node = None
@@ -64,7 +64,7 @@ class CstNodeList(UserList[CstNode]):
         return node
 
 
-def html_to_tree(html: str) -> CstNodeList:
+def html_to_tree(html: str) -> CstTree:
     parser = _PositionalHTMLParser(html)
     parse = parser.parse()
     _complete_tree_data(html, parse)
@@ -77,7 +77,7 @@ class _PositionalHTMLParser(HTMLParser):
     def __init__(self, html: str):
         super().__init__()
         self.html = html
-        self.nodes = CstNodeList()
+        self.nodes = CstTree()
         self.stack = []
         self.current_pos = 0
 
@@ -135,7 +135,7 @@ class _PositionalHTMLParser(HTMLParser):
         return self.nodes
 
 
-def _complete_tree_data(html: str, tree: CstNodeList, parent: CstNode | None = None, level: int = 0):
+def _complete_tree_data(html: str, tree: CstTree, parent: CstNode | None = None, level: int = 0):
     for node in tree:
         node.parent = parent
         node.level = level
