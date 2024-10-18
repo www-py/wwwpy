@@ -9,6 +9,7 @@ from wwwpy.common.designer.html_parser import html_to_tree, CstNode, CstNodeList
 
 @dataclass()
 class Node:
+    """This is intended to be serializable because it could cross the client/server boundary."""
     tag_name: str
     """The tag name in lowercase."""
     child_index: int
