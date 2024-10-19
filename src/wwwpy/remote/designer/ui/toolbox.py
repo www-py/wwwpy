@@ -206,18 +206,11 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
             if meta.always_visible or self.inputSearch.value.lower() in meta.label.lower():
                 self.body.appendChild(p)
 
-    # @menu('Reload')
-    # def _hot_reload(self, e: Event):
-    #     _reload()
-    async def _select_element_btn__click(self, e: Event):
-        await self._select_component(e)
-
     async def _select_clear_btn__click(self, e: Event):
         self._toolbox_state.selected_element_path = None
         self._restore_selected_element_path()
 
-    # @menu('Select component...', always_visible=True)
-    async def _select_component(self, e: Event):
+    async def _select_element_btn__click(self, e: Event):
         no_comp = 'Click an element...'
         self.property_editor.message1div.innerHTML = no_comp
 
