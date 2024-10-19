@@ -5,6 +5,9 @@ import os
 import sys
 from pathlib import Path
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 def _find_module_path(module_name: str) -> Path | None:
     """Finds the path of a module without loading it."""
@@ -19,7 +22,7 @@ def _find_module_path(module_name: str) -> Path | None:
         if module_path.is_dir() and init_file.is_file():
             return init_file
 
-    print(f'warning: path not found for module `{module_name}`', file=sys.stderr)
+    logger.warning(f'warning: path not found for module `{module_name}`')
     # import traceback
     # traceback.print_stack()
 
