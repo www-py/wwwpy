@@ -8,6 +8,14 @@ from typing import Any
 from wwwpy.common.designer.html_locator import NodePath, locate_span
 from wwwpy.common.modlib import _find_module_root
 from wwwpy.common import modlib
+from enum import Enum
+
+
+class Origin(str, Enum):
+    source = 'source'
+    """The original html source in the component"""
+    live = 'live'
+    """The live html in the browser"""
 
 
 @dataclass()
@@ -21,6 +29,8 @@ class ElementPath:
     """The class name of the Component."""
     path: NodePath
     """The path from the Component (excluded) to the element."""
+
+    origin: Origin
 
     @property
     def tag_name(self) -> str:

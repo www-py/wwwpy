@@ -178,7 +178,7 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
 
         if add_result:
             logger.debug(f'write_module_file len={len(add_result.html)} el_path={el_path}')
-            new_element_path = ElementPath(el_path.class_module, el_path.class_name, add_result.node_path)
+            new_element_path = ElementPath(el_path.class_module, el_path.class_name, add_result.node_path, el_path.origin)
             self._toolbox_state.selected_element_path = new_element_path
             write_res = await rpc.write_module_file(el_path.class_module, add_result.html)
             logger.debug(f'write_module_file res={write_res}')

@@ -6,7 +6,7 @@ from tests.common import dyn_sys_path, DynSysPath
 from wwwpy.common.designer import code_info
 from wwwpy.common.designer.element_editor import ElementEditor
 from wwwpy.common.designer.element_library import ElementDef, EventDef, AttributeDef
-from wwwpy.common.designer.element_path import ElementPath
+from wwwpy.common.designer.element_path import ElementPath, Origin
 from wwwpy.common.designer.html_locator import Node, NodePath
 
 
@@ -255,7 +255,7 @@ class TargetFixture:
         self.set_node_path(path)
 
     def set_node_path(self, path: NodePath):
-        self.element_path = ElementPath('component2', 'Component2', path)
+        self.element_path = ElementPath('component2', 'Component2', path, Origin.source)
 
     @property
     def current_html(self) -> str:
