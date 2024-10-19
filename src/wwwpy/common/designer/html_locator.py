@@ -22,10 +22,14 @@ class Node:
     def __post_init__(self):
         assert self.tag_name == self.tag_name.lower()
 
-
+IndexPath = List[int]
 NodePath = List[Node]
 """This is the path from the root to a node in the DOM tree."""
 
+
+def check_node_path(node_path: IndexPath):
+    if len(node_path) > 0 and not isinstance(node_path[0], int):
+        raise ValueError(f'Invalid node path: {node_path}')
 
 def node_path_serialize(path: NodePath) -> str:
     return json.dumps([node.__dict__ for node in path])
@@ -55,6 +59,26 @@ def locate_node(html: str, path: NodePath) -> CstNode | None:
 
     return target_node
 
+def locate_node_indexed(html: str, index_path: IndexPath) -> CstNode | None:
+    check_node_path(index_path)
+    cst_tree = html_to_tree(html)
+
+    def find_node(nodes: CstTree, path: IndexPath, depth: int) -> CstNode | None:
+        if depth >= len(path):
+            return None
+
+        child_index = path[depth]
+        if child_index < 0 or child_index >= len(nodes):
+            return None
+        node = nodes[child_index]
+        if depth == len(path) - 1:
+            return node
+        return find_node(node.children, path, depth + 1)
+
+    target_node = find_node(cst_tree, index_path, 0)
+
+    return target_node
+
 
 def locate_span(html: str, path: NodePath) -> Tuple[int, int] | None:
     """This function locates the position of the node specified by the path in the HTML string.
@@ -64,8 +88,18 @@ def locate_span(html: str, path: NodePath) -> Tuple[int, int] | None:
     node = locate_node(html, path)
     return node.span if node else None
 
+def locate_span_indexed(html: str, index_path: IndexPath) -> Tuple[int, int] | None:
+    check_node_path(index_path)
+    """This function locates the position of the node specified by the path in the HTML string.
+    The position is represented by the start and end indices of the node in the HTML string.
+    """
 
-def tree_to_path(tree: CstTree, indexed_path: list[int]) -> NodePath:
+    node = locate_node_indexed(html, index_path)
+    return node.span if node else None
+
+
+def tree_to_path(tree: CstTree, index_path: IndexPath) -> NodePath:
+    check_node_path(index_path)
     """This function converts a tree of CstNode objects to a NodePath."""
 
     def _node(index: int, node: CstNode) -> Node:
@@ -73,13 +107,14 @@ def tree_to_path(tree: CstTree, indexed_path: list[int]) -> NodePath:
 
     result = []
     children = tree
-    for index in indexed_path:
+    for index in index_path:
         node = children[index]
         result.append(_node(index, node))
         children = node.children
     return result
 
 
-def html_to_node_path(html: str, indexed_path: list[int]) -> NodePath:
+def html_to_node_path(html: str, index_path: IndexPath) -> NodePath:
+    check_node_path(index_path)
     tree = html_to_tree(html)
-    return tree_to_path(tree, indexed_path)
+    return tree_to_path(tree, index_path)
