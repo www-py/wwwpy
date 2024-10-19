@@ -80,7 +80,7 @@ class EventEditor:
 
 
 class ElementEditor:
-    """Allow to edit an HTML element according to its ElementDef.
+    """Allow to edit an HTML element inside a Component, according to the specified ElementDef.
     Notice that the changes applied by an instance of this class  are not reflected in the internal state;
     it is expected that the hot reload will be triggered and consequently this instance will be discarded and
     reloaded.
