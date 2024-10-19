@@ -15,6 +15,7 @@ from wwwpy.common.designer.code_edit import add_component, ElementDef
 from wwwpy.common.designer.element_library import Help
 from wwwpy.common.designer.element_path import ElementPath
 from wwwpy.common.designer.html_edit import Position
+from wwwpy.common.designer.html_locator import path_to_index
 from wwwpy.remote import dict_to_js, set_timeout
 from wwwpy.remote.designer import element_path
 from wwwpy.remote.designer.drop_zone import DropZone
@@ -172,7 +173,8 @@ class ToolboxComponent(wpc.Component, tag_name='wwwpy-toolbox'):
         file = modlib._find_module_path(el_path.class_module)
         old_source = file.read_text()
 
-        add_result = add_component(old_source, el_path.class_name, element_def, el_path.path, drop_zone.position)
+        path_index = path_to_index(el_path.path)
+        add_result = add_component(old_source, el_path.class_name, element_def, path_index, drop_zone.position)
 
         if add_result:
             logger.debug(f'write_module_file len={len(add_result.html)} el_path={el_path}')

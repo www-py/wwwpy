@@ -107,6 +107,9 @@ class MyElement2(wpc.Component):
     assert modified_source == expected_source
 
 
+path01 = [0, 1]
+
+
 def test_add_component():
     original_source = """
 import wwwpy.remote.component as wpc
@@ -126,8 +129,7 @@ class MyElement(wpc.Component):
     """
 
     component_def = ElementDef('btn', 'js.Some')
-    node_path = [Node("div", 0, {'id': 'foo'}), Node("div", 1, {'id': 'target'})]
-    add_result = add_component(original_source, 'MyElement', component_def, node_path, Position.afterend)
+    add_result = add_component(original_source, 'MyElement', component_def, path01, Position.afterend)
 
     assert add_result.html == expected_source
 
@@ -154,8 +156,7 @@ class MyElement(wpc.Component):
         return f'\n<btn data-name="{data_name}" attr1="bar"></btn>'
 
     component_def = ElementDef('btn', 'js.Some', gen_html=gen_html)
-    node_path = [Node("div", 0, {'id': 'foo'}), Node("div", 1, {'id': 'target'})]
-    add_result = add_component(original_source, 'MyElement', component_def, node_path, Position.afterend)
+    add_result = add_component(original_source, 'MyElement', component_def, path01, Position.afterend)
 
     assert add_result.html == expected_source
 
@@ -172,10 +173,9 @@ class MyElement(wpc.Component):
         return f'\n<btn data-name="{data_name}" attr1="bar"></btn>'
 
     component_def = ElementDef('btn', 'js.Some', gen_html=gen_html)
-    node_path = [Node("div", 0, {'id': 'foo'}), Node("div", 1, {'id': 'target'})]
-    add_result = add_component(original_source, 'MyElement', component_def, node_path, Position.afterend)
+    add_result = add_component(original_source, 'MyElement', component_def, path01, Position.afterend)
 
-    expected_node_path = [node_path[0], Node('btn', 2, {'data-name': 'btn1', 'attr1': 'bar'})]
+    expected_node_path = [Node("div", 0, {'id': 'foo'}), Node('btn', 2, {'data-name': 'btn1', 'attr1': 'bar'})]
     assert add_result.node_path == expected_node_path
 
 
@@ -191,10 +191,9 @@ class MyElement(wpc.Component):
         return f'\n<btn data-name="{data_name}" attr1="bar"></btn>'
 
     component_def = ElementDef('btn', 'js.Some', gen_html=gen_html)
-    node_path = [Node("div", 0, {'id': 'foo'}), Node("div", 1, {'id': 'target'})]
-    add_result = add_component(original_source, 'MyElement', component_def, node_path, Position.beforebegin)
+    add_result = add_component(original_source, 'MyElement', component_def, path01, Position.beforebegin)
 
-    expected_node_path = [node_path[0], Node('btn', 1, {'data-name': 'btn1', 'attr1': 'bar'})]
+    expected_node_path = [Node("div", 0, {'id': 'foo'}), Node('btn', 1, {'data-name': 'btn1', 'attr1': 'bar'})]
     assert add_result.node_path == expected_node_path
 
 

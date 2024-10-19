@@ -26,6 +26,8 @@ IndexPath = List[int]
 NodePath = List[Node]
 """This is the path from the root to a node in the DOM tree."""
 
+def path_to_index(path: NodePath) -> IndexPath:
+    return [node.child_index for node in path]
 
 def check_node_path(node_path: IndexPath):
     if len(node_path) > 0 and not isinstance(node_path[0], int):

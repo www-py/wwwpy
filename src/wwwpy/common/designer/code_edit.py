@@ -9,8 +9,8 @@ from wwwpy.common.designer import code_info, html_parser, html_locator
 from wwwpy.common.designer.code_info import Attribute
 from wwwpy.common.designer.code_strings import html_string_edit
 from wwwpy.common.designer.element_library import ElementDef
-from wwwpy.common.designer.html_edit import Position, html_add
-from wwwpy.common.designer.html_locator import NodePath
+from wwwpy.common.designer.html_edit import Position, html_add, html_add_indexed
+from wwwpy.common.designer.html_locator import NodePath, IndexPath
 
 import logging
 
@@ -41,7 +41,7 @@ class AddComponentExceptionReport:
     node_path: NodePath
     position: Position
 
-def add_component(source_code: str, class_name: str, comp_def: ElementDef, node_path: NodePath,
+def add_component(source_code: str, class_name: str, comp_def: ElementDef, index_path: IndexPath,
                   position: Position) -> AddResult | None:
     source_code_orig = source_code
     try:
@@ -57,13 +57,13 @@ def add_component(source_code: str, class_name: str, comp_def: ElementDef, node_
         source1 = add_property(source_code, class_name, Attribute(attr_name, comp_def.python_type, 'wpc.element()'))
 
         def manipulate_html(html):
-            add = html_add(html, named_html, node_path, position)
+            add = html_add_indexed(html, named_html, index_path, position)
             return add
 
         source2 = html_string_edit(source1, class_name, manipulate_html)
         new_tree = html_parser.html_to_tree(source2)
         displacement = 0 if position == Position.beforebegin else 1
-        indexes = [n.child_index for n in node_path[0:-1]] + [node_path[-1].child_index + displacement]
+        indexes = index_path[0:-1] + [index_path[-1] + displacement]
         new_node_path = html_locator.tree_to_path(new_tree, indexes)
         result = AddResult(source2, new_node_path)
     except Exception as e:
@@ -72,7 +72,7 @@ def add_component(source_code: str, class_name: str, comp_def: ElementDef, node_
         logger.error(f'Error adding component: {e}')
 
         exception_report = AddComponentExceptionReport(traceback.format_exc(), source_code_orig, class_name,
-                                           comp_def.tag_name, node_path, position)
+                                                       comp_def.tag_name, index_path, position)
         exception_report_str = serialization.to_json(exception_report, AddComponentExceptionReport)
         logger.error(f'Exception report str:\n{"=" * 20}\n{exception_report_str}\n{"=" * 20}')
         from wwwpy.common.files import str_gzip_base64
