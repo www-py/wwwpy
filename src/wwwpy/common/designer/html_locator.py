@@ -127,6 +127,14 @@ def html_to_node_path(html: str, index_path: IndexPath) -> NodePath:
     return tree_to_path(tree, index_path)
 
 
+def rebase_path(source_html: str, live_path: NodePath) -> NodePath:
+    source_tree = html_to_tree(source_html)
+    cst_node_list = tree_fuzzy_match(source_tree, live_path)
+    last_node = cst_node_list[-1]
+    result = node_path_from_leaf(last_node)
+    return result
+
+
 def tree_fuzzy_match(tree: CstTree, node_path: NodePath) -> List[CstNode]:
     """This function finds the best CstNode matches in the tree for the given NodePath."""
 

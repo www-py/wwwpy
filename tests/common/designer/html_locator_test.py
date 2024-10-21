@@ -44,19 +44,16 @@ class TestTreeFuzzyMatch:
 </form>
 <span><br><button>confounder</button></span>
 """
-        source_tree = html_parser.html_to_tree(source_html)
         # language=html
         dyn_insertion = "<div></div>"
         live_tree = html_parser.html_to_tree(dyn_insertion + source_html)
         live_path = html_locator.tree_to_path(live_tree, [1, 1])  # [ 1=form, 1=button ]
 
         # WHEN
-        actual_cst_nodelist = html_locator.tree_fuzzy_match(source_tree, live_path)
-        last_node = actual_cst_nodelist[-1]
-        actual = html_locator.node_path_from_leaf(last_node)
+        actual = html_locator.rebase_path(source_html, live_path)
 
         # THEN
-        expect = html_locator.tree_to_path(source_tree, [0, 1])  # [ 0=form, 1=button ]
+        expect = html_locator.tree_to_path(html_locator.html_to_tree(source_html), [0, 1])  # [ 0=form, 1=button ]
         assert actual == expect, f'\nactual={actual} \nexpect={expect}'
 
     def todo_test_nested_divs(self):
