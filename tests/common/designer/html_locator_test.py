@@ -33,15 +33,16 @@ def test_cst_node_to_node():
 
 
 class TestTreeFuzzyMatch:
-    def todo_test_dynamically_inserted_tag(self):
+    def test_dynamically_inserted_tag(self):
         # GIVEN
         # language=html
         source_html = """
 <form id="f1">
     <input id="i1" title="title1" required type="text">
     <button id="b1" type="submit">b1-content</button>
-    <textarea id="ta1" rows="10" >ta1-content</textarea>
+    <textarea id="ta1" rows="10">ta1-content</textarea>
 </form>
+<span><br><button>confounder</button></span>
 """
         source_tree = html_parser.html_to_tree(source_html)
         # language=html
@@ -50,7 +51,9 @@ class TestTreeFuzzyMatch:
         live_path = html_locator.tree_to_path(live_tree, [1, 1])  # [ 1=form, 1=button ]
 
         # WHEN
-        actual = html_locator.tree_fuzzy_match(source_tree, live_path)
+        actual_cst_nodelist = html_locator.tree_fuzzy_match(source_tree, live_path)
+        last_node = actual_cst_nodelist[-1]
+        actual = html_locator.node_path_from_leaf(last_node)
 
         # THEN
         expect = html_locator.tree_to_path(source_tree, [0, 1])  # [ 0=form, 1=button ]
@@ -99,4 +102,9 @@ class TestNodeSimilarity:
                 _node_sim("<input class='a'>", "<input class='b'>")
         )
 
+    def test_different_tags(self):
+        # language=html
+        assert (
+                _node_sim("<div></div>", "<span></span>") < 0.1
+        )
 # todo different tags, e.g., div vs span; different levels

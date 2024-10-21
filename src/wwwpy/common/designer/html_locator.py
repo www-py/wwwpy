@@ -48,22 +48,21 @@ def node_path_deserialize(serialized: str) -> NodePath:
 
 def locate_node(html: str, path: NodePath) -> CstNode | None:
     cst_tree = html_to_tree(html)
-
-    def find_node(nodes: CstTree, path: NodePath, depth: int) -> CstNode | None:
-        if depth >= len(path):
-            return None
-
-        target_node = path[depth]
-        if target_node.child_index < 0 or target_node.child_index >= len(nodes):
-            return None
-        node = nodes[target_node.child_index]
-        if depth == len(path) - 1:
-            return node
-        return find_node(node.children, path, depth + 1)
-
-    target_node = find_node(cst_tree, path, 0)
-
+    target_node = _locate_node_rec(cst_tree, path)
     return target_node
+
+
+def _locate_node_rec(nodes: CstTree, path: NodePath, depth: int = 0) -> CstNode | None:
+    if depth >= len(path):
+        return None
+
+    target_node = path[depth]
+    if target_node.child_index < 0 or target_node.child_index >= len(nodes):
+        return None
+    node = nodes[target_node.child_index]
+    if depth == len(path) - 1:
+        return node
+    return _locate_node_rec(node.children, path, depth + 1)
 
 
 def locate_node_indexed(html: str, index_path: IndexPath) -> CstNode | None:
@@ -130,12 +129,40 @@ def html_to_node_path(html: str, index_path: IndexPath) -> NodePath:
 
 def tree_fuzzy_match(tree: CstTree, node_path: NodePath) -> List[CstNode]:
     """This function finds the best CstNode matches in the tree for the given NodePath."""
-    return []
+
+    def flatten(t: CstTree) -> List[CstNode]:
+        result = []
+        for node in t:
+            result.append(node)
+            result.extend(flatten(node.children))
+        return result
+
+    nodes = flatten(tree)
+
+    # for all nodes/node_path pair, compute the similarity
+    # and store the node with the highest similarity
+    matches = []
+    for dx in node_path:
+        candidates = []
+        for sx in nodes:
+            similarity = node_similarity(sx, dx)
+            candidates.append((similarity, sx))
+        candidates.sort(key=lambda pair: pair[0], reverse=True)
+        matches.append(candidates)
+
+    # for each node in the node_path, select the best match
+    result: NodePath = []
+    for match in matches:
+        bm = match[0][1]
+        result.append(bm)
+
+    return result
 
 
 def node_similarity(node1: CstNode, node2: CstNode) -> float:
     """This function computes the similarity between two CstNode objects."""
-
+    if node1.tag_name != node2.tag_name:
+        return 0.05
     attr1 = node1.attributes
     attr2 = node2.attributes
 
@@ -158,3 +185,15 @@ def node_similarity(node1: CstNode, node2: CstNode) -> float:
 
     similarity = sum(attr_sim(key) for key in common_keys) / len(total_keys)
     return similarity
+
+
+def node_path_from_leaf(last_node: CstNode) -> NodePath:
+    """This function constructs a NodePath from a leaf node."""
+    result = []
+
+    current = last_node
+    while current is not None:
+        node = Node(current.tag_name, current.child_index, current.attributes)
+        result.insert(0, node)
+        current = current.parent
+    return result

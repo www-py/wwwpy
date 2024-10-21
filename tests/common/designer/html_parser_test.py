@@ -29,6 +29,9 @@ def test_nested():
     assert actual_div.content == '<p></p>'
     assert actual_p.content == ''
 
+    assert actual_div.child_index == 0
+    assert actual_p.child_index == 0
+
 
 def test_nested_with_attributes_and_spaces():
     actual = html_to_tree('<div   id="div1" > <p ></p> </div> ')
@@ -79,6 +82,17 @@ def test_issue20240727():
               CstNode(tag_name='input', span=(19, 26), attr_span=(25, 25))]
     assert actual == expect
     assert actual[0].content == '<input/>'
+
+
+def test_child_index():
+    # language=html
+    actual = html_to_tree("<div><br><br></div><input>")
+    assert actual[0].child_index == 0
+    assert actual[1].child_index == 1
+    div = actual[0]
+    assert div.children[0].child_index == 0
+    assert div.children[1].child_index == 1
+
 
 def test_attribute_span_for_autoclosing():
     # language=html

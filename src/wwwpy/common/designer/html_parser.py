@@ -35,6 +35,7 @@ class CstNode:
     content: str | None = field(repr=False, compare=False, default=None)
     parent: CstNode | None = field(repr=False, compare=False, default=None)
     level: int = field(repr=False, compare=False, default=0)
+    child_index: int = field(repr=False, compare=False, default=0)
 
     def __post_init__(self):
         self._attributes_dict = None
@@ -136,9 +137,10 @@ class _PositionalHTMLParser(HTMLParser):
 
 
 def _complete_tree_data(html: str, tree: CstTree, parent: CstNode | None = None, level: int = 0):
-    for node in tree:
+    for idx, node in enumerate(tree):
         node.parent = parent
         node.level = level
+        node.child_index = idx
         start, end = node.span
         node.html = html[start:end]
         c_sp = node.content_span
