@@ -85,9 +85,18 @@ class TestNodeSimilarity:
         # language=html
         assert 0.1 < _node_sim("<input class='a'>", "<input class='b'>") < 1.0
 
-    def test_data_name_should_count_more(self):
+    def test_data_name_same(self):
         # language=html
         assert (
                 _node_sim("<div data-name='foo' class='a'></div>", "<div data-name='foo' class='b'></div>") >
                 _node_sim("<input class='a'>", "<input class='a'>")
         )
+
+    def test_data_name_different(self):
+        # language=html
+        assert (
+                _node_sim("<div data-name='foo1' class='a'></div>", "<div data-name='foo2' class='b'></div>") <
+                _node_sim("<input class='a'>", "<input class='b'>")
+        )
+
+# todo different tags, e.g., div vs span; different levels

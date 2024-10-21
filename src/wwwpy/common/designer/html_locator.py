@@ -145,12 +145,15 @@ def node_similarity(node1: CstNode, node2: CstNode) -> float:
         return 1.0
 
     common_keys = set(attr1.keys()) & set(attr2.keys())
+
+    def attr_eq(key) -> bool:
+        return attr1[key] == attr2[key]
+
     if 'data-name' in common_keys:
-        if attr1['data-name'] == attr2['data-name']:
-            return 1.0
+        return 1.0 if attr_eq('data-name') else 0.0
 
     def attr_sim(key) -> float:
-        eq_points = 0.25 if attr1[key] == attr2[key] else -0.25
+        eq_points = 0.25 if attr_eq(key) else -0.25
         return 0.5 + eq_points
 
     similarity = sum(attr_sim(key) for key in common_keys) / len(total_keys)
