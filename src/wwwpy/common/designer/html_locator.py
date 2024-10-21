@@ -22,16 +22,20 @@ class Node:
     def __post_init__(self):
         assert self.tag_name == self.tag_name.lower()
 
+
 IndexPath = List[int]
 NodePath = List[Node]
 """This is the path from the root to a node in the DOM tree."""
 
+
 def path_to_index(path: NodePath) -> IndexPath:
     return [node.child_index for node in path]
+
 
 def check_node_path(node_path: IndexPath):
     if len(node_path) > 0 and not isinstance(node_path[0], int):
         raise ValueError(f'Invalid node path: {node_path}')
+
 
 def node_path_serialize(path: NodePath) -> str:
     return json.dumps([node.__dict__ for node in path])
@@ -61,6 +65,7 @@ def locate_node(html: str, path: NodePath) -> CstNode | None:
 
     return target_node
 
+
 def locate_node_indexed(html: str, index_path: IndexPath) -> CstNode | None:
     check_node_path(index_path)
     cst_tree = html_to_tree(html)
@@ -89,6 +94,7 @@ def locate_span(html: str, path: NodePath) -> Tuple[int, int] | None:
 
     node = locate_node(html, path)
     return node.span if node else None
+
 
 def locate_span_indexed(html: str, index_path: IndexPath) -> Tuple[int, int] | None:
     check_node_path(index_path)
@@ -120,3 +126,32 @@ def html_to_node_path(html: str, index_path: IndexPath) -> NodePath:
     check_node_path(index_path)
     tree = html_to_tree(html)
     return tree_to_path(tree, index_path)
+
+
+def tree_fuzzy_match(tree: CstTree, node_path: NodePath) -> List[CstNode]:
+    """This function finds the best CstNode matches in the tree for the given NodePath."""
+    return []
+
+
+def node_similarity(node1: CstNode, node2: CstNode) -> float:
+    """This function computes the similarity between two CstNode objects."""
+
+    attr1 = node1.attributes
+    attr2 = node2.attributes
+
+    total_keys = set(attr1.keys()) | set(attr2.keys())
+
+    if not total_keys:  # both nodes have no attributes
+        return 1.0
+
+    common_keys = set(attr1.keys()) & set(attr2.keys())
+    if 'data-name' in common_keys:
+        if attr1['data-name'] == attr2['data-name']:
+            return 1.0
+
+    def attr_sim(key) -> float:
+        eq_points = 0.25 if attr1[key] == attr2[key] else -0.25
+        return 0.5 + eq_points
+
+    similarity = sum(attr_sim(key) for key in common_keys) / len(total_keys)
+    return similarity
