@@ -16,12 +16,15 @@ It is necessary to refresh the browser. <br>
 </h2>
 
         """
+        self.element.style.position = 'absolute'
+        self.element.style.top = '0'
         self.element.style.display = 'none'
+        self.element.style.backgroundColor = 'red'
         try:
             from server import rpc
         except ImportError as e:
             self.element.style.display = 'block'
-    
+
     async def button1__click(self, event):
         js.console.log('handler button1__click event =', event)
         js.location.reload()

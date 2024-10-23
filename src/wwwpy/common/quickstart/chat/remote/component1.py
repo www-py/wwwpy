@@ -21,7 +21,7 @@ class Component1(wpc.Component, tag_name='component-1'):
     <sl-textarea data-name="slTextarea1" placeholder="slTextarea1" rows="10">Messages...</sl-textarea>
 </form>
 """
-        self.element.insertBefore(RpcIssueAlert().element, self.element.firstChild)
+        self.element.append(RpcIssueAlert().element)
 
         def new_message(message):
             self.slTextarea1.value += message + '\n'
