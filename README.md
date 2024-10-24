@@ -25,4 +25,4 @@ To start developing:
 wwwpy dev
 ```
 
-If the current folder is empty, wwwpy will automatically create a demo project to help you explore its features right away.
+If the current folder is empty, wwwpy will ask you to select a quickstart project to help you explore its features right away.
