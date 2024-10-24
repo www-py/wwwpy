@@ -1,5 +1,5 @@
 # wwwpy
-A layered library for web development, Python all the way down.
+Develop web applications quickly, Python all the way down.
 
 The vision of wwwpy: 
 - **Jumpstart Your Projects**: With just a couple of commands, get a head start on building web UIs, allowing you to focus on coding and scaling your application.
