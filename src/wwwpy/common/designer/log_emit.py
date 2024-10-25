@@ -1,4 +1,5 @@
 import logging
+import warnings
 from typing import Callable
 
 
@@ -29,3 +30,21 @@ def add_once(emit: Callable[[str], None]):
     custom_handler = _CustomHandler(emit)
     custom_handler.setFormatter(formatter)
     root.addHandler(custom_handler)
+
+
+_original_showwarning = None
+
+
+def _custom_showwarning(message, category, filename, lineno, file=None, line=None):
+    if _original_showwarning:
+        _original_showwarning(message, category, filename, lineno, file, line)
+    log_entry = f'{category.__name__}: {message} ({filename}:{lineno})'
+    logging.getLogger('common').warning(log_entry)
+
+
+def warning_to_log():
+    global _original_showwarning
+    if _original_showwarning:
+        return
+    _original_showwarning = warnings.showwarning
+    warnings.showwarning = _custom_showwarning

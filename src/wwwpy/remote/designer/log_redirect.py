@@ -23,3 +23,4 @@ def redirect_logging():
         asyncio.create_task(_process_buffer())
 
     log_emit.add_once(emit)
+    log_emit.warning_to_log()
