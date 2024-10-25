@@ -22,7 +22,8 @@ async def add(a: int, b: int) -> int:
 ```
 
 You can define and use both async and synchronous functions. 
-Beware that async functions are more performant because they do not block the browser main thread. 
+Note that async functions are more performant 
+because they do not block the browser's main thread. 
 
 ### Calling server-side functions from the browser
 ```python
@@ -64,7 +65,8 @@ class Rpc:
 ### Calling browser-side functions from the server
 
 The following code is an example of how to call a browser-side function from the server.
-It's a tricky example, because it calls all the connected clients from inside a server-side function. 
+This is a tricky example because it calls all the connected clients from inside a server-side function.
+
   
 ```python
 from wwwpy.server.configure import websocket_pool
