@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from inspect import iscoroutinefunction
-
+import asyncio
 import js
 from js import console
 
 import wwwpy.common.reloader as reloader
 from wwwpy.common import _no_remote_infrastructure_found_text
 from wwwpy.common.tree import print_tree
-from wwwpy.remote import set_timeout
 from wwwpy.remote.designer import dev_mode as dm
 from wwwpy.remote.websocket import setup_websocket
 
@@ -34,7 +33,7 @@ def _reload():
                 reloader.unload_path(str(directory))
         await _invoke_browser_main(True)
 
-    set_timeout(reload)
+    asyncio.create_task(reload())
 
 
 async def _invoke_browser_main(reload=False):

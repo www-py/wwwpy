@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import asyncio
+
 import js
 
 import wwwpy.remote.component as wpc
 from wwwpy.common import files
-from wwwpy.remote import dict_to_js, dict_to_py, set_timeout
+from wwwpy.remote import dict_to_js, dict_to_py
 from wwwpy.server.designer import rpc
 from . import quickstart_ui
 from .quickstart_ui import QuickstartUI
@@ -51,4 +53,4 @@ class DevModeComponent(wpc.Component, tag_name='wwwpy-dev-mode-component'):
                 self.shadow.append(self.quickstart.window.element)
                 self.toolbox.visible = False
 
-        set_timeout(check_for_quickstart)
+        asyncio.create_task(check_for_quickstart())

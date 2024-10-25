@@ -16,7 +16,8 @@ from wwwpy.common.designer.element_library import Help
 from wwwpy.common.designer.element_path import ElementPath
 from wwwpy.common.designer.html_edit import Position
 from wwwpy.common.designer.html_locator import path_to_index
-from wwwpy.remote import dict_to_js, set_timeout
+import asyncio
+from wwwpy.remote import dict_to_js
 from wwwpy.remote.designer import element_path
 from wwwpy.remote.designer.drop_zone import DropZone
 from wwwpy.remote.designer.global_interceptor import GlobalInterceptor, InterceptorEvent
@@ -321,7 +322,8 @@ async def _drop_zone_start_selection_async(on_pointed, whole=False) -> Optional[
     click_inter.install()
     drop_zone_selector.start_selector(on_pointed, _default_drop_zone_accept, whole=whole)
     await event.wait()
-    set_timeout(lambda: click_inter.uninstall(), 500)
+    await asyncio.sleep(0.5)
+    click_inter.uninstall()
 
     if len(result) == 0:
         return None

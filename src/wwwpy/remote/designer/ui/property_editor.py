@@ -1,19 +1,20 @@
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, List, Union
+from typing import Optional, List
 
+import js
 import wwwpy.remote.component as wpc
+from pyodide.ffi import create_proxy
 from wwwpy.common import state, property_monitor
 from wwwpy.common.designer import element_library, html_locator, code_strings
 from wwwpy.common.designer.element_editor import ElementEditor, EventEditor
 from wwwpy.common.designer.element_path import ElementPath
-from wwwpy.remote import dict_to_js, set_timeout
-import js
-from pyodide.ffi import create_proxy
-
+from wwwpy.remote import dict_to_js
 from wwwpy.remote.designer.helpers import _element_path_lbl, _rpc_save, _log_event, _help_button
+
 from .button_tab import ButtonTab, Tab
 from .searchable_combobox2 import SearchableComboBox, Option
 
@@ -23,7 +24,6 @@ class PropertyEditorMode(str, Enum):
     palette = 'palette'
     events = 'events'
     attributes = 'attributes'
-
 
 
 @dataclass
@@ -207,7 +207,7 @@ class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
         async def start_save():
             await _rpc_save(self._selected_element_path, source)
 
-        set_timeout(start_save)
+        asyncio.create_task(start_save())
 
     def _render_event_editor(self, element_def, ep):
         self._set_title('Event', 'Value')
@@ -231,7 +231,7 @@ class PropertyEditor(wpc.Component, tag_name='wwwpy-property-editor'):
                         await _rpc_save(ep, source)
                     await _log_event(element_editor, ev)
 
-                set_timeout(start_save)
+                asyncio.create_task(start_save())
 
             row1.double_click_handler = lambda ev=event_editor: dblclick(ev)
 

@@ -1,8 +1,7 @@
 import js
 from pyodide.ffi import create_proxy
-
+import asyncio
 from wwwpy.common import quickstart
-from wwwpy.remote import set_timeout
 from wwwpy.remote.designer.ui.draggable_component import new_window, DraggableComponent
 from wwwpy.remote.designer.ui.searchable_list_1 import SearchableList1, Item
 from wwwpy.server.designer import rpc
@@ -30,7 +29,7 @@ class QuickstartUI:
         async def _notify_server():
             await rpc.quickstart_apply(quickstart_name)
 
-        set_timeout(_notify_server)
+        asyncio.create_task(_notify_server())
 
     def _item_click_handler(self, event):
         item = event.detail

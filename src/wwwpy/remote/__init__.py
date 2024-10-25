@@ -16,10 +16,10 @@ async def micropip_install(package):
     await micropip.install([package])
 
 
-def set_timeout(callback: Callable[[], Union[None, Awaitable[None]]], timeout_millis: int | None = 0):
-    from pyodide.ffi import create_once_callable
-    from js import window
-    window.setTimeout(create_once_callable(callback), timeout_millis)
+# def set_timeout(callback: Callable[[], Union[None, Awaitable[None]]], timeout_millis: int | None = 0):
+#     from pyodide.ffi import create_once_callable
+#     from js import window
+#     window.setTimeout(create_once_callable(callback), timeout_millis)
 
 
 def dict_to_py(js_obj):
