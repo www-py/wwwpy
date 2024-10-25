@@ -169,6 +169,12 @@ def tree_fuzzy_match(tree: CstTree, node_path: NodePath) -> List[CstNode]:
 
 def node_similarity(node1: CstNode, node2: CstNode) -> float:
     """This function computes the similarity between two CstNode objects."""
+    # assert isinstance(node1, CstNode)
+    # assert isinstance(node2, CstNode)
+    # import math
+    # level_diff = abs(node1.level - node2.level)
+    # level_penality = (1.0 - math.log(level_diff + 1)) if level_diff > 0 else 1.0
+
     if node1.tag_name != node2.tag_name:
         return 0.05
     attr1 = node1.attributes
@@ -177,7 +183,7 @@ def node_similarity(node1: CstNode, node2: CstNode) -> float:
     total_keys = set(attr1.keys()) | set(attr2.keys())
 
     if not total_keys:  # both nodes have no attributes
-        return 1.0
+        return 1.0 # * level_penality
 
     common_keys = set(attr1.keys()) & set(attr2.keys())
 

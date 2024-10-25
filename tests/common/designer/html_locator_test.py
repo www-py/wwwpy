@@ -60,6 +60,15 @@ class TestTreeFuzzyMatch:
         # language=html
         source_html = """<div><div><div></div></div></div>"""
         live_html = """<div><div><div></div></div></div>"""
+        live_tree = html_parser.html_to_tree(live_html)
+        live_path = html_locator.tree_to_path(live_tree, [0, 0, 0])
+
+        # WHEN
+        actual = html_locator.rebase_path(source_html, live_path)
+
+        # THEN
+        expect = html_locator.tree_to_path(html_locator.html_to_tree(source_html), [0, 0, 0])
+        assert actual == expect, f'\nactual={actual} \nexpect={expect}'
 
     def todo_test_swapped_tags(self):
         # language=html
@@ -98,6 +107,16 @@ class TestNodeSimilarity:
                 _node_sim("<div data-name='foo1' class='a'></div>", "<div data-name='foo2' class='b'></div>") <
                 _node_sim("<input class='a'>", "<input class='b'>")
         )
+
+    def test_with_level(self):
+        divs = "<div><div><div></div></div></div>"
+        tree1 = html_parser.html_to_tree(divs)
+        tree2 = html_parser.html_to_tree(divs)
+        sim_0_0 = html_locator.node_similarity(tree1[0], tree2[0])
+        sim_0_00 = html_locator.node_similarity(tree1[0], tree2[0].children[0])
+        sim_0_000 = html_locator.node_similarity(tree1[0], tree2[0].children[0].children[0])
+        assert (sim_0_0 > sim_0_00)
+        assert (sim_0_00 > sim_0_000)
 
     def test_different_tags(self):
         # language=html
