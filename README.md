@@ -1,4 +1,8 @@
-# wwwpy
+# wwwpy / develop web applications in Python quickly and easily
+
+[![Test suite](https://github.com/www-py/wwwpy/actions/workflows/ci.yml/badge.svg)](https://github.com/www-py/wwwpy/actions/workflows/ci.yml)
+
+
 Develop web applications quickly, Python all the way down.
 
 The vision of wwwpy: 
