@@ -1,6 +1,8 @@
 # Seamless communication server/remote
 
-wwwpy allows you to call server-side functions from the browser seamlessly, without the need to write API endpoints. You can also call the browser(s) from the server to push changes and information to it.
+wwwpy allows you to call server-side functions from the browser seamlessly, 
+without the need to write API endpoints.
+You can also do the reverse, calling functions in the browser(s) from the server just as easily.
 
 
 ## Server-side functions

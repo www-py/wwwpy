@@ -31,3 +31,10 @@ wwwpy dev
 ```
 
 If the current folder is empty, wwwpy will ask you to select a quickstart project to help you explore its features right away.
+
+
+## Documentation
+
+For more detailed information on how to use and create components, refer to the [Component User Documentation](docs/component.md).
+
+For details on seamless communication between server and browser(s), refer to the [Seamless communication between server and browser(s)](docs/rpc.md).
