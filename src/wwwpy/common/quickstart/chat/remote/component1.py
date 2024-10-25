@@ -2,44 +2,62 @@ import js
 import wwwpy.remote.component as wpc
 from wwwpy.remote import dict_to_js
 
+from common import name
 from .rpc_issue import RpcIssueAlert
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Component1(wpc.Component, tag_name='component-1'):
-    slButton1: js.HTMLElement = wpc.element()
     slInput1: js.HTMLElement = wpc.element()
-    slIconButton1: js.HTMLElement = wpc.element()
     slTextarea1: js.HTMLElement = wpc.element()
-    form1: js.HTMLElement = wpc.element()
+    slSwitch1: js.HTMLElement = wpc.element()
+    nickname: js.HTMLElement = wpc.element()
 
     def init_component(self):
         # language=html
-        self.element.innerHTML = """<span>component-1</span>
-<form data-name="form1">
-    <sl-input data-name="slInput1" placeholder="Message" title="" required></sl-input>
-    <sl-button data-name="slButton1" type="submit">Send</sl-button>
-    <sl-textarea data-name="slTextarea1" placeholder="slTextarea1" rows="10">Messages...</sl-textarea>
-</form>
+        self.element.innerHTML = """
+<style> * { margin-bottom: 0.5em; } </style>
+<h2>You are: <span data-name="nickname"></span></h2>
+<sl-switch data-name="slSwitch1" checked>Allow empty messages</sl-switch>
+<sl-input data-name="slInput1" placeholder="Message"></sl-input>
+<sl-button data-name="slButton1">Send<sl-icon slot="suffix" name="send"></sl-icon></sl-button>
+<sl-textarea data-name="slTextarea1" placeholder="slTextarea1" rows="10">Messages...</sl-textarea>
 """
         self.element.append(RpcIssueAlert().element)
+        local_storage_key = 'wwwpy.userspace.chat.nickname'
+        nick = js.window.localStorage.getItem(local_storage_key)
+        if not nick:
+            nick = name.generate_name()
+            js.window.localStorage.setItem(local_storage_key, nick)
+        self.nickname.textContent = nick
 
         def new_message(message):
             self.slTextarea1.value += message + '\n'
-            self.slTextarea1.scrollPosition(dict_to_js({'top': self.slTextarea1.scrollHeight}))
+            self.slTextarea1.scrollPosition(dict_to_js({'top': 999999999}))
 
         import remote.rpc
         remote.rpc.messages_listeners.append(new_message)
 
     async def slButton1__click(self, event):
-        js.console.log('handler slButton1__click event =', event)
-        import server.rpc
+        logger.debug('handler slButton1__click')
+        self._set_error('')
         try:
-            await server.rpc.send_message_to_all(self.slInput1.value)
-            self.slInput1.value = ''
-            self.slInput1.setCustomValidity('')
-        except Exception as e:
-            self.slInput1.setCustomValidity('Issues sending message... ' + str(e))
-            self.slInput1.reportValidity()
+            message = self.slInput1.value.strip()
+            if not message:
+                if not self.slSwitch1.checked:
+                    self._set_error('Please enter a message')
+                    return
+                message = 'Empty message'
 
-    def form1__submit(self, event):
-        event.preventDefault()
+            import server.rpc
+            await server.rpc.send_message_to_all(self.nickname.innerText + ': ' + message)
+            self.slInput1.value = ''
+            self._set_error('')
+        except Exception as e:
+            self._set_error('Issues sending message... ' + str(e))
+
+    def _set_error(self, msg):
+        self.slInput1.setCustomValidity(msg)
+        self.slInput1.reportValidity()
