@@ -2,6 +2,7 @@
 
 [![Test suite](https://github.com/www-py/wwwpy/actions/workflows/ci.yml/badge.svg)](https://github.com/www-py/wwwpy/actions/workflows/ci.yml)
 ![PyPI](https://img.shields.io/pypi/v/wwwpy)
+[![Python Versions][python_versions]](https://pypi.org/project/wwwpy/)
 
 
 Develop web applications quickly, Python all the way down.
