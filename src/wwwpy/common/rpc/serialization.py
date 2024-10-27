@@ -108,7 +108,7 @@ def deserialize(data: Any, cls: Type[T]) -> T:
             deserialize(key, key_type): deserialize(value, value_type)
             for key, value in data.items()
         }
-    elif issubclass(cls, list):  # for subclasses of list
+    elif isinstance(data, list):  # for subclasses of list
         item_type = get_args(cls)[0]
         return cls([deserialize(item, item_type) for item in data])
     elif cls == datetime:
