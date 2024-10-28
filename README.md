@@ -42,3 +42,6 @@ If the current folder is empty, wwwpy will ask you to select a quickstart projec
 * [Component Documentation](docs/component.md): Instructions on how to use and create components.
 * [Seamless communication between server and browser(s)](docs/rpc.md): Learn about seamless communication between the server and browser(s).
 
+## Roadmap
+
+todo
