@@ -1,4 +1,4 @@
-# wwwpy / develop web applications in Python quickly and easily
+# wwwpy
 
 [python_versions]: https://img.shields.io/pypi/pyversions/wwwpy.svg?logo=python&logoColor=white
 
@@ -7,7 +7,7 @@
 [![Python Versions][python_versions]](https://pypi.org/project/wwwpy/)
 
 
-Develop web applications quickly, Python all the way down.
+Develop web applications in Python quickly and easily.
 
 The vision of wwwpy: 
 - **Jumpstart Your Projects**: With just a couple of commands, get a head start on building web UIs, allowing you to focus on coding and scaling your application.
