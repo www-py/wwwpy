@@ -43,6 +43,8 @@ If the current folder is empty, wwwpy will ask you to select a quickstart projec
 * [Seamless communication between server and browser(s)](docs/rpc.md): Learn about seamless communication between the server and browser(s).
 
 ## Roadmap
+Our primary focus is to get to know how you are using wwwpy and what are the problems you are solving now or trying to solve. 
+Please, reach out to us and share your experience.
 
 Disclaimer: This roadmap is fluid and we will change according to your feedback. If you have comments or ideas, please open an issue or post a message in a discussion.
 
