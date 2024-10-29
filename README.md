@@ -44,4 +44,35 @@ If the current folder is empty, wwwpy will ask you to select a quickstart projec
 
 ## Roadmap
 
-todo
+Disclaimer: This roadmap is fluid and we will change according to your feedback. If you have comments or ideas, please open an issue or post a message in a discussion.
+
+- Add support for [Plotly](https://plotly.com/javascript/)
+- Add support for [AG Grid](https://ag-grid.com) 
+- Add support for Ionic custom web components
+  Add support for ASGI. This will enable wwwpy to be used as an add-on to e.g., Django
+- Create a database quickstart with vanilla SQLite (or SQLAlchemy)
+- Documentation and tutorial about keybindings (hotkey and shortcuts)
+- PyCharm and VS Code plugin
+- Implement a simple layout system to easily place components
+- Execute/Schedule server-side code [see issue](https://github.com/www-py/wwwpy/issues/7)
+- Support IDE Python completion for shoelace property (through Python stubs .pyi)
+- Support server.rpc function signature hot-reload (now if you change the parameters of a function, the hot-reload will not pick it up)
+- Improve the serialization mechanism of RPC
+- Change the default event handler code from 'console.log' to 'logger.debug' to use the Python API. As a side effect, all the logging is sent to the server console (only in dev-mode)
+- Improve and clean the Component API that handle the shadow DOM
+- Add a cute loader instead of the plain `<h1>Loading...</h1>`
+
+
+### Toolbox improvements:
+- Improve the selection mechanism; it should be smarter and 'do the right thing' given the context
+- Implement the deletion of an element
+- Give better visibility to "Create new Component" and "Explore local filesystem"; now they are at the bottom of the item list
+- Develop a 'manual' element selection for those element not easily selected with the mouse
+- Implement the rename of an element
+- Dynamically include the user custom Components in the palette so they can be dropped and used
+- When creating event handlers, add type hints to the event parameter, e.g., `def button1__click(self, event: js.MouseEvent)`
+- Setting the data-name should declare the Python definition
+- Removing the data-name should remove the Python definition
+- Improve the editing of third-party components (e.g., shoelace). Some components have constraints on parents or children, facilitate that (also standard elements have constraints like this).
+
+
