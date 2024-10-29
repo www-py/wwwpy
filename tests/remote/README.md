@@ -1,1 +1,0 @@
-This tests will be executed in the browser
